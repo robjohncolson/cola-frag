@@ -1,0 +1,92 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+
+% Defining cola-inspired colors
+\definecolor{colaRed}{RGB}{201, 37, 44}     % Deep red like Coca-Cola logo
+\definecolor{colaBrown}{RGB}{58, 29, 20}    % Dark brown like cola liquid
+\definecolor{colaCream}{RGB}{253, 246, 227} % Light cream for background
+\definecolor{colaDark}{RGB}{45, 12, 7}      % Deep dark brown
+
+% Setting up page geometry
+\geometry{margin=1in}
+\pagecolor{colaCream}
+
+% Configuring header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[C]{\textcolor{colaRed}{\textbf{Artisan Fragrance Recipe}}}
+\fancyfoot[C]{\textcolor{colaBrown}{\thepage}}
+
+% Formatting section titles
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{colaRed}}
+  {\thesection}{1em}{}
+
+% Starting document
+\begin{document}
+
+\begin{center}
+\textcolor{colaDark}{\LARGE\textbf{Cola-Inspired Musk Eau de Parfum}}\\[0.5cm]
+\textcolor{colaBrown}{\large\textit{A sparkling fragrance with citrus vibrancy, warm spices, and a floral-musky base}}\\[1cm]
+\end{center}
+
+\section*{Recipe for 1 Milliliter Sample (15\% Concentration)}
+
+\begin{itemize}[leftmargin=*]
+  \item \textcolor{colaRed}{\textbf{Citrus Notes (8\%):}}
+  \begin{itemize}
+    \item Bergamot Essential Oil: \textbf{40 microliters} (4\% final concentration)
+    \item Lemon Essential Oil: \textbf{20 microliters} (2\% final concentration)
+    \item Lime Essential Oil: \textbf{20 microliters} (2\% final concentration)
+  \end{itemize}
+  
+  \item \textcolor{colaRed}{\textbf{Spice Elements (4\%):}}
+  \begin{itemize}
+    \item Ceylon Cinnamon Essential Oil: \textbf{10 microliters} (1\% final concentration)
+    \item Coriander Essential Oil: \textbf{10 microliters} (1\% final concentration)
+    \item Nutmeg Absolute (10\% dilution in DPG): \textbf{50 microliters} (0.5\% final concentration)
+    \item Neroli Essential Oil: \textbf{10 microliters} (1\% final concentration)
+    \item Pink Pepper Essential Oil: \textbf{5 microliters} (0.5\% final concentration)
+  \end{itemize}
+  
+  \item \textcolor{colaRed}{\textbf{Base Notes (0.4\%):}}
+  \begin{itemize}
+    \item 3\% Tonkin Tibetan Deer Musk Tincture: \textbf{33 microliters} (0.1\% final musk concentration)
+    \item Violet Leaf Absolute (10\% dilution in DPG): \textbf{10 microliters} (0.1\% final concentration)
+    \item Black Currant Bud Absolute (10\% dilution in DPG): \textbf{10 microliters} (0.1\% final concentration)
+    \item Boronia Absolute (10\% dilution in DPG): \textbf{10 microliters} (0.1\% final concentration)
+  \end{itemize}
+  
+  \item \textcolor{colaRed}{\textbf{Carrier (87.6\%):}}
+  \begin{itemize}
+    \item Ethanol (95\% or higher): \textbf{826 microliters} (82.6\% final concentration)
+    \item Dipropylene Glycol (DPG): \textbf{50 microliters} (5\% final concentration)
+  \end{itemize}
+\end{itemize}
+
+\section*{Preparation Instructions}
+\begin{enumerate}
+  \item Prepare 10\% dilutions of violet leaf, nutmeg, black currant, and boronia absolutes in DPG (100 microliters absolute to 900 microliters DPG).
+  \item Add ingredients in order: musk tincture, violet leaf dilution, black currant dilution, boronia dilution, nutmeg dilution, essential oils (cinnamon, coriander, neroli, pink pepper, bergamot, lemon, lime), DPG, then ethanol.
+  \item Mix gently with a glass rod to avoid aeration.
+  \item Transfer to an amber glass spray or dropper vial and seal tightly.
+  \item Allow to rest for 48 hours before initial testing.
+  \item Optimal maturation period: 2--4 weeks for alcohol-based formulation.
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+\textcolor{colaBrown}{\rule{0.8\textwidth}{0.4pt}}
+\end{center}
+
+\begin{center}
+\textit{\textcolor{colaDark}{This eau de parfum delivers a vibrant, cola-inspired scent with sparkling citrus, warm spices, and a sophisticated floral-musky base.}}
+\end{center}
+
+\end{document}
