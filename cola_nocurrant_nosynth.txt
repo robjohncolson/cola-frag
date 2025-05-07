@@ -9,7 +9,7 @@
 % Define cola-inspired colors
 \definecolor{colaRed}{RGB}{201, 37, 44}     % Deep red like Coca-Cola logo
 \definecolor{colaBrown}{RGB}{58, 29, 20}    % Dark brown like cola liquid
-\definecolor{colaCream}{RGB}{253, 246, 227} % Light cream for background
+\definecolor{colaCream}{RGB}{255, 255, 255} % Light cream for background
 \definecolor{colaDark}{RGB}{45, 12, 7}      % Deep dark brown
 
 % Page setup
