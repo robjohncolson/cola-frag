@@ -352,6 +352,112 @@
                 return formula.ingredients.find(ing => ing.name === name);
             };
 
+            // Export comparison data
+            const exportComparison = (format = 'json') => {
+                const uniqueIngredients = getAllUniqueIngredients();
+                const comparisonData = {
+                    exportDate: new Date().toISOString(),
+                    exportType: 'Formula Comparison',
+                    formulas: formulas.map(formula => {
+                        const stats = calculateStats(formula);
+                        const strengthCategory = getStrengthCategory(parseFloat(stats.fragranceConcentration));
+                        return {
+                            name: formula.name,
+                            targetVolume: formula.targetVolume,
+                            scaleFactor: formula.scaleFactor,
+                            stats: {
+                                ...stats,
+                                strengthCategory: strengthCategory.name
+                            }
+                        };
+                    }),
+                    ingredientComparison: uniqueIngredients.map(ingredientName => {
+                        const comparison = {
+                            ingredient: ingredientName,
+                            formulas: {}
+                        };
+                        
+                        formulas.forEach((formula, index) => {
+                            const ingredient = findIngredientByName(formula, ingredientName);
+                            const stats = calculateStats(formula);
+                            
+                            if (ingredient) {
+                                const activeAmount = ingredient.amount * formula.scaleFactor * ingredient.dilution / 100;
+                                const ratio = (activeAmount / parseFloat(stats.totalActiveVolume) * 100);
+                                comparison.formulas[formula.name] = {
+                                    present: true,
+                                    baseAmount: ingredient.amount,
+                                    scaledAmount: (ingredient.amount * formula.scaleFactor).toFixed(2),
+                                    activeAmount: activeAmount.toFixed(1),
+                                    activeRatio: ratio.toFixed(1) + '%',
+                                    dilution: ingredient.dilution + '%',
+                                    category: ingredient.category,
+                                    notes: ingredient.notes
+                                };
+                            } else {
+                                comparison.formulas[formula.name] = {
+                                    present: false
+                                };
+                            }
+                        });
+                        
+                        return comparison;
+                    })
+                };
+
+                if (format === 'json') {
+                    const dataStr = JSON.stringify(comparisonData, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `Formula_Comparison_${new Date().toISOString().split('T')[0]}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                } else if (format === 'csv') {
+                    // Create CSV format
+                    let csvContent = 'Ingredient';
+                    formulas.forEach(formula => {
+                        csvContent += `,${formula.name} (Active μL),${formula.name} (Ratio %),${formula.name} (Dilution %)`;
+                    });
+                    csvContent += '\n';
+
+                    uniqueIngredients.forEach(ingredientName => {
+                        csvContent += `"${ingredientName}"`;
+                        formulas.forEach(formula => {
+                            const ingredient = findIngredientByName(formula, ingredientName);
+                            const stats = calculateStats(formula);
+                            
+                            if (ingredient) {
+                                const activeAmount = ingredient.amount * formula.scaleFactor * ingredient.dilution / 100;
+                                const ratio = (activeAmount / parseFloat(stats.totalActiveVolume) * 100);
+                                csvContent += `,${activeAmount.toFixed(1)},${ratio.toFixed(1)}%,${ingredient.dilution}%`;
+                            } else {
+                                csvContent += `,,,`;
+                            }
+                        });
+                        csvContent += '\n';
+                    });
+
+                    // Add summary stats at the bottom
+                    csvContent += '\n--- FORMULA SUMMARY ---\n';
+                    csvContent += 'Formula,Target Volume,Concentration %,Strength Category,Active Volume,Ingredient Count\n';
+                    formulas.forEach(formula => {
+                        const stats = calculateStats(formula);
+                        const strengthCategory = getStrengthCategory(parseFloat(stats.fragranceConcentration));
+                        csvContent += `"${formula.name}",${formula.targetVolume},${stats.fragranceConcentration}%,"${strengthCategory.name}",${stats.totalActiveVolume},${formula.ingredients.length}\n`;
+                    });
+
+                    const dataBlob = new Blob([csvContent], {type: 'text/csv'});
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `Formula_Comparison_${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }
+            };
+
             if (comparisonMode) {
                 const uniqueIngredients = getAllUniqueIngredients();
                 
@@ -360,12 +466,28 @@
                         <div className="bg-white rounded-lg shadow-lg p-6">
                             <div className="flex justify-between items-center mb-6">
                                 <h1 className="text-3xl font-bold text-gray-800">Formula Comparison</h1>
-                                <button
-                                    onClick={() => setComparisonMode(false)}
-                                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                                >
-                                    ← Back to Edit Mode
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => exportComparison('json')}
+                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                    >
+                                        <Download />
+                                        Export JSON
+                                    </button>
+                                    <button
+                                        onClick={() => exportComparison('csv')}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        <Download />
+                                        Export CSV
+                                    </button>
+                                    <button
+                                        onClick={() => setComparisonMode(false)}
+                                        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                    >
+                                        ← Back to Edit Mode
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Summary Stats */}
