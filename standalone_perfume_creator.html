@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfume Formula Comparison Tool</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .lucide {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        // Simple Lucide icons as SVG components
+        const Download = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" x2="12" y1="15" y2="3"/>
+            </svg>
+        );
+
+        const Upload = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-15"/>
+                <polyline points="17,6 12,1 7,6"/>
+                <line x1="12" x2="12" y1="1" y2="13"/>
+            </svg>
+        );
+
+        const Plus = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" x2="12" y1="8" y2="16"/>
+                <line x1="8" x2="16" y1="12" y2="12"/>
+            </svg>
+        );
+
+        const Trash2 = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <polyline points="3,6 5,6 21,6"/>
+                <path d="m19,6v14c0,1-1,2-2,2H7c-1,0-2-1-2-2V6m3,0V4c0-1,1-2,2-2h4c1,0,2,1,2,2v2"/>
+                <line x1="10" x2="10" y1="11" y2="17"/>
+                <line x1="14" x2="14" y1="11" y2="17"/>
+            </svg>
+        );
+
+        const Copy = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                <path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+        );
+
+        const ArrowLeftRight = () => (
+            <svg className="lucide" viewBox="0 0 24 24">
+                <path d="m6 8-4 4 4 4"/>
+                <path d="m2 12h20"/>
+                <path d="m18 16 4-4-4-4"/>
+            </svg>
+        );
+
+        const PerfumeComparisonTool = () => {
+            // Initial formulas - three different Aventus variations
+            const initialFormulas = [
+                {
+                    name: "Scaled Aventus Template",
+                    targetVolume: 750,
+                    scaleFactor: 1.0,
+                    ingredients: [
+                        { id: 1, name: 'Hedione', category: 'Core Synthetic', dilution: 100, amount: 76.7, notes: 'Heart/floral radiance' },
+                        { id: 2, name: 'Iso E Super', category: 'Core Synthetic', dilution: 100, amount: 46.7, notes: 'Woody backbone' },
+                        { id: 3, name: 'Helvetolide', category: 'Core Synthetic', dilution: 100, amount: 46.7, notes: 'Musk base' },
+                        { id: 4, name: 'Ambroxan', category: 'Core Synthetic', dilution: 10, amount: 333.0, notes: 'Ambergris note' },
+                        { id: 5, name: 'Bergamot EO', category: 'Natural Oil', dilution: 100, amount: 33.3, notes: 'Citrus opening' },
+                        { id: 6, name: 'Galaxolide', category: 'Core Synthetic', dilution: 27, amount: 29.0, notes: 'Musk substitute' },
+                        { id: 7, name: 'Patchouli EO', category: 'Natural Oil', dilution: 100, amount: 13.0, notes: 'Earthy/woody' },
+                        { id: 8, name: 'Linalyl Acetate', category: 'Opening Modifier', dilution: 100, amount: 12.0, notes: 'Lavender/bergamot' },
+                        { id: 9, name: 'Birch Tar Rectified', category: 'Natural Oil', dilution: 1, amount: 7.0, notes: 'Smoky/leather' }
+                    ]
+                },
+                {
+                    name: "Formula 2",
+                    targetVolume: 750,
+                    scaleFactor: 1.0,
+                    ingredients: []
+                },
+                {
+                    name: "Formula 3", 
+                    targetVolume: 750,
+                    scaleFactor: 1.0,
+                    ingredients: []
+                }
+            ];
+
+            const [formulas, setFormulas] = useState(initialFormulas);
+            const [activeTab, setActiveTab] = useState(0);
+            const [comparisonMode, setComparisonMode] = useState(false);
+
+            // Calculate stats for a formula
+            const calculateStats = (formula) => {
+                const totalRawVolume = formula.ingredients.reduce((sum, ing) => sum + (ing.amount * formula.scaleFactor), 0);
+                const totalActiveVolume = formula.ingredients.reduce((sum, ing) => 
+                    sum + (ing.amount * formula.scaleFactor * ing.dilution / 100), 0
+                );
+                const ethanolNeeded = Math.max(0, formula.targetVolume - totalRawVolume);
+                const fragranceConcentration = totalActiveVolume / formula.targetVolume * 100;
+                
+                return {
+                    totalRawVolume: totalRawVolume.toFixed(1),
+                    totalActiveVolume: totalActiveVolume.toFixed(1),
+                    ethanolNeeded: ethanolNeeded.toFixed(1),
+                    fragranceConcentration: fragranceConcentration.toFixed(1),
+                    totalVolume: formula.targetVolume
+                };
+            };
+
+            // Get strength category
+            const getStrengthCategory = (concentration) => {
+                if (concentration < 5) return { name: 'Eau Fraiche', color: 'text-blue-600' };
+                if (concentration < 15) return { name: 'Eau de Cologne', color: 'text-green-600' };
+                if (concentration < 20) return { name: 'Eau de Toilette', color: 'text-yellow-600' };
+                if (concentration < 30) return { name: 'Eau de Parfum', color: 'text-orange-600' };
+                return { name: 'Parfum/Extrait', color: 'text-red-600' };
+            };
+
+            // Update formula
+            const updateFormula = (formulaIndex, updates) => {
+                setFormulas(prev => prev.map((formula, index) => 
+                    index === formulaIndex ? { ...formula, ...updates } : formula
+                ));
+            };
+
+            // Update ingredient in specific formula
+            const updateIngredient = (formulaIndex, ingredientId, field, value) => {
+                setFormulas(prev => prev.map((formula, index) => 
+                    index === formulaIndex ? {
+                        ...formula,
+                        ingredients: formula.ingredients.map(ing => 
+                            ing.id === ingredientId ? { ...ing, [field]: parseFloat(value) || 0 } : ing
+                        )
+                    } : formula
+                ));
+            };
+
+            // Add ingredient to formula
+            const addIngredient = (formulaIndex) => {
+                const formula = formulas[formulaIndex];
+                const newId = formula.ingredients.length > 0 ? Math.max(...formula.ingredients.map(i => i.id)) + 1 : 1;
+                updateFormula(formulaIndex, {
+                    ingredients: [...formula.ingredients, {
+                        id: newId,
+                        name: 'New Ingredient',
+                        category: 'Custom',
+                        dilution: 100,
+                        amount: 1.0,
+                        notes: 'Custom addition'
+                    }]
+                });
+            };
+
+            // Remove ingredient from formula
+            const removeIngredient = (formulaIndex, ingredientId) => {
+                updateFormula(formulaIndex, {
+                    ingredients: formulas[formulaIndex].ingredients.filter(ing => ing.id !== ingredientId)
+                });
+            };
+
+            // Copy formula
+            const copyFormula = (sourceIndex, targetIndex) => {
+                const sourceFormula = formulas[sourceIndex];
+                updateFormula(targetIndex, {
+                    ingredients: sourceFormula.ingredients.map(ing => ({ ...ing, id: ing.id + 1000 + targetIndex * 100 })),
+                    targetVolume: sourceFormula.targetVolume,
+                    scaleFactor: sourceFormula.scaleFactor
+                });
+            };
+
+            // Import formula - FIXED VERSION
+            const importFormula = (formulaIndex) => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json,.csv,.txt';
+                input.onchange = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const content = e.target.result;
+                            let data;
+
+                            if (file.name.endsWith('.json')) {
+                                data = JSON.parse(content);
+                                
+                                // Handle different JSON structures
+                                let ingredientsData = [];
+                                let formulaName = `Imported ${file.name}`;
+                                let targetVol = 750;
+                                let scaleFact = 1.0;
+                                
+                                // Check if it's an exported formula from this app
+                                if (data.ingredients && Array.isArray(data.ingredients)) {
+                                    ingredientsData = data.ingredients;
+                                    formulaName = data.formulaName || data.name || formulaName;
+                                    targetVol = data.targetVolume || 750;
+                                    scaleFact = data.scaleFactor || 1.0;
+                                }
+                                // Check if it's just an array of ingredients
+                                else if (Array.isArray(data)) {
+                                    ingredientsData = data;
+                                }
+                                // Check if it has a different structure
+                                else if (data.formulation && data.formulation.ingredients) {
+                                    ingredientsData = data.formulation.ingredients;
+                                }
+                                else {
+                                    throw new Error('Invalid JSON structure. Expected "ingredients" array or direct ingredient array.');
+                                }
+
+                                // Process ingredients
+                                const processedIngredients = ingredientsData.map((ing, index) => ({
+                                    id: ing.id || Date.now() + index,
+                                    name: ing.name || ing.ingredient || `Ingredient ${index + 1}`,
+                                    amount: parseFloat(ing.amount) || parseFloat(ing.scaledAmount) || parseFloat(ing.baseAmount) || 0,
+                                    dilution: parseFloat(ing.dilution) || parseFloat(ing.concentration) || 100,
+                                    category: ing.category || ing.type || 'Imported',
+                                    notes: ing.notes || ing.description || ''
+                                }));
+
+                                updateFormula(formulaIndex, {
+                                    name: formulaName,
+                                    ingredients: processedIngredients,
+                                    targetVolume: targetVol,
+                                    scaleFactor: scaleFact
+                                });
+                                
+                            } else if (file.name.endsWith('.csv')) {
+                                // Parse CSV format
+                                const lines = content.split('\n').filter(line => line.trim());
+                                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                                
+                                const nameIndex = headers.findIndex(h => h.includes('name') || h.includes('ingredient'));
+                                const amountIndex = headers.findIndex(h => h.includes('amount') || h.includes('quantity'));
+                                const dilutionIndex = headers.findIndex(h => h.includes('dilution') || h.includes('concentration'));
+                                const categoryIndex = headers.findIndex(h => h.includes('category') || h.includes('type'));
+                                const notesIndex = headers.findIndex(h => h.includes('notes') || h.includes('description'));
+
+                                if (nameIndex === -1 || amountIndex === -1) {
+                                    throw new Error('CSV must contain at least "name" and "amount" columns');
+                                }
+
+                                const importedIngredients = lines.slice(1).map((line, index) => {
+                                    const cols = line.split(',').map(c => c.trim().replace(/"/g, ''));
+                                    return {
+                                        id: Date.now() + index,
+                                        name: cols[nameIndex] || `Ingredient ${index + 1}`,
+                                        amount: parseFloat(cols[amountIndex]) || 1.0,
+                                        dilution: dilutionIndex >= 0 ? parseFloat(cols[dilutionIndex]) || 100 : 100,
+                                        category: categoryIndex >= 0 ? cols[categoryIndex] || 'Imported' : 'Imported',
+                                        notes: notesIndex >= 0 ? cols[notesIndex] || '' : ''
+                                    };
+                                });
+
+                                updateFormula(formulaIndex, {
+                                    name: `Imported CSV - ${file.name}`,
+                                    ingredients: importedIngredients,
+                                    targetVolume: 750,
+                                    scaleFactor: 1.0
+                                });
+                            }
+                            
+                            alert('Formula imported successfully!');
+                        } catch (error) {
+                            console.error('Import error:', error);
+                            alert(`Import failed: ${error.message}`);
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            };
+
+            // Export formula
+            const exportFormula = (formulaIndex) => {
+                const formula = formulas[formulaIndex];
+                const stats = calculateStats(formula);
+                
+                const formulaData = {
+                    formulaName: formula.name,
+                    exportDate: new Date().toISOString(),
+                    targetVolume: formula.targetVolume,
+                    scaleFactor: formula.scaleFactor,
+                    ingredients: formula.ingredients.map(ing => ({
+                        ...ing,
+                        scaledAmount: (ing.amount * formula.scaleFactor).toFixed(2),
+                        activeAmount: (ing.amount * formula.scaleFactor * ing.dilution / 100).toFixed(2),
+                        activeRatio: ((ing.amount * formula.scaleFactor * ing.dilution / 100) / parseFloat(stats.totalActiveVolume) * 100).toFixed(2) + '%'
+                    })),
+                    stats
+                };
+                
+                const dataStr = JSON.stringify(formulaData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${formula.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            };
+
+            // Group ingredients by category for a formula
+            const groupIngredients = (ingredients) => {
+                return ingredients.reduce((groups, ingredient) => {
+                    const category = ingredient.category;
+                    if (!groups[category]) {
+                        groups[category] = [];
+                    }
+                    groups[category].push(ingredient);
+                    return groups;
+                }, {});
+            };
+
+            // Get all unique ingredients across formulas for comparison
+            const getAllUniqueIngredients = () => {
+                const allIngredients = new Set();
+                formulas.forEach(formula => {
+                    formula.ingredients.forEach(ing => {
+                        allIngredients.add(ing.name);
+                    });
+                });
+                return Array.from(allIngredients).sort();
+            };
+
+            // Find ingredient in formula by name
+            const findIngredientByName = (formula, name) => {
+                return formula.ingredients.find(ing => ing.name === name);
+            };
+
+            if (comparisonMode) {
+                const uniqueIngredients = getAllUniqueIngredients();
+                
+                return (
+                    <div className="max-w-full mx-auto p-6 bg-gray-50 min-h-screen">
+                        <div className="bg-white rounded-lg shadow-lg p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h1 className="text-3xl font-bold text-gray-800">Formula Comparison</h1>
+                                <button
+                                    onClick={() => setComparisonMode(false)}
+                                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                                >
+                                    ← Back to Edit Mode
+                                </button>
+                            </div>
+
+                            {/* Summary Stats */}
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                {formulas.map((formula, index) => {
+                                    const stats = calculateStats(formula);
+                                    const strengthCategory = getStrengthCategory(parseFloat(stats.fragranceConcentration));
+                                    return (
+                                        <div key={index} className="p-4 bg-blue-50 rounded-lg border">
+                                            <h3 className="font-bold text-lg mb-2">{formula.name}</h3>
+                                            <div className="space-y-1 text-sm">
+                                                <div><strong>Concentration:</strong> {stats.fragranceConcentration}%</div>
+                                                <div><strong>Strength:</strong> <span className={strengthCategory.color}>{strengthCategory.name}</span></div>
+                                                <div><strong>Active Volume:</strong> {stats.totalActiveVolume} μL</div>
+                                                <div><strong>Ingredients:</strong> {formula.ingredients.length}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Comparison Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full border border-gray-200">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-2 text-left border-r">Ingredient</th>
+                                            {formulas.map((formula, index) => (
+                                                <th key={index} className="px-4 py-2 text-center border-r">
+                                                    {formula.name}
+                                                    <div className="text-xs font-normal">Active μL (Ratio %)</div>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {uniqueIngredients.map((ingredientName, rowIndex) => (
+                                            <tr key={rowIndex} className={rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                                                <td className="px-4 py-2 font-medium border-r">{ingredientName}</td>
+                                                {formulas.map((formula, formulaIndex) => {
+                                                    const ingredient = findIngredientByName(formula, ingredientName);
+                                                    const stats = calculateStats(formula);
+                                                    
+                                                    if (ingredient) {
+                                                        const activeAmount = ingredient.amount * formula.scaleFactor * ingredient.dilution / 100;
+                                                        const ratio = (activeAmount / parseFloat(stats.totalActiveVolume) * 100);
+                                                        return (
+                                                            <td key={formulaIndex} className="px-4 py-2 text-center border-r">
+                                                                <div className="font-medium text-green-600">{activeAmount.toFixed(1)}</div>
+                                                                <div className="text-xs text-purple-600">({ratio.toFixed(1)}%)</div>
+                                                                <div className="text-xs text-gray-500">{ingredient.dilution}% dil</div>
+                                                            </td>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <td key={formulaIndex} className="px-4 py-2 text-center border-r text-gray-400">
+                                                                -
+                                                            </td>
+                                                        );
+                                                    }
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Main editing interface
+            const currentFormula = formulas[activeTab];
+            const stats = calculateStats(currentFormula);
+            const strengthCategory = getStrengthCategory(parseFloat(stats.fragranceConcentration));
+            const groupedIngredients = groupIngredients(currentFormula.ingredients);
+
+            return (
+                <div className="max-w-7xl mx-auto p-6 bg-gray-50 min-h-screen">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold text-gray-800">Perfume Formula Comparison Tool</h1>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setComparisonMode(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                                >
+                                    <ArrowLeftRight />
+                                    Compare All
+                                </button>
+                                <button
+                                    onClick={() => importFormula(activeTab)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                >
+                                    <Upload />
+                                    Import
+                                </button>
+                                <button
+                                    onClick={() => exportFormula(activeTab)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                >
+                                    <Download />
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Import Instructions */}
+                        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h3 className="font-semibold text-blue-800 mb-2">Import Instructions</h3>
+                            <div className="text-sm text-blue-700 space-y-1">
+                                <p><strong>JSON:</strong> Supports exported files from this app, or any JSON with "ingredients" array</p>
+                                <p><strong>CSV:</strong> Columns: Name, Amount, Dilution (optional), Category (optional), Notes (optional)</p>
+                                <p><strong>Compatible:</strong> Exports from the single-formula version work perfectly!</p>
+                            </div>
+                        </div>
+
+                        {/* Formula Tabs */}
+                        <div className="flex mb-6 border-b">
+                            {formulas.map((formula, index) => (
+                                <div key={index} className="flex items-center">
+                                    <button
+                                        onClick={() => setActiveTab(index)}
+                                        className={`px-4 py-2 font-medium ${
+                                            activeTab === index 
+                                                ? 'border-b-2 border-blue-600 text-blue-600' 
+                                                : 'text-gray-600 hover:text-blue-600'
+                                        }`}
+                                    >
+                                        {formula.name}
+                                    </button>
+                                    {index > 0 && (
+                                        <div className="flex ml-2 mr-4">
+                                            <button
+                                                onClick={() => copyFormula(0, index)}
+                                                className="p-1 text-gray-400 hover:text-blue-600"
+                                                title="Copy from Formula 1"
+                                            >
+                                                <Copy />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Formula Name Editor */}
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={currentFormula.name}
+                                onChange={(e) => updateFormula(activeTab, { name: e.target.value })}
+                                className="text-xl font-semibold border-b-2 border-gray-200 bg-transparent focus:border-blue-600 focus:outline-none"
+                                placeholder="Formula Name"
+                            />
+                        </div>
+
+                        {/* Controls */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-gray-100 rounded-lg">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Volume (μL)</label>
+                                <input
+                                    type="number"
+                                    value={currentFormula.targetVolume}
+                                    onChange={(e) => updateFormula(activeTab, { targetVolume: parseFloat(e.target.value) || 750 })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Scale Factor</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={currentFormula.scaleFactor}
+                                    onChange={(e) => updateFormula(activeTab, { scaleFactor: parseFloat(e.target.value) || 1.0 })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Fragrance Strength</label>
+                                <div className={`px-3 py-2 rounded-md bg-white border ${strengthCategory.color} font-semibold`}>
+                                    {strengthCategory.name}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Concentration</label>
+                                <div className="px-3 py-2 rounded-md bg-white border font-semibold">
+                                    {stats.fragranceConcentration}%
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Statistics Panel */}
+                        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6 p-4 bg-blue-50 rounded-lg">
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">Raw Volume</div>
+                                <div className="text-lg font-bold text-blue-600">{stats.totalRawVolume} μL</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">Active Volume</div>
+                                <div className="text-lg font-bold text-green-600">{stats.totalActiveVolume} μL</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">Ethanol Needed</div>
+                                <div className="text-lg font-bold text-purple-600">{stats.ethanolNeeded} μL</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">Total Volume</div>
+                                <div className="text-lg font-bold text-gray-600">{stats.totalVolume} μL</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">Ingredient Count</div>
+                                <div className="text-lg font-bold text-orange-600">{currentFormula.ingredients.length}</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm text-gray-600">
+                                    <button
+                                        onClick={() => addIngredient(activeTab)}
+                                        className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                                    >
+                                        <Plus />
+                                        Add Ingredient
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Ingredients Table */}
+                        <div className="space-y-6">
+                            {Object.entries(groupedIngredients).map(([category, categoryIngredients]) => (
+                                <div key={category} className="border border-gray-200 rounded-lg overflow-hidden">
+                                    <div className="bg-gray-100 px-4 py-2">
+                                        <h3 className="font-semibold text-gray-800">{category} ({categoryIngredients.length} ingredients)</h3>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Ingredient</th>
+                                                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Notes</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Dilution %</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Base Amount (μL)</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Scaled Amount (μL)</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Active Amount (μL)</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Active Ratio (%)</th>
+                                                    <th className="px-4 py-2 text-center text-sm font-medium text-gray-700">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {categoryIngredients.map((ingredient) => (
+                                                    <tr key={ingredient.id} className="border-t border-gray-200 hover:bg-gray-50">
+                                                        <td className="px-4 py-2">
+                                                            <input
+                                                                type="text"
+                                                                value={ingredient.name}
+                                                                onChange={(e) => updateFormula(activeTab, {
+                                                                    ingredients: currentFormula.ingredients.map(ing => 
+                                                                        ing.id === ingredient.id ? { ...ing, name: e.target.value } : ing
+                                                                    )
+                                                                })}
+                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            <input
+                                                                type="text"
+                                                                value={ingredient.notes}
+                                                                onChange={(e) => updateFormula(activeTab, {
+                                                                    ingredients: currentFormula.ingredients.map(ing => 
+                                                                        ing.id === ingredient.id ? { ...ing, notes: e.target.value } : ing
+                                                                    )
+                                                                })}
+                                                                className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            <input
+                                                                type="number"
+                                                                step="0.1"
+                                                                value={ingredient.dilution}
+                                                                onChange={(e) => updateIngredient(activeTab, ingredient.id, 'dilution', e.target.value)}
+                                                                className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-2">
+                                                            <input
+                                                                type="number"
+                                                                step="0.1"
+                                                                value={ingredient.amount}
+                                                                onChange={(e) => updateIngredient(activeTab, ingredient.id, 'amount', e.target.value)}
+                                                                className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center text-sm font-medium text-blue-600">
+                                                            {(ingredient.amount * currentFormula.scaleFactor).toFixed(1)}
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center text-sm font-medium text-green-600">
+                                                            {(ingredient.amount * currentFormula.scaleFactor * ingredient.dilution / 100).toFixed(1)}
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center text-sm font-medium text-purple-600">
+                                                            {((ingredient.amount * currentFormula.scaleFactor * ingredient.dilution / 100) / parseFloat(stats.totalActiveVolume) * 100).toFixed(1)}%
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center">
+                                                            <button
+                                                                onClick={() => removeIngredient(activeTab, ingredient.id)}
+                                                                className="text-red-600 hover:text-red-800 transition-colors"
+                                                            >
+                                                                <Trash2 />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Final Formula Summary */}
+                        <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <h3 className="font-semibold text-green-800 mb-2">Final Formula Summary</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p><strong>Total Ingredients Volume:</strong> {stats.totalRawVolume} μL</p>
+                                    <p><strong>Active Fragrance Oil:</strong> {stats.totalActiveVolume} μL</p>
+                                    <p><strong>Ethanol (95%) Required:</strong> {stats.ethanolNeeded} μL</p>
+                                </div>
+                                <div>
+                                    <p><strong>Final Volume:</strong> {stats.totalVolume} μL</p>
+                                    <p><strong>Fragrance Concentration:</strong> {stats.fragranceConcentration}%</p>
+                                    <p><strong>Strength Category:</strong> <span className={strengthCategory.color}>{strengthCategory.name}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<PerfumeComparisonTool />, document.getElementById('root'));
+    </script>
+</body>
+</html>

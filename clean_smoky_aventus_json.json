@@ -1,0 +1,241 @@
+{
+  "formulaName": "Clean-Smoky Aventus Formula (Galaxolide-Based)",
+  "description": "Clean version embracing Galaxolide, avoiding fruity ingredients, with sophisticated smoky profile. Concentrated 36.7% formula for testing.",
+  "source": "User Formula - Galax-Birch-Boronia Aventus",
+  "exportDate": "2025-06-02",
+  "targetVolume": 802,
+  "scaleFactor": 1.0,
+  "actualVolume": 802,
+  "designVolume": 750,
+  "ingredients": [
+    {
+      "id": 1,
+      "name": "Hedione",
+      "category": "Base & Musk Foundation",
+      "dilution": 100,
+      "amount": 77,
+      "notes": "Heart/floral radiance - dominant at 26.1% active"
+    },
+    {
+      "id": 2,
+      "name": "Iso E Super",
+      "category": "Base & Musk Foundation",
+      "dilution": 100,
+      "amount": 47,
+      "notes": "Transparent woody radiance - 16% active"
+    },
+    {
+      "id": 3,
+      "name": "Helvetolide",
+      "category": "Base & Musk Foundation",
+      "dilution": 100,
+      "amount": 47,
+      "notes": "Clean-powdery musk foundation - 16% active"
+    },
+    {
+      "id": 4,
+      "name": "Ambroxan",
+      "category": "Base & Musk Foundation",
+      "dilution": 10,
+      "amount": 330,
+      "notes": "Major foundation - 33μL active, 10x previous attempts"
+    },
+    {
+      "id": 5,
+      "name": "Bergamot Oil",
+      "category": "Citrus Top",
+      "dilution": 100,
+      "amount": 33,
+      "notes": "Original: Bergamot EO. Sophisticated sparkle - 11.2% active"
+    },
+    {
+      "id": 6,
+      "name": "Galaxolide",
+      "category": "Base & Musk Foundation",
+      "dilution": 27,
+      "amount": 29,
+      "notes": "Clean powder foundation - 7.8μL active (Ambrettolide substitute)"
+    },
+    {
+      "id": 7,
+      "name": "Patchouli Oil (Heart Fraction)",
+      "category": "Woody-Earthy Foundation",
+      "dilution": 100,
+      "amount": 13,
+      "notes": "Original: Patchouli EO. Earthy depth - 4.4% active"
+    },
+    {
+      "id": 8,
+      "name": "Petitgrain Absolute",
+      "category": "Green-Resinous Complex",
+      "dilution": 50,
+      "amount": 10,
+      "notes": "Clean bitterness - 5μL active"
+    },
+    {
+      "id": 9,
+      "name": "Birch Tar Oil (Rectified)",
+      "category": "Smoky Core",
+      "dilution": 1,
+      "amount": 7,
+      "notes": "Original: Birch Tar Rectified. Refined smoke signature - 0.07μL active but impactful"
+    },
+    {
+      "id": 10,
+      "name": "Linalyl Acetate",
+      "category": "Citrus Top",
+      "dilution": 100,
+      "amount": 7,
+      "notes": "Opening freshness - 2.4% active"
+    },
+    {
+      "id": 11,
+      "name": "Lyral",
+      "category": "Floral & Fruit",
+      "dilution": 100,
+      "amount": 7,
+      "notes": "Floral lily radiance - 2.4% active"
+    },
+    {
+      "id": 12,
+      "name": "Violet Leaf Absolute",
+      "category": "Green-Resinous Complex",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Green metallic - 0.5μL active (Note: text mentions 18μL total?)"
+    },
+    {
+      "id": 13,
+      "name": "Blackcurrant Bud Absolute",
+      "category": "Floral & Fruit",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Original: Black Currant Bud Absolute. Green-fruity tartness bridge - 0.5μL active"
+    },
+    {
+      "id": 14,
+      "name": "Coranol",
+      "category": "Citrus Top",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Green/metallic freshness"
+    },
+    {
+      "id": 15,
+      "name": "Linalool",
+      "category": "Citrus Top",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Soft opening smoothness"
+    },
+    {
+      "id": 16,
+      "name": "Clary Sage Absolute",
+      "category": "Green-Resinous Complex",
+      "dilution": 23,
+      "amount": 4,
+      "notes": "Herbaceous green - 0.9μL active"
+    },
+    {
+      "id": 17,
+      "name": "Patchoulol",
+      "category": "Woody-Earthy Foundation",
+      "dilution": 23,
+      "amount": 3,
+      "notes": "Enhanced patchouli complexity - 0.7μL active"
+    },
+    {
+      "id": 18,
+      "name": "Pink Pepper Oil",
+      "category": "Woody-Earthy Foundation",
+      "dilution": 100,
+      "amount": 3,
+      "notes": "Original: Pink Pepper EO. Spicy warmth"
+    },
+    {
+      "id": 19,
+      "name": "Boronia Absolute",
+      "category": "Floral & Fruit",
+      "dilution": 10,
+      "amount": 3,
+      "notes": "Honeyed-floral sophistication - 0.3μL active"
+    },
+    {
+      "id": 20,
+      "name": "2-Isobutyl Quinoline",
+      "category": "Smoky Core",
+      "dilution": 10,
+      "amount": 2,
+      "notes": "Leather/animalic depth - 0.2μL active"
+    },
+    {
+      "id": 21,
+      "name": "Evernyl (Veramoss)",
+      "category": "Final Touches",
+      "dilution": 23,
+      "amount": 2,
+      "notes": "Original: Veramoss (IFF). Oakmoss alternative - 0.5μL active"
+    },
+    {
+      "id": 22,
+      "name": "Neroli Oil",
+      "category": "Floral & Fruit",
+      "dilution": 100,
+      "amount": 1,
+      "notes": "Orange blossom touch"
+    },
+    {
+      "id": 23,
+      "name": "Alpha Damascone",
+      "category": "Final Touches",
+      "dilution": 10,
+      "amount": 1,
+      "notes": "Original: Damascone Alpha. Rose/fruity nuance - 0.1μL active"
+    },
+    {
+      "id": 24,
+      "name": "Ethanol (95%)",
+      "category": "Solvent",
+      "dilution": 100,
+      "amount": 156,
+      "notes": "Perfumer's alcohol - 19.5% of total volume"
+    }
+  ],
+  "formulaNotes": {
+    "keyFeatures": [
+      "Perfect Ambrettolide Substitute: 29μL Galaxolide 27% = 7.8μL active",
+      "Proper Ambroxan Foundation: 330μL at 10% = 33μL active",
+      "Galaxolide-Patchouli-Birch Tar Trinity: Clean powder, earthy musk, sophisticated smoke",
+      "Concentrated Formula: 36.7% fragrance oil concentration",
+      "Clean-Smoky Profile: Embraces Galaxolide, avoids fruity ingredients"
+    ],
+    "scentProfile": {
+      "opening": "Sophisticated bergamot with violet leaf greenness, clean petitgrain bitterness, black currant green-fruity tartness",
+      "heart": "Galaxolide clean powder + birch tar refined smoke, Hedione radiant lift, boronia honeyed-floral, massive ambroxan ozonic smoothness",
+      "base": "Galaxolide + Helvetolide lasting clean-powdery musk, patchouli earthy depth, birch tar smoky signature"
+    },
+    "performance": "Expected 6-8 hours with good projection",
+    "totalActiveIngredients": 23,
+    "dominantIngredients": ["Hedione (26.1%)", "Iso E Super (16.0%)", "Helvetolide (16.0%)", "Bergamot (11.2%)", "Ambroxan (11.2%)"]
+  },
+  "sanityChecks": {
+    "volumeDiscrepancy": "Formula totals 802μL, not 750μL as stated in title",
+    "violetLeafDiscrepancy": "Violet Leaf provides 0.5μL active, but text mentions 18μL (likely typo)",
+    "scalingNote": "To reach 1000μL: multiply by 1.25 (not 1.33 as document states)",
+    "galaxolideRatio": "7.8μL active vs target 20μL ambrettolide - may need adjustment for full replacement",
+    "concentrationLevel": "36.7% puts this in Parfum/Extrait category - very concentrated"
+  },
+  "stats": {
+    "totalRawVolume": "802.0",
+    "totalActiveVolume": "294.6",
+    "ethanolNeeded": "0",
+    "fragranceConcentration": "36.7",
+    "totalVolume": 802,
+    "ethanolIncluded": 156
+  },
+  "scalingInstructions": {
+    "for750μL": "Reduce all ingredients by 6.5% (multiply by 0.935)",
+    "for1000μL": "Multiply all ingredients by 1.25",
+    "currentState": "Formula is 52μL over stated 750μL target"
+  }
+}

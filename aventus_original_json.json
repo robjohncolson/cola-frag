@@ -72,7 +72,7 @@
     },
     {
       "id": 9,
-      "name": "Evernyl",
+      "name": "Evernyl (Veramoss)",
       "category": "Synthetic Backbone",
       "dilution": 100,
       "amount": 5,
@@ -80,11 +80,11 @@
     },
     {
       "id": 10,
-      "name": "Butyl Quinoline Secondary",
+      "name": "2-Isobutyl Quinoline",
       "category": "Synthetic Backbone",
       "dilution": 10,
       "amount": 6,
-      "notes": "Leather/animalic - 0.6% actual"
+      "notes": "Original: Butyl Quinoline Secondary. Leather/animalic - 0.6% actual"
     },
     {
       "id": 11,
@@ -104,19 +104,19 @@
     },
     {
       "id": 13,
-      "name": "Patchouli Oil Heart",
+      "name": "Patchouli Oil (Heart Fraction)",
       "category": "Naturals",
       "dilution": 100,
       "amount": 50,
-      "notes": "Earthy/woody - main player, lasts hours"
+      "notes": "Original: Patchouli Oil Heart. Earthy/woody - main player, lasts hours"
     },
     {
       "id": 14,
-      "name": "Orange Oil",
+      "name": "Sweet Orange Oil",
       "category": "Naturals",
       "dilution": 100,
       "amount": 20,
-      "notes": "Sweet citrus - opening modifier"
+      "notes": "Original: Orange Oil. Sweet citrus - opening modifier"
     },
     {
       "id": 15,
@@ -168,11 +168,11 @@
     },
     {
       "id": 21,
-      "name": "Black Currant Absolute",
+      "name": "Blackcurrant Bud Absolute",
       "category": "Naturals",
       "dilution": 50,
       "amount": 2,
-      "notes": "Fruity/green - cassis effect"
+      "notes": "Original: Black Currant Absolute. Fruity/green - cassis effect"
     },
     {
       "id": 22,
@@ -208,11 +208,11 @@
     },
     {
       "id": 26,
-      "name": "Birch Tar Rectified",
+      "name": "Birch Tar Oil (Rectified)",
       "category": "Naturals",
       "dilution": 1,
       "amount": 2,
-      "notes": "Smoky/leather - 0.02% actual!"
+      "notes": "Original: Birch Tar Rectified. Smoky/leather - 0.02% actual!"
     },
     {
       "id": 27,
