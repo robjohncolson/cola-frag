@@ -1,0 +1,310 @@
+{
+  "formulaName": "Original Aventus Formula (Basenotes 1000-part)",
+  "description": "The suspected actual 2010 Aventus formula from anonymous Reddit post. This is the original 1000-part structure before scaling.",
+  "source": "Basenotes Reddit Post - October 2022",
+  "exportDate": "2025-06-02",
+  "targetVolume": 1000,
+  "scaleFactor": 1.0,
+  "ingredients": [
+    {
+      "id": 1,
+      "name": "Hedione",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 230,
+      "notes": "Heart/floral radiance - 23% of formula"
+    },
+    {
+      "id": 2,
+      "name": "Iso E Super",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 140,
+      "notes": "Woody backbone - 14% of formula"
+    },
+    {
+      "id": 3,
+      "name": "Helvetolide",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 140,
+      "notes": "Musk base - diffusive fruity character"
+    },
+    {
+      "id": 4,
+      "name": "Ambroxan",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 100,
+      "notes": "Ambergris note - birth of Aventus development"
+    },
+    {
+      "id": 5,
+      "name": "Lyral",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 33,
+      "notes": "Floral lily - creates accords with naturals"
+    },
+    {
+      "id": 6,
+      "name": "Ambrettolide",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 20,
+      "notes": "Musk - smooth animalic facet"
+    },
+    {
+      "id": 7,
+      "name": "Coranol",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 15,
+      "notes": "Green/metallic - adds freshness"
+    },
+    {
+      "id": 8,
+      "name": "Octyl Salicylate",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 10,
+      "notes": "UV sunblock - also adds subtle floral"
+    },
+    {
+      "id": 9,
+      "name": "Evernyl",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Oakmoss replacement - earthy facet"
+    },
+    {
+      "id": 10,
+      "name": "Butyl Quinoline Secondary",
+      "category": "Synthetic Backbone",
+      "dilution": 10,
+      "amount": 6,
+      "notes": "Leather/animalic - 0.6% actual"
+    },
+    {
+      "id": 11,
+      "name": "Alpha Damascone",
+      "category": "Synthetic Backbone",
+      "dilution": 10,
+      "amount": 3,
+      "notes": "Rose/fruity - 0.3% actual"
+    },
+    {
+      "id": 12,
+      "name": "Bergamot Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 100,
+      "notes": "Citrus opening - main natural component"
+    },
+    {
+      "id": 13,
+      "name": "Patchouli Oil Heart",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 50,
+      "notes": "Earthy/woody - main player, lasts hours"
+    },
+    {
+      "id": 14,
+      "name": "Orange Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 20,
+      "notes": "Sweet citrus - opening modifier"
+    },
+    {
+      "id": 15,
+      "name": "Petitgrain Bigarade Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 15,
+      "notes": "Bitter orange leaves - green facet"
+    },
+    {
+      "id": 16,
+      "name": "Pink Pepper Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 8,
+      "notes": "Spicy/rosy - adds warmth"
+    },
+    {
+      "id": 17,
+      "name": "Neroli Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 3,
+      "notes": "Orange blossom - floral touch"
+    },
+    {
+      "id": 18,
+      "name": "Clary Sage Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 3,
+      "notes": "Herbaceous - green/aromatic"
+    },
+    {
+      "id": 19,
+      "name": "Orange Blossom Absolute",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 2,
+      "notes": "Rich floral - depth to citrus"
+    },
+    {
+      "id": 20,
+      "name": "Juniper Berry Oil",
+      "category": "Naturals",
+      "dilution": 100,
+      "amount": 1.5,
+      "notes": "Gin-like - aromatic complexity"
+    },
+    {
+      "id": 21,
+      "name": "Black Currant Absolute",
+      "category": "Naturals",
+      "dilution": 50,
+      "amount": 2,
+      "notes": "Fruity/green - cassis effect"
+    },
+    {
+      "id": 22,
+      "name": "Cistus Oil",
+      "category": "Naturals",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Resinous/amber - 0.5% actual"
+    },
+    {
+      "id": 23,
+      "name": "Elderflower Absolute",
+      "category": "Naturals",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Floral/fruity - controversial ingredient!"
+    },
+    {
+      "id": 24,
+      "name": "Galbanum Oil",
+      "category": "Naturals",
+      "dilution": 10,
+      "amount": 3,
+      "notes": "Green/bitter - surprising green element"
+    },
+    {
+      "id": 25,
+      "name": "Fir Balsam Absolute",
+      "category": "Naturals",
+      "dilution": 10,
+      "amount": 2,
+      "notes": "Coniferous - adds depth"
+    },
+    {
+      "id": 26,
+      "name": "Birch Tar Rectified",
+      "category": "Naturals",
+      "dilution": 1,
+      "amount": 2,
+      "notes": "Smoky/leather - 0.02% actual!"
+    },
+    {
+      "id": 27,
+      "name": "Linalyl Acetate",
+      "category": "Opening Modifiers",
+      "dilution": 100,
+      "amount": 36,
+      "notes": "Lavender/bergamot - opening freshness"
+    },
+    {
+      "id": 28,
+      "name": "Linalool",
+      "category": "Opening Modifiers",
+      "dilution": 100,
+      "amount": 15,
+      "notes": "Floral/citrus - soft opening"
+    },
+    {
+      "id": 29,
+      "name": "Beta Pinene",
+      "category": "Opening Modifiers",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Pineapple component - piney/fresh"
+    },
+    {
+      "id": 30,
+      "name": "Triplal",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 5.5,
+      "notes": "Green metallic - 0.55% actual"
+    },
+    {
+      "id": 31,
+      "name": "Alpha Fenchone",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Pineapple component - fennel/anise"
+    },
+    {
+      "id": 32,
+      "name": "Manzanate",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Pineapple component - apple/fruity"
+    },
+    {
+      "id": 33,
+      "name": "Neobutenone Alpha",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 2,
+      "notes": "Pineapple component - ketonic"
+    },
+    {
+      "id": 34,
+      "name": "Veloutone",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 1.5,
+      "notes": "Pineapple component - creamy"
+    },
+    {
+      "id": 35,
+      "name": "Ethyl Caproate",
+      "category": "Opening Modifiers",
+      "dilution": 10,
+      "amount": 1.5,
+      "notes": "Pineapple component - fruity ester"
+    }
+  ],
+  "formulaNotes": {
+    "syntheticBackbone": "610 parts - Makes up 61% of formula. Hedione + Iso E + Helvetolide + Ambroxan = 61% alone",
+    "naturals": "215.5 parts - Only patchouli lasts hours, rest modify opening/mid",
+    "openingModifiers": "75 parts - Famous pineapple accord is only 2% of total formula",
+    "totalParts": 1000,
+    "keyInsights": [
+      "Helvetolide at 14% provides diffusive fruity musk character",
+      "Combination of Helvetolide + Ambroxan was birth of Aventus development",
+      "Pineapple accord totals only 0.2% but transforms the composition",
+      "Many green ingredients: galbanum, triplal, petitgrain, clary sage",
+      "Elderflower first connected to Aventus in Oct 2022 Reddit post"
+    ]
+  },
+  "stats": {
+    "totalRawVolume": "900.5",
+    "totalActiveVolume": "811.52",
+    "ethanolNeeded": "99.5",
+    "fragranceConcentration": "81.2",
+    "totalVolume": 1000
+  }
+}
