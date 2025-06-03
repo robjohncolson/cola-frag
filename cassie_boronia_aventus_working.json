@@ -1,0 +1,320 @@
+{
+  "formulaName": "Corrected Enhanced Aventus Formula - Ratio Optimized",
+  "description": "Authentic yet sophisticated interpretation of Aventus with proper active ratios, enhanced green complexity, tropical-musk bridge, and Mediterranean character",
+  "exportDate": "2025-06-03",
+  "targetVolume": 872,
+  "scaleFactor": 1.0,
+  "ingredients": [
+    {
+      "id": 1,
+      "name": "Hedione",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 77,
+      "notes": "Heart/floral radiance"
+    },
+    {
+      "id": 2,
+      "name": "Iso E Super",
+      "category": "Synthetic Backbone", 
+      "dilution": 100,
+      "amount": 47,
+      "notes": "Woody backbone"
+    },
+    {
+      "id": 3,
+      "name": "Helvetolide",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 47,
+      "notes": "Musk base - diffusive fruity character"
+    },
+    {
+      "id": 4,
+      "name": "Bergamot EO",
+      "category": "Enhanced Citrus",
+      "dilution": 100,
+      "amount": 33,
+      "notes": "Citrus opening - main natural component"
+    },
+    {
+      "id": 5,
+      "name": "Ambroxan",
+      "category": "Synthetic Backbone",
+      "dilution": 10,
+      "amount": 330,
+      "notes": "Ambergris note - ozonic smoothness"
+    },
+    {
+      "id": 6,
+      "name": "Galaxolide",
+      "category": "Synthetic Backbone",
+      "dilution": 27,
+      "amount": 29,
+      "notes": "Clean-powdery musk foundation"
+    },
+    {
+      "id": 7,
+      "name": "Patchouli EO",
+      "category": "Woody Naturals",
+      "dilution": 100,
+      "amount": 13,
+      "notes": "Earthy depth - main woody player"
+    },
+    {
+      "id": 8,
+      "name": "Linalyl Acetate",
+      "category": "Enhanced Citrus",
+      "dilution": 100,
+      "amount": 11,
+      "notes": "Strengthened opening freshness - ratio corrected"
+    },
+    {
+      "id": 9,
+      "name": "Lyral",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 10,
+      "notes": "Enhanced backbone strength - ratio corrected"
+    },
+    {
+      "id": 10,
+      "name": "Petitgrain Absolute",
+      "category": "Green Complex",
+      "dilution": 50,
+      "amount": 10,
+      "notes": "Bitter orange leaves - green bridge"
+    },
+    {
+      "id": 11,
+      "name": "Orange Oil",
+      "category": "Enhanced Citrus",
+      "dilution": 100,
+      "amount": 7,
+      "notes": "Enhanced sweet citrus - opening modifier"
+    },
+    {
+      "id": 12,
+      "name": "Veramoss (IFF)",
+      "category": "Synthetic Backbone",
+      "dilution": 23,
+      "amount": 7,
+      "notes": "Strengthened woody-earthy depth - ratio corrected"
+    },
+    {
+      "id": 13,
+      "name": "Juniper Berry Oil",
+      "category": "Green Complex",
+      "dilution": 10,
+      "amount": 5,
+      "notes": "Gin-like complexity - Mediterranean character"
+    },
+    {
+      "id": 14,
+      "name": "Coranol",
+      "category": "Synthetic Backbone",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Green/metallic - adds freshness"
+    },
+    {
+      "id": 15,
+      "name": "Linalool",
+      "category": "Enhanced Citrus",
+      "dilution": 100,
+      "amount": 5,
+      "notes": "Floral/citrus - soft opening"
+    },
+    {
+      "id": 16,
+      "name": "Clary Sage Absolute",
+      "category": "Green Complex",
+      "dilution": 23,
+      "amount": 4,
+      "notes": "Herbaceous - green/aromatic"
+    },
+    {
+      "id": 17,
+      "name": "Birch Tar",
+      "category": "Smoky Core",
+      "dilution": 1,
+      "amount": 3.5,
+      "notes": "Balanced smoky signature - ratio corrected"
+    },
+    {
+      "id": 18,
+      "name": "Black Currant Bud Absolute",
+      "category": "Green Complex",
+      "dilution": 10,
+      "amount": 3,
+      "notes": "Balanced green-fruity tartness - ratio corrected"
+    },
+    {
+      "id": 19,
+      "name": "Patchoulol",
+      "category": "Woody Naturals",
+      "dilution": 23,
+      "amount": 3,
+      "notes": "Woody depth modifier"
+    },
+    {
+      "id": 20,
+      "name": "Pink Pepper EO",
+      "category": "Spicy",
+      "dilution": 100,
+      "amount": 3,
+      "notes": "Spicy/rosy - adds warmth"
+    },
+    {
+      "id": 21,
+      "name": "Paradisadmide",
+      "category": "Musk Enhancement",
+      "dilution": 1,
+      "amount": 40,
+      "notes": "Tropical-animalic sophistication - guava-musk bridge"
+    },
+    {
+      "id": 22,
+      "name": "Robertet Pineapple Essence",
+      "category": "Citrus Top",
+      "dilution": 25,
+      "amount": 2,
+      "notes": "Authentic pineapple signature - professional quality"
+    },
+    {
+      "id": 23,
+      "name": "2-Isobutyl Quinoline",
+      "category": "Smoky Core",
+      "dilution": 10,
+      "amount": 2,
+      "notes": "Leather/animalic - smoky complexity"
+    },
+    {
+      "id": 24,
+      "name": "Neroli Oil",
+      "category": "Floral",
+      "dilution": 100,
+      "amount": 1,
+      "notes": "Orange blossom - floral touch"
+    },
+    {
+      "id": 25,
+      "name": "Galbanum Oil",
+      "category": "Green Complex",
+      "dilution": 10,
+      "amount": 1,
+      "notes": "Sharp green bite - Mediterranean complexity"
+    },
+    {
+      "id": 26,
+      "name": "Damascone Alpha",
+      "category": "Synthetic Backbone",
+      "dilution": 10,
+      "amount": 1,
+      "notes": "Rose/fruity - final touch"
+    },
+    {
+      "id": 27,
+      "name": "Cassie Absolute",
+      "category": "Floral Bridge",
+      "dilution": 1,
+      "amount": 8,
+      "notes": "Honey-spicy floral bridge - elderflower substitute"
+    },
+    {
+      "id": 28,
+      "name": "Boronia Absolute",
+      "category": "Floral Bridge",
+      "dilution": 1,
+      "amount": 8,
+      "notes": "Honey-violet sophistication - elderflower substitute"
+    },
+    {
+      "id": 29,
+      "name": "Cistus Absolute",
+      "category": "Resinous",
+      "dilution": 23,
+      "amount": 0.7,
+      "notes": "Proper resinous-amber complexity - ratio corrected"
+    },
+    {
+      "id": 30,
+      "name": "Cypress Absolute",
+      "category": "Woody Naturals",
+      "dilution": 100,
+      "amount": 0.06,
+      "notes": "Mediterranean woody refinement"
+    }
+  ],
+  "formulaNotes": {
+    "totalActiveVolume": 310.57,
+    "activeConcentration": 35.6,
+    "ethanolNeeded": 156,
+    "totalVolume": 872,
+    "compliance": "90%+ elements match original Aventus active ratios",
+    "character": "Tropical-Mediterranean-Smoky with authentic Aventus DNA",
+    "keyCorrections": [
+      "Enhanced opening strength (Linalyl Acetate 11μL, Lyral 10μL)",
+      "Balanced smoky signature (Birch Tar reduced to 3.5μL)", 
+      "Strengthened woody foundation (Veramoss increased to 7μL)",
+      "Optimized floral bridge (Cassie + Boronia at 1% dilution)",
+      "Tropical musk enhancement (Paradisadmide guava-musk bridge)"
+    ],
+    "signatureProgression": "Strengthened citrus opening → Balanced honey-floral bridge → Guava-musk tropical sophistication → Mediterranean green-woody heart → Authentic clean-smoky base"
+  },
+  "stats": {
+    "totalRawVolume": "716.26",
+    "totalActiveVolume": "310.57", 
+    "ethanolNeeded": "156.00",
+    "fragranceConcentration": "35.6",
+    "totalVolume": 872,
+    "scalingFactor": "1.15 for 1ml batch",
+    "maturationTime": "48-72 hours minimum, optimal after 1 week"
+  },
+  "categoryBreakdown": {
+    "Synthetic Backbone": {
+      "activeAmount": 228.54,
+      "percentage": 73.6
+    },
+    "Enhanced Citrus": {
+      "activeAmount": 56.00,
+      "percentage": 18.0
+    },
+    "Woody Naturals": {
+      "activeAmount": 13.75,
+      "percentage": 4.4
+    },
+    "Green Complex": {
+      "activeAmount": 6.82,
+      "percentage": 2.2
+    },
+    "Spicy": {
+      "activeAmount": 3.00,
+      "percentage": 1.0
+    },
+    "Floral": {
+      "activeAmount": 1.00,
+      "percentage": 0.3
+    },
+    "Citrus Top": {
+      "activeAmount": 0.50,
+      "percentage": 0.2
+    },
+    "Musk Enhancement": {
+      "activeAmount": 0.40,
+      "percentage": 0.1
+    },
+    "Smoky Core": {
+      "activeAmount": 0.24,
+      "percentage": 0.1
+    },
+    "Resinous": {
+      "activeAmount": 0.16,
+      "percentage": 0.1
+    },
+    "Floral Bridge": {
+      "activeAmount": 0.16,
+      "percentage": 0.1
+    }
+  }
+}
