@@ -1227,10 +1227,7 @@
                 // Exact match
                 if (itemName === searchName) return true;
                 
-                // Partial matches for common variations
-                if (itemName.includes(searchName) || searchName.includes(itemName)) return true;
-                
-                // Handle common name variations
+                // Handle common name variations with exact mapping
                 const variations = {
                     'iso e super': ['iso e super', 'isoesuper'],
                     'hedione': ['hedione hc', 'hedione'],
@@ -1238,13 +1235,38 @@
                     'helvetolide': ['helvetolide'],
                     'lyral': ['leerall', 'lyral'],
                     'evernyl': ['veramoss', 'evernyl'],
-                    'birch tar oil': ['birch tar', 'birch tar rectified']
+                    'birch tar oil': ['birch tar', 'birch tar rectified'],
+                    'bergamot oil': ['bergamot', 'bergamot essential oil'],
+                    'sweet orange oil': ['sweet orange', 'orange oil'],
+                    'lemon oil': ['lemon', 'lemon essential oil'],
+                    'patchouli oil': ['patchouli', 'patchouli essential oil'],
+                    'pink pepper oil': ['pink pepper', 'pink peppercorn oil']
                 };
                 
+                // Check if ingredient name matches any known variation
                 for (const [key, variants] of Object.entries(variations)) {
-                    if (variants.some(v => searchName.includes(v) || itemName.includes(v))) {
-                        return true;
+                    if (searchName === key || variants.includes(searchName)) {
+                        // Check if inventory item matches any variant of this ingredient
+                        if (itemName === key || variants.includes(itemName)) {
+                            return true;
+                        }
                     }
+                }
+                
+                // Only allow partial matches for very specific cases (avoid false positives)
+                // Word-boundary matching for compound ingredients only
+                const searchWords = searchName.split(' ');
+                const itemWords = itemName.split(' ');
+                
+                // For single-word ingredients, require exact match to avoid bergamot->bergamyl issues
+                if (searchWords.length === 1 && itemWords.length === 1) {
+                    return false; // Already handled by exact match above
+                }
+                
+                // For multi-word ingredients, check if all words in search are in item name
+                // This handles cases like "hedione hc" matching "hedione"
+                if (searchWords.length > 1 && searchWords.every(word => itemWords.includes(word))) {
+                    return true;
                 }
                 
                 return false;
