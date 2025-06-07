@@ -729,16 +729,10 @@
                         </button>
                     </div>
                     
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                        <button onclick="importInventoryFromReceipts()" class="btn btn-green" style="flex: 1;">
-                            <i data-lucide="file-text" class="icon"></i>
-                            Load PA Receipts
-                        </button>
-                        <button onclick="exportInventory()" class="btn btn-blue" style="flex: 1;">
-                            <i data-lucide="database" class="icon"></i>
-                            Export
-                        </button>
-                    </div>
+                    <button onclick="exportInventory()" class="btn btn-blue" style="width: 100%; margin-bottom: 8px;">
+                        <i data-lucide="database" class="icon"></i>
+                        Export Inventory
+                    </button>
                     
                     <input type="file" id="inventoryImportFile" accept=".json" style="display: none;" onchange="importInventory(event)">
                     <button onclick="document.getElementById('inventoryImportFile').click()" class="btn btn-green" style="width: 100%; margin-bottom: 8px;">
