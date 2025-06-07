@@ -395,6 +395,126 @@
         .btn-edit:hover {
             color: #2563eb;
         }
+        
+        /* Inventory Management Styles */
+        .inventory-section {
+            margin-bottom: 16px;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px;
+            background: white;
+        }
+        
+        .inventory-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .inventory-item.low-stock {
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
+        
+        .inventory-item.out-of-stock {
+            border-color: #ef4444;
+            background: #fee2e2;
+            opacity: 0.7;
+        }
+        
+        .inventory-name {
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .inventory-amount {
+            color: #6b7280;
+            margin-left: 8px;
+        }
+        
+        .coverage-indicator {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .coverage-full {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .coverage-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .coverage-none {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .add-inventory-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+        
+        .recipe-coverage {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .coverage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .coverage-title {
+            font-weight: 600;
+            color: #0c4a6e;
+        }
+        
+        .coverage-stats {
+            font-size: 12px;
+            color: #0369a1;
+        }
+        
+        .missing-ingredients {
+            font-size: 12px;
+            color: #7c2d12;
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .add-inventory-form {
+                grid-template-columns: 1fr;
+            }
+            .inventory-grid {
+                max-height: 150px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -464,6 +584,50 @@
                         <textarea id="jsonPreview" class="input" placeholder="JSON preview will appear here..." style="height: 80px; resize: vertical; font-family: monospace; font-size: 11px;" readonly></textarea>
                     </div>
                 </div>
+                
+                <!-- Inventory Management Section -->
+                <div class="form-section inventory-section">
+                    <h2 class="form-title">
+                        <i data-lucide="package" class="icon"></i>
+                        Inventory Management
+                    </h2>
+                    
+                    <div class="add-inventory-form" style="margin-bottom: 12px;">
+                        <input type="text" id="inventoryName" class="input" placeholder="Ingredient name">
+                        <input type="number" id="inventoryAmount" class="input" step="0.1" placeholder="Amount">
+                        <select id="inventoryUnit" class="input">
+                            <option value="ml">ml</option>
+                            <option value="g">g</option>
+                            <option value="μL">μL</option>
+                        </select>
+                        <button onclick="addToInventory()" class="btn btn-blue">
+                            <i data-lucide="plus" class="icon"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <button onclick="importInventoryFromReceipts()" class="btn btn-green" style="flex: 1;">
+                            <i data-lucide="file-text" class="icon"></i>
+                            Load PA Receipts
+                        </button>
+                        <button onclick="exportInventory()" class="btn btn-blue" style="flex: 1;">
+                            <i data-lucide="database" class="icon"></i>
+                            Export
+                        </button>
+                    </div>
+                    
+                    <input type="file" id="inventoryImportFile" accept=".json" style="display: none;" onchange="importInventory(event)">
+                    <button onclick="document.getElementById('inventoryImportFile').click()" class="btn btn-green" style="width: 100%; margin-bottom: 8px;">
+                        <i data-lucide="upload" class="icon"></i>
+                        Import Inventory
+                    </button>
+                    
+                    <div class="inventory-grid" id="inventoryGrid">
+                        <div style="text-align: center; color: #6b7280; padding: 20px;">
+                            No ingredients in inventory
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -489,6 +653,16 @@
 
             <!-- Groups Container -->
             <div class="groups-container">
+                <!-- Recipe Coverage Analysis -->
+                <div class="recipe-coverage" id="recipeCoverage" style="display: none;">
+                    <div class="coverage-header">
+                        <div class="coverage-title">Recipe Coverage Analysis</div>
+                        <div class="coverage-stats" id="coverageStats">0/0 ingredients available</div>
+                    </div>
+                    <div id="coverageDetails">No active recipe loaded</div>
+                    <div class="missing-ingredients" id="missingIngredients"></div>
+                </div>
+                
                 <div class="container">
                     <div id="groupsContainer"></div>
                 </div>
@@ -503,6 +677,83 @@
             'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' }
         };
         let draggedItem = null;
+        
+        // Inventory Management
+        let inventory = [];
+        
+        // Perfumer's Apprentice receipts data (from your receipts)
+        const paReceiptsData = [
+            // Receipt 1
+            { name: "Aldehyde C-12 MNA", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Ambroxan", amount: 4, unit: "ml", dilution: 0.1 },
+            { name: "Calone", amount: 4, unit: "ml", dilution: 0.1 },
+            { name: "Damascone Beta", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Ethyl Maltol", amount: 8, unit: "g", dilution: 1.0 },
+            { name: "Hedione", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Iso E Super", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Linalool", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Methyl Anthranilate", amount: 4, unit: "ml", dilution: 0.5 },
+            { name: "Raspberry Ketone", amount: 4, unit: "ml", dilution: 0.1 },
+            
+            // Receipt 2
+            { name: "Birch Tar Oil (Rectified)", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Coranol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Alpha Damascone", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Ethyl Methyl-2-Butyrate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Galaxolide", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Helvetolide", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "2-Isobutyl Quinoline", amount: 4, unit: "ml", dilution: 0.1 },
+            { name: "Linalyl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Lyral", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Methyl Benzoate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Paradisamide", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Patchoulol Crystals", amount: 8, unit: "g", dilution: 1.0 },
+            { name: "Pineapple Essence", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Valspice", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Evernyl (Veramoss)", amount: 8, unit: "g", dilution: 1.0 },
+            
+            // Receipt 3
+            { name: "Aldehyde C-10", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Allyl Caproate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Ambrettolide", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Beta Pinene", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Dynascone", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Ethyl Caproate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Geosmin", amount: 4, unit: "ml", dilution: 0.01 },
+            { name: "Manzanate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Muscone", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Pyralone", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Triethyl Citrate", amount: 250, unit: "g", dilution: 1.0 },
+            { name: "Veloutone", amount: 4, unit: "ml", dilution: 1.0 },
+            
+            // Receipt 4
+            { name: "Aldehyde C-6", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Anisic Aldehyde", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Anisyl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Anisyl Acetone", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Basil Sweet Oil", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Cashmeran", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Citral", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Citronellol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Dihydro Myrcenol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Fennel Sweet Oil", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Geraniol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Hexenol-3-Cis", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Kephalis", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Norlimbanol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Patchouli Absolute", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Phenyl Ethyl Alcohol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Polysantol", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Tarragon Oil", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Vetiveryl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
+            { name: "Wormwood Oil", amount: 4, unit: "ml", dilution: 1.0 },
+            
+            // Receipt 5 (larger quantities)
+            { name: "Ambrettolide", amount: 4, unit: "ml", dilution: 1.0 }, // Givaudan version
+            { name: "Ambroxan", amount: 50, unit: "g", dilution: 0.1 }, // Large size
+            { name: "Hedione", amount: 15, unit: "ml", dilution: 1.0 }, // Large size  
+            { name: "Helvetolide", amount: 15, unit: "ml", dilution: 1.0 } // Large size
+        ];
 
         const groupColors = [
             'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-yellow-50', 
@@ -640,6 +891,260 @@
                 document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
             } else {
                 document.getElementById('jsonPreview').value = '';
+            }
+        }
+
+        // Inventory Management Functions
+        function addToInventory() {
+            const name = document.getElementById('inventoryName').value.trim();
+            const amount = parseFloat(document.getElementById('inventoryAmount').value);
+            const unit = document.getElementById('inventoryUnit').value;
+
+            if (!name || isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid ingredient name and amount');
+                return;
+            }
+
+            // Check if ingredient already exists
+            const existing = inventory.find(item => item.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.amount += amount;
+                existing.unit = unit; // Update unit if different
+            } else {
+                inventory.push({
+                    id: Date.now(),
+                    name: name,
+                    amount: amount,
+                    unit: unit,
+                    dilution: 1.0 // Default to neat
+                });
+            }
+
+            // Clear form
+            document.getElementById('inventoryName').value = '';
+            document.getElementById('inventoryAmount').value = '';
+            
+            renderInventory();
+            updateRecipeCoverage();
+        }
+
+        function importInventoryFromReceipts() {
+            // Merge PA receipts data with existing inventory
+            paReceiptsData.forEach(receipt => {
+                const existing = inventory.find(item => 
+                    item.name.toLowerCase() === receipt.name.toLowerCase()
+                );
+                
+                if (existing) {
+                    // Add to existing amount (convert units if needed)
+                    existing.amount += receipt.amount;
+                    existing.dilution = receipt.dilution; // Update dilution
+                } else {
+                    inventory.push({
+                        id: Date.now() + Math.random(),
+                        name: receipt.name,
+                        amount: receipt.amount,
+                        unit: receipt.unit,
+                        dilution: receipt.dilution
+                    });
+                }
+            });
+
+            renderInventory();
+            updateRecipeCoverage();
+            alert('Perfumer\'s Apprentice receipts loaded successfully!');
+        }
+
+        function exportInventory() {
+            const inventoryData = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                totalItems: inventory.length,
+                inventory: inventory
+            };
+
+            const jsonString = JSON.stringify(inventoryData, null, 2);
+            
+            // Download file
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fragrance-inventory-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importInventory(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const inventoryData = JSON.parse(e.target.result);
+                    
+                    if (!inventoryData.inventory || !Array.isArray(inventoryData.inventory)) {
+                        throw new Error('Invalid inventory format');
+                    }
+
+                    inventory = inventoryData.inventory.map(item => ({
+                        id: item.id || Date.now() + Math.random(),
+                        name: item.name || 'Unknown',
+                        amount: parseFloat(item.amount) || 0,
+                        unit: item.unit || 'ml',
+                        dilution: parseFloat(item.dilution) || 1.0
+                    }));
+
+                    renderInventory();
+                    updateRecipeCoverage();
+                    alert('Inventory imported successfully!');
+                } catch (error) {
+                    alert('Error importing inventory: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function removeFromInventory(id) {
+            inventory = inventory.filter(item => item.id !== id);
+            renderInventory();
+            updateRecipeCoverage();
+        }
+
+        function renderInventory() {
+            const container = document.getElementById('inventoryGrid');
+            
+            if (inventory.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">No ingredients in inventory</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            inventory.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                const itemDiv = document.createElement('div');
+                
+                // Determine stock level
+                let stockClass = '';
+                if (item.amount <= 0) stockClass = 'out-of-stock';
+                else if (item.amount <= 1) stockClass = 'low-stock';
+                
+                itemDiv.className = `inventory-item ${stockClass}`;
+                itemDiv.innerHTML = `
+                    <div class="inventory-name">${item.name}</div>
+                    <div class="inventory-amount">${item.amount}${item.unit}</div>
+                    <button onclick="removeFromInventory(${item.id})" class="btn-red" style="padding: 2px;">
+                        <i data-lucide="x" class="icon-sm"></i>
+                    </button>
+                `;
+                
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function updateRecipeCoverage() {
+            if (ingredients.length === 0) {
+                document.getElementById('recipeCoverage').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('recipeCoverage').style.display = 'block';
+            
+            let availableCount = 0;
+            let partialCount = 0;
+            const missingIngredients = [];
+            const partialIngredients = [];
+
+            ingredients.forEach(ingredient => {
+                const inventoryItem = findInventoryMatch(ingredient.name);
+                
+                if (inventoryItem) {
+                    const requiredAmount = ingredient.volume; // μL
+                    const availableAmount = convertToMicroliters(inventoryItem.amount, inventoryItem.unit);
+                    
+                    if (availableAmount >= requiredAmount) {
+                        availableCount++;
+                    } else if (availableAmount > 0) {
+                        partialCount++;
+                        partialIngredients.push({
+                            name: ingredient.name,
+                            required: requiredAmount,
+                            available: availableAmount
+                        });
+                    } else {
+                        missingIngredients.push(ingredient.name);
+                    }
+                } else {
+                    missingIngredients.push(ingredient.name);
+                }
+            });
+
+            // Update stats
+            document.getElementById('coverageStats').textContent = 
+                `${availableCount}/${ingredients.length} ingredients available (${partialCount} partial)`;
+
+            // Update details
+            const percentage = ((availableCount + partialCount * 0.5) / ingredients.length * 100).toFixed(1);
+            document.getElementById('coverageDetails').innerHTML = `
+                <div style="margin-bottom: 4px;">
+                    <span class="coverage-indicator coverage-full">${availableCount} Full</span>
+                    <span class="coverage-indicator coverage-partial">${partialCount} Partial</span>
+                    <span class="coverage-indicator coverage-none">${missingIngredients.length} Missing</span>
+                    <span style="margin-left: 8px; font-weight: 600;">${percentage}% Coverage</span>
+                </div>
+            `;
+
+            // Update missing ingredients
+            if (missingIngredients.length > 0) {
+                document.getElementById('missingIngredients').innerHTML = 
+                    `<strong>Missing:</strong> ${missingIngredients.join(', ')}`;
+            } else {
+                document.getElementById('missingIngredients').innerHTML = '';
+            }
+        }
+
+        function findInventoryMatch(ingredientName) {
+            return inventory.find(item => {
+                const itemName = item.name.toLowerCase().replace(/[®™]/g, '');
+                const searchName = ingredientName.toLowerCase().replace(/[®™]/g, '');
+                
+                // Exact match
+                if (itemName === searchName) return true;
+                
+                // Partial matches for common variations
+                if (itemName.includes(searchName) || searchName.includes(itemName)) return true;
+                
+                // Handle common name variations
+                const variations = {
+                    'iso e super': ['iso e super', 'isoesuper'],
+                    'hedione': ['hedione hc', 'hedione'],
+                    'ambroxan': ['ambroxan'],
+                    'helvetolide': ['helvetolide'],
+                    'lyral': ['leerall', 'lyral'],
+                    'evernyl': ['veramoss', 'evernyl'],
+                    'birch tar oil': ['birch tar', 'birch tar rectified']
+                };
+                
+                for (const [key, variants] of Object.entries(variations)) {
+                    if (variants.some(v => searchName.includes(v) || itemName.includes(v))) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            });
+        }
+
+        function convertToMicroliters(amount, unit) {
+            switch (unit.toLowerCase()) {
+                case 'ml': return amount * 1000;
+                case 'g': return amount * 1000; // Approximate for most aromachemicals
+                case 'μl': return amount;
+                default: return amount * 1000; // Default to ml conversion
             }
         }
 
@@ -931,12 +1436,16 @@
                     else if (iconName === 'plus-circle') el.innerHTML = '⊕';
                     else if (iconName === 'folder-plus') el.innerHTML = '📁+';
                     else if (iconName === 'save') el.innerHTML = '💾';
+                    else if (iconName === 'package') el.innerHTML = '📦';
+                    else if (iconName === 'file-text') el.innerHTML = '📄';
+                    else if (iconName === 'database') el.innerHTML = '🗄️';
                     else el.innerHTML = iconName;
                 });
             }
             
-            // Update JSON preview
+            // Update JSON preview and inventory coverage
             updateJsonPreview();
+            updateRecipeCoverage();
         }
 
         // Handle Enter key in form inputs
@@ -964,6 +1473,7 @@
 
             // Initial render
             render();
+            renderInventory();
         });
     </script>
 </body>
