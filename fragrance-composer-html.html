@@ -640,6 +640,112 @@
             color: #374151;
         }
         
+        /* Inventory Status Stars */
+        .inventory-star {
+            font-size: 16px;
+            margin-left: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .inventory-star:hover {
+            transform: scale(1.1);
+        }
+        
+        .inventory-star.available {
+            color: #fbbf24; /* Gold */
+        }
+        
+        .inventory-star.missing {
+            color: #64748b; /* Dark blueish grey */
+        }
+        
+        /* Ingredient Card Color Coding */
+        .ingredient-card.has-inventory {
+            border-left: 3px solid #10b981;
+            background: linear-gradient(to right, #f0fdf4, white);
+        }
+        
+        .ingredient-card.missing-inventory {
+            border-left: 3px solid #ef4444;
+            background: linear-gradient(to right, #fef2f2, white);
+        }
+        
+        /* Recipe Complete Background */
+        .recipe-complete {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+        }
+        
+        .recipe-complete-banner {
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid #047857;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Inline Inventory Form */
+        .inline-inventory-form {
+            background: #fffbeb;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .inline-inventory-form.active {
+            display: block;
+        }
+        
+        .inventory-form-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .inventory-form-input {
+            flex: 1;
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .inventory-status-detail {
+            font-size: 11px;
+            color: #059669;
+            margin-top: 4px;
+            padding: 4px;
+            background: #f0fdf4;
+            border-radius: 3px;
+            border-left: 3px solid #10b981;
+        }
+        
+        .inventory-status-missing {
+            font-size: 11px;
+            color: #dc2626;
+            margin-top: 4px;
+            padding: 4px;
+            background: #fef2f2;
+            border-radius: 3px;
+            border-left: 3px solid #ef4444;
+        }
+        
+        .purchase-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+        
+        .purchase-link:hover {
+            text-decoration: underline;
+        }
+        
         /* Database Tab Styles */
         .database-table {
             background: white;
@@ -933,6 +1039,11 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Recipe Complete Banner -->
+            <div id="recipeCompleteBanner" class="recipe-complete-banner" style="display: none;">
+                🎉 Recipe Complete! All ingredients are available in your inventory
+            </div>
 
             <!-- Groups Container -->
             <div class="groups-container">
@@ -1217,6 +1328,7 @@
             
             renderInventory();
             updateRecipeCoverage();
+            render(); // Update stars and colors
         }
 
         function importInventoryFromReceipts() {
@@ -1291,6 +1403,7 @@
 
                     renderInventory();
                     updateRecipeCoverage();
+                    render(); // Update stars and colors
                     alert('Inventory imported successfully!');
                 } catch (error) {
                     alert('Error importing inventory: ' + error.message);
@@ -1304,6 +1417,7 @@
             inventory = inventory.filter(item => item.id !== id);
             renderInventory();
             updateRecipeCoverage();
+            render(); // Update stars and colors
         }
 
         function renderInventory() {
@@ -1539,6 +1653,99 @@
                 case 'μl': return amount;
                 default: return amount * 1000; // Default to ml conversion
             }
+        }
+
+        // Inventory Star Functions
+        function getInventoryStatus(ingredientName) {
+            const inventoryItem = findInventoryMatch(ingredientName);
+            return {
+                available: !!inventoryItem,
+                item: inventoryItem,
+                amount: inventoryItem ? inventoryItem.amount : 0,
+                unit: inventoryItem ? inventoryItem.unit : 'ml'
+            };
+        }
+        
+        function checkRecipeComplete() {
+            if (ingredients.length === 0) return false;
+            
+            return ingredients.every(ingredient => {
+                const status = getInventoryStatus(ingredient.name);
+                return status.available;
+            });
+        }
+        
+        function toggleInlineInventoryForm(ingredientId) {
+            const form = document.getElementById(`inline-form-${ingredientId}`);
+            const allForms = document.querySelectorAll('.inline-inventory-form');
+            
+            // Close all other forms
+            allForms.forEach(f => {
+                if (f.id !== `inline-form-${ingredientId}`) {
+                    f.classList.remove('active');
+                }
+            });
+            
+            // Toggle this form
+            if (form) {
+                form.classList.toggle('active');
+            }
+        }
+        
+        function updateInventoryFromInline(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+            
+            const amountInput = document.getElementById(`inline-amount-${ingredientId}`);
+            const unitSelect = document.getElementById(`inline-unit-${ingredientId}`);
+            
+            const amount = parseFloat(amountInput.value);
+            const unit = unitSelect.value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            // Check if ingredient already exists in inventory
+            const existing = inventory.find(item => 
+                item.name.toLowerCase() === ingredient.name.toLowerCase()
+            );
+            
+            if (existing) {
+                existing.amount = amount;
+                existing.unit = unit;
+            } else {
+                inventory.push({
+                    id: Date.now(),
+                    name: ingredient.name,
+                    amount: amount,
+                    unit: unit,
+                    dilution: 1.0
+                });
+            }
+            
+            // Clear form and close
+            amountInput.value = '';
+            document.getElementById(`inline-form-${ingredientId}`).classList.remove('active');
+            
+            renderInventory();
+            render(); // Re-render to update stars and colors
+        }
+        
+        function removeInventoryFromInline(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+            
+            inventory = inventory.filter(item => 
+                item.name.toLowerCase() !== ingredient.name.toLowerCase()
+            );
+            
+            // Close form
+            document.getElementById(`inline-form-${ingredientId}`).classList.remove('active');
+            
+            renderInventory();
+            render(); // Re-render to update stars and colors
         }
 
         // Notes and Substitution Functions
@@ -1870,6 +2077,17 @@
         }
 
         function render() {
+            // Check if recipe is complete and update body class
+            const isRecipeComplete = checkRecipeComplete();
+            const banner = document.getElementById('recipeCompleteBanner');
+            if (isRecipeComplete && ingredients.length > 0) {
+                document.body.classList.add('recipe-complete');
+                banner.style.display = 'block';
+            } else {
+                document.body.classList.remove('recipe-complete');
+                banner.style.display = 'none';
+            }
+            
             // Update stats
             document.getElementById('totalActives').textContent = getTotalActives().toFixed(2);
             document.getElementById('totalIngredients').textContent = ingredients.length;
@@ -1928,7 +2146,20 @@
                             const cardDiv = document.createElement('div');
                             const isEditing = editingIngredient === ingredient.id;
                             const isSubstituted = ingredient.substituted;
-                            cardDiv.className = `ingredient-card ${isEditing ? 'ingredient-edit' : ''} ${isSubstituted ? 'ingredient-substituted' : ''}`;
+                            const inventoryStatus = getInventoryStatus(ingredient.name);
+                            
+                            let cardClasses = 'ingredient-card';
+                            if (isEditing) cardClasses += ' ingredient-edit';
+                            if (isSubstituted) cardClasses += ' ingredient-substituted';
+                            if (!isEditing) {
+                                if (inventoryStatus.available) {
+                                    cardClasses += ' has-inventory';
+                                } else {
+                                    cardClasses += ' missing-inventory';
+                                }
+                            }
+                            
+                            cardDiv.className = cardClasses;
                             cardDiv.draggable = !isEditing;
                             if (!isEditing) {
                                 cardDiv.ondragstart = () => draggedItem = ingredient.id;
@@ -1978,6 +2209,11 @@
                                             </div>` : ''}
                                             <div style="display: flex; align-items: center; gap: 4px;">
                                                 <h4 class="ingredient-name">${ingredient.name}</h4>
+                                                <span class="inventory-star ${inventoryStatus.available ? 'available' : 'missing'}" 
+                                                      onclick="toggleInlineInventoryForm(${ingredient.id})"
+                                                      title="${inventoryStatus.available ? 'In inventory - click to edit' : 'Not in inventory - click to add'}">
+                                                    ${inventoryStatus.available ? '⭐' : '⭐'}
+                                                </span>
                                                 <button onclick="toggleIngredientExpansion(${ingredient.id})" class="expand-toggle">
                                                     ${isExpanded ? '▼' : '▶'} ${isExpanded ? 'Less' : 'More'}
                                                 </button>
@@ -1989,7 +2225,50 @@
                                             
                                             ${isExpanded ? `
                                                 <div class="substitution-controls">
-                                                    <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">Database Notes:</div>
+                                                    <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">Inventory Status:</div>
+                                                    ${inventoryStatus.available ? 
+                                                        `<div class="inventory-status-detail">
+                                                            ✓ Available: ${inventoryStatus.amount}${inventoryStatus.unit}
+                                                            <a href="https://perfumersapprentice.com/search?q=${encodeURIComponent(ingredient.name)}" 
+                                                               target="_blank" class="purchase-link">Buy more</a>
+                                                        </div>` :
+                                                        `<div class="inventory-status-missing">
+                                                            ✗ Not in inventory
+                                                            <a href="https://perfumersapprentice.com/search?q=${encodeURIComponent(ingredient.name)}" 
+                                                               target="_blank" class="purchase-link">Buy</a>
+                                                        </div>`
+                                                    }
+                                                    
+                                                    <div class="inline-inventory-form" id="inline-form-${ingredient.id}">
+                                                        <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">
+                                                            ${inventoryStatus.available ? 'Update Inventory:' : 'Add to Inventory:'}
+                                                        </div>
+                                                        <div class="inventory-form-row">
+                                                            <input type="number" 
+                                                                   id="inline-amount-${ingredient.id}" 
+                                                                   class="inventory-form-input" 
+                                                                   placeholder="Amount" 
+                                                                   step="0.1" 
+                                                                   value="${inventoryStatus.available ? inventoryStatus.amount : ''}">
+                                                            <select id="inline-unit-${ingredient.id}" class="inventory-form-input" style="flex: 0 0 60px;">
+                                                                <option value="ml" ${inventoryStatus.unit === 'ml' ? 'selected' : ''}>ml</option>
+                                                                <option value="g" ${inventoryStatus.unit === 'g' ? 'selected' : ''}>g</option>
+                                                                <option value="μL" ${inventoryStatus.unit === 'μL' ? 'selected' : ''}>μL</option>
+                                                            </select>
+                                                            <button onclick="updateInventoryFromInline(${ingredient.id})" 
+                                                                    class="btn" style="background: #10b981; color: white; padding: 4px 8px; font-size: 10px;">
+                                                                ${inventoryStatus.available ? 'Update' : 'Add'}
+                                                            </button>
+                                                        </div>
+                                                        ${inventoryStatus.available ? `
+                                                            <button onclick="removeInventoryFromInline(${ingredient.id})" 
+                                                                    class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px; margin-top: 4px;">
+                                                                Remove from Inventory
+                                                            </button>
+                                                        ` : ''}
+                                                    </div>
+                                                    
+                                                    <div style="font-size: 11px; font-weight: 500; margin: 12px 0 4px 0;">Database Notes:</div>
                                                     <textarea id="notes-${ingredient.id}" 
                                                              class="notes-textarea" 
                                                              placeholder="Add notes about this ingredient..."
