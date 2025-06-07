@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fragrance Composition Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" onerror="console.warn('Failed to load Lucide icons')"></script>
     <style>
         * {
             margin: 0;
@@ -605,8 +605,26 @@
                 container.appendChild(groupDiv);
             });
 
-            // Initialize Lucide icons
-            lucide.createIcons();
+            // Initialize Lucide icons with error handling
+            try {
+                if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                    lucide.createIcons();
+                }
+            } catch (error) {
+                console.warn('Lucide icons failed to load:', error);
+                // Fallback: replace icons with text
+                document.querySelectorAll('[data-lucide]').forEach(el => {
+                    const iconName = el.getAttribute('data-lucide');
+                    if (iconName === 'chevron-down') el.innerHTML = '▼';
+                    else if (iconName === 'chevron-right') el.innerHTML = '▶';
+                    else if (iconName === 'plus') el.innerHTML = '+';
+                    else if (iconName === 'download') el.innerHTML = '↓';
+                    else if (iconName === 'upload') el.innerHTML = '↑';
+                    else if (iconName === 'trash-2') el.innerHTML = '×';
+                    else if (iconName === 'move') el.innerHTML = '⌖';
+                    else el.innerHTML = iconName;
+                });
+            }
             
             // Update JSON preview
             updateJsonPreview();
