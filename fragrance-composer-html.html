@@ -639,6 +639,114 @@
         .expand-toggle:hover {
             color: #374151;
         }
+        
+        /* Database Tab Styles */
+        .database-table {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .db-table th {
+            background: #f9fafb;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        
+        .db-table th:hover {
+            background: #f3f4f6;
+        }
+        
+        .db-table td {
+            padding: 6px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: top;
+        }
+        
+        .db-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .db-table .notes-cell {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .db-table .subs-cell {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .db-edit-input {
+            width: 100%;
+            padding: 2px 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 11px;
+            background: #fefce8;
+        }
+        
+        .db-edit-textarea {
+            width: 100%;
+            min-height: 40px;
+            padding: 2px 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 11px;
+            resize: vertical;
+            background: #fefce8;
+        }
+        
+        .db-actions {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .db-btn {
+            background: transparent;
+            border: none;
+            padding: 2px 4px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+        
+        .db-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .sort-indicator {
+            margin-left: 4px;
+            color: #9ca3af;
+        }
+        
+        .tab-active {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+        
+        .tab-inactive {
+            background: #6b7280 !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body>
@@ -648,101 +756,158 @@
             <div class="sidebar-header">
                 <h1 class="title">Fragrance Composer</h1>
                 <p class="subtitle">Create and manage your fragrance formulations</p>
+                
+                <!-- Tab Navigation -->
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button onclick="switchTab('composer')" id="composerTab" class="btn" style="flex: 1; font-size: 12px;">
+                        <i data-lucide="beaker" class="icon"></i>
+                        Composer
+                    </button>
+                    <button onclick="switchTab('database')" id="databaseTab" class="btn" style="flex: 1; font-size: 12px; background: #6b7280; color: white;">
+                        <i data-lucide="database" class="icon"></i>
+                        Database
+                    </button>
+                </div>
             </div>
             
             <div class="sidebar-content">
-                <!-- Add Ingredient Form -->
-                <div class="form-section">
-                    <h2 class="form-title">
-                        <i data-lucide="plus-circle" class="icon"></i>
-                        Add Ingredient
-                    </h2>
-                    <div class="form-grid">
-                        <input type="text" id="ingredientName" class="input" placeholder="Ingredient name">
-                        <input type="number" id="ingredientDilution" class="input" step="0.001" placeholder="Dilution (0.1 = 10%)" value="1.0">
-                        <input type="number" id="ingredientVolume" class="input" step="0.1" placeholder="Volume (μL)" value="0">
-                        <button onclick="addIngredient()" class="btn btn-blue">
-                            <i data-lucide="plus" class="icon"></i>
+                <!-- Composer Tab Content -->
+                <div id="composerContent">
+                    <!-- Add Ingredient Form -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="plus-circle" class="icon"></i>
                             Add Ingredient
-                        </button>
+                        </h2>
+                        <div class="form-grid">
+                            <input type="text" id="ingredientName" class="input" placeholder="Ingredient name" onchange="onIngredientNameChange()">
+                            <input type="number" id="ingredientDilution" class="input" step="0.001" placeholder="Dilution (0.1 = 10%)" value="1.0">
+                            <input type="number" id="ingredientVolume" class="input" step="0.1" placeholder="Volume (μL)" value="0">
+                            <button onclick="addIngredient()" class="btn btn-blue">
+                                <i data-lucide="plus" class="icon"></i>
+                                Add Ingredient
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Add Group Form -->
-                <div class="form-section">
-                    <h2 class="form-title">
-                        <i data-lucide="folder-plus" class="icon"></i>
-                        Add Group/Accord
-                    </h2>
-                    <div class="form-grid">
-                        <input type="text" id="groupName" class="input" placeholder="Group name (e.g., Citrus, Musks, Pineapple Accord)">
-                        <button onclick="addGroup()" class="btn btn-green">
-                            <i data-lucide="plus" class="icon"></i>
-                            Add Group
-                        </button>
+                    <!-- Add Group Form -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="folder-plus" class="icon"></i>
+                            Add Group/Accord
+                        </h2>
+                        <div class="form-grid">
+                            <input type="text" id="groupName" class="input" placeholder="Group name (e.g., Citrus, Musks, Pineapple Accord)">
+                            <button onclick="addGroup()" class="btn btn-green">
+                                <i data-lucide="plus" class="icon"></i>
+                                Add Group
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Import/Export Section -->
-                <div class="form-section">
-                    <h2 class="form-title">
-                        <i data-lucide="save" class="icon"></i>
-                        Import/Export
-                    </h2>
-                    <div class="form-grid" style="margin-bottom: 12px;">
-                        <button onclick="exportRecipe()" class="btn btn-blue">
-                            <i data-lucide="download" class="icon"></i>
-                            Export Recipe
+                    <!-- Import/Export Section -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="save" class="icon"></i>
+                            Import/Export
+                        </h2>
+                        <div class="form-grid" style="margin-bottom: 12px;">
+                            <button onclick="exportRecipe()" class="btn btn-blue">
+                                <i data-lucide="download" class="icon"></i>
+                                Export Recipe
+                            </button>
+                            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRecipe(event)">
+                            <button onclick="document.getElementById('importFile').click()" class="btn btn-green">
+                                <i data-lucide="upload" class="icon"></i>
+                                Import Recipe
+                            </button>
+                            <button onclick="clearAll()" class="btn btn-red" style="background: #ef4444; color: white;">
+                                <i data-lucide="trash-2" class="icon"></i>
+                                Clear All
+                            </button>
+                        </div>
+                        <div>
+                            <textarea id="jsonPreview" class="input" placeholder="JSON preview will appear here..." style="height: 80px; resize: vertical; font-family: monospace; font-size: 11px;" readonly></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Inventory Management Section -->
+                    <div class="form-section inventory-section">
+                        <h2 class="form-title">
+                            <i data-lucide="package" class="icon"></i>
+                            Inventory Management
+                        </h2>
+                        
+                        <div class="add-inventory-form" style="margin-bottom: 12px;">
+                            <input type="text" id="inventoryName" class="input" placeholder="Ingredient name">
+                            <input type="number" id="inventoryAmount" class="input" step="0.1" placeholder="Amount">
+                            <select id="inventoryUnit" class="input">
+                                <option value="ml">ml</option>
+                                <option value="g">g</option>
+                                <option value="μL">μL</option>
+                            </select>
+                            <button onclick="addToInventory()" class="btn btn-blue">
+                                <i data-lucide="plus" class="icon"></i>
+                            </button>
+                        </div>
+                        
+                        <button onclick="exportInventory()" class="btn btn-blue" style="width: 100%; margin-bottom: 8px;">
+                            <i data-lucide="database" class="icon"></i>
+                            Export Inventory
                         </button>
-                        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRecipe(event)">
-                        <button onclick="document.getElementById('importFile').click()" class="btn btn-green">
+                        
+                        <input type="file" id="inventoryImportFile" accept=".json" style="display: none;" onchange="importInventory(event)">
+                        <button onclick="document.getElementById('inventoryImportFile').click()" class="btn btn-green" style="width: 100%; margin-bottom: 8px;">
                             <i data-lucide="upload" class="icon"></i>
-                            Import Recipe
+                            Import Inventory
                         </button>
-                        <button onclick="clearAll()" class="btn btn-red" style="background: #ef4444; color: white;">
-                            <i data-lucide="trash-2" class="icon"></i>
-                            Clear All
-                        </button>
-                    </div>
-                    <div>
-                        <textarea id="jsonPreview" class="input" placeholder="JSON preview will appear here..." style="height: 80px; resize: vertical; font-family: monospace; font-size: 11px;" readonly></textarea>
+                        
+                        <div class="inventory-grid" id="inventoryGrid">
+                            <div style="text-align: center; color: #6b7280; padding: 20px;">
+                                No ingredients in inventory
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Inventory Management Section -->
-                <div class="form-section inventory-section">
-                    <h2 class="form-title">
-                        <i data-lucide="package" class="icon"></i>
-                        Inventory Management
-                    </h2>
-                    
-                    <div class="add-inventory-form" style="margin-bottom: 12px;">
-                        <input type="text" id="inventoryName" class="input" placeholder="Ingredient name">
-                        <input type="number" id="inventoryAmount" class="input" step="0.1" placeholder="Amount">
-                        <select id="inventoryUnit" class="input">
-                            <option value="ml">ml</option>
-                            <option value="g">g</option>
-                            <option value="μL">μL</option>
-                        </select>
-                        <button onclick="addToInventory()" class="btn btn-blue">
-                            <i data-lucide="plus" class="icon"></i>
-                        </button>
+                <!-- Database Tab Content -->
+                <div id="databaseContent" style="display: none;">
+                    <!-- Database Search -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="search" class="icon"></i>
+                            Search Database
+                        </h2>
+                        <input type="text" id="databaseSearch" class="input" placeholder="Search ingredients..." onkeyup="filterDatabase()">
                     </div>
                     
-                    <button onclick="exportInventory()" class="btn btn-blue" style="width: 100%; margin-bottom: 8px;">
-                        <i data-lucide="database" class="icon"></i>
-                        Export Inventory
-                    </button>
+                    <!-- Database Export/Import -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="database" class="icon"></i>
+                            Database Management
+                        </h2>
+                        <div class="form-grid">
+                            <button onclick="exportDatabase()" class="btn btn-blue">
+                                <i data-lucide="download" class="icon"></i>
+                                Export Database
+                            </button>
+                            <input type="file" id="databaseImportFile" accept=".json" style="display: none;" onchange="importDatabase(event)">
+                            <button onclick="document.getElementById('databaseImportFile').click()" class="btn btn-green">
+                                <i data-lucide="upload" class="icon"></i>
+                                Import Database
+                            </button>
+                        </div>
+                    </div>
                     
-                    <input type="file" id="inventoryImportFile" accept=".json" style="display: none;" onchange="importInventory(event)">
-                    <button onclick="document.getElementById('inventoryImportFile').click()" class="btn btn-green" style="width: 100%; margin-bottom: 8px;">
-                        <i data-lucide="upload" class="icon"></i>
-                        Import Inventory
-                    </button>
-                    
-                    <div class="inventory-grid" id="inventoryGrid">
-                        <div style="text-align: center; color: #6b7280; padding: 20px;">
-                            No ingredients in inventory
+                    <!-- Database Table -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="list" class="icon"></i>
+                            Ingredient Database
+                        </h2>
+                        <div id="databaseTable" class="database-table">
+                            <!-- Table will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
@@ -798,6 +963,10 @@
         
         // Inventory Management
         let inventory = [];
+        
+        // Ingredient Database
+        let ingredientDatabase = [];
+        let currentTab = 'composer'; // 'composer' or 'database'
         
         // Notes and Substitutions
         let expandedIngredients = new Set(); // Track which ingredient cards are expanded
@@ -939,15 +1108,31 @@
                     ingredients = [];
                     groups = { 'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' } };
 
-                    // Import ingredients
+                    // Import ingredients and merge notes into database
                     if (Array.isArray(recipeData.ingredients)) {
-                        ingredients = recipeData.ingredients.map(ing => ({
-                            id: ing.id || Date.now() + Math.random(),
-                            name: ing.name || 'Unknown',
-                            dilution: parseFloat(ing.dilution) || 1.0,
-                            volume: parseFloat(ing.volume) || 0,
-                            group: ing.group || 'Unassigned'
-                        }));
+                        ingredients = recipeData.ingredients.map(ing => {
+                            // Get or create database entry for this ingredient
+                            const dbEntry = getOrCreateDatabaseEntry(ing.name || 'Unknown');
+                            
+                            // Merge notes from recipe into database
+                            if (ing.notes && ing.notes.trim()) {
+                                if (dbEntry.notes && dbEntry.notes.trim()) {
+                                    dbEntry.notes += '\n---\n' + ing.notes;
+                                } else {
+                                    dbEntry.notes = ing.notes;
+                                }
+                            }
+                            
+                            return {
+                                id: ing.id || Date.now() + Math.random(),
+                                name: ing.name || 'Unknown',
+                                dilution: parseFloat(ing.dilution) || 1.0,
+                                volume: parseFloat(ing.volume) || 0,
+                                group: ing.group || 'Unassigned',
+                                notes: '', // Notes now come from database
+                                substituted: false
+                            };
+                        });
                     }
 
                     // Import groups
@@ -965,7 +1150,7 @@
                     document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
 
                     render();
-                    alert('Recipe imported successfully!');
+                    alert('Recipe imported successfully! Notes have been merged into your ingredient database.');
                 } catch (error) {
                     alert('Error importing recipe: ' + error.message);
                 }
@@ -1375,6 +1560,11 @@
                 // Don't re-render to avoid losing focus
             }
         }
+        
+        function updateDatabaseNotes(ingredientName, notes) {
+            const dbEntry = getOrCreateDatabaseEntry(ingredientName);
+            dbEntry.notes = notes.trim();
+        }
 
         function substituteIngredient(ingredientId, substituteName = null) {
             const ingredient = ingredients.find(i => i.id === ingredientId);
@@ -1514,6 +1704,9 @@
             const volume = parseFloat(document.getElementById('ingredientVolume').value);
 
             if (!name) return;
+            
+            // Create or get database entry for this ingredient
+            const dbEntry = getOrCreateDatabaseEntry(name);
 
             const ingredient = {
                 id: Date.now(),
@@ -1534,6 +1727,26 @@
             document.getElementById('ingredientVolume').value = '0';
 
             render();
+        }
+        
+        // Auto-populate form when ingredient name changes
+        function onIngredientNameChange() {
+            const name = document.getElementById('ingredientName').value.trim();
+            if (!name) return;
+            
+            const dbEntry = ingredientDatabase.find(entry => 
+                entry.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (dbEntry) {
+                // Auto-populate dilution and volume from database
+                if (dbEntry.dilution && dbEntry.dilution !== 1.0) {
+                    document.getElementById('ingredientDilution').value = dbEntry.dilution;
+                }
+                if (dbEntry.typicalUsage && dbEntry.typicalUsage > 0) {
+                    document.getElementById('ingredientVolume').value = dbEntry.typicalUsage;
+                }
+            }
         }
 
         function addGroup() {
@@ -1746,6 +1959,13 @@
                                 const isExpanded = expandedIngredients.has(ingredient.id);
                                 const isSubstituted = ingredient.substituted;
                                 
+                                // Get notes from database
+                                const dbEntry = ingredientDatabase.find(entry => 
+                                    entry.name.toLowerCase() === ingredient.name.toLowerCase()
+                                );
+                                const dbNotes = dbEntry ? dbEntry.notes : '';
+                                const dbSubstitutions = dbEntry ? dbEntry.substitutions : [];
+                                
                                 cardDiv.innerHTML = `
                                     <div class="ingredient-header">
                                         <div class="ingredient-info">
@@ -1765,17 +1985,22 @@
                                             <p class="ingredient-details">${ingredient.volume}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
                                             <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
                                             
-                                            ${ingredient.notes ? `<div class="ingredient-notes">${ingredient.notes}</div>` : ''}
+                                            ${dbNotes ? `<div class="ingredient-notes">${dbNotes}</div>` : ''}
                                             
                                             ${isExpanded ? `
                                                 <div class="substitution-controls">
-                                                    <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">Notes:</div>
+                                                    <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">Database Notes:</div>
                                                     <textarea id="notes-${ingredient.id}" 
                                                              class="notes-textarea" 
                                                              placeholder="Add notes about this ingredient..."
-                                                             onblur="updateIngredientNotes(${ingredient.id})">${ingredient.notes || ''}</textarea>
+                                                             onblur="updateDatabaseNotes('${ingredient.name}', this.value)">${dbNotes}</textarea>
                                                     
-                                                    <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Substitution:</div>
+                                                    <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Known Substitutions:</div>
+                                                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">
+                                                        ${dbSubstitutions.length > 0 ? dbSubstitutions.join(', ') : 'None recorded'}
+                                                    </div>
+                                                    
+                                                    <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Add Substitution:</div>
                                                     <div class="substitution-form">
                                                         <input type="text" 
                                                                id="substitution-${ingredient.id}" 
@@ -1853,6 +2078,9 @@
 
         // Handle Enter key in form inputs
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize tab state
+            switchTab('composer');
+            
             document.getElementById('ingredientName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') addIngredient();
             });
@@ -1878,6 +2106,294 @@
             render();
             renderInventory();
         });
+
+        // Database Management Functions
+        function getOrCreateDatabaseEntry(ingredientName) {
+            let dbEntry = ingredientDatabase.find(entry => 
+                entry.name.toLowerCase() === ingredientName.toLowerCase()
+            );
+            
+            if (!dbEntry) {
+                dbEntry = {
+                    id: Date.now() + Math.random(),
+                    name: ingredientName,
+                    notes: '',
+                    substitutions: [],
+                    dilution: 1.0,
+                    typicalUsage: 0,
+                    olfactoryFamily: ''
+                };
+                ingredientDatabase.push(dbEntry);
+            }
+            
+            return dbEntry;
+        }
+        
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            // Update tab buttons
+            document.getElementById('composerTab').className = tabName === 'composer' ? 'btn tab-active' : 'btn tab-inactive';
+            document.getElementById('databaseTab').className = tabName === 'database' ? 'btn tab-active' : 'btn tab-inactive';
+            
+            // Show/hide content
+            document.getElementById('composerContent').style.display = tabName === 'composer' ? 'block' : 'none';
+            document.getElementById('databaseContent').style.display = tabName === 'database' ? 'block' : 'none';
+            
+            if (tabName === 'database') {
+                renderDatabase();
+            }
+        }
+        
+        function exportDatabase() {
+            const databaseData = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                totalEntries: ingredientDatabase.length,
+                database: ingredientDatabase
+            };
+
+            const jsonString = JSON.stringify(databaseData, null, 2);
+            
+            // Download file
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fragrance-ingredient-database-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function importDatabase(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const databaseData = JSON.parse(e.target.result);
+                    
+                    if (!databaseData.database || !Array.isArray(databaseData.database)) {
+                        throw new Error('Invalid database format');
+                    }
+
+                    // Merge with existing database
+                    databaseData.database.forEach(importedEntry => {
+                        const existing = ingredientDatabase.find(entry => 
+                            entry.name.toLowerCase() === importedEntry.name.toLowerCase()
+                        );
+                        
+                        if (existing) {
+                            // Merge notes with separator
+                            if (importedEntry.notes && importedEntry.notes.trim()) {
+                                if (existing.notes && existing.notes.trim()) {
+                                    existing.notes += '\n---\n' + importedEntry.notes;
+                                } else {
+                                    existing.notes = importedEntry.notes;
+                                }
+                            }
+                            
+                            // Merge substitutions
+                            if (importedEntry.substitutions && Array.isArray(importedEntry.substitutions)) {
+                                importedEntry.substitutions.forEach(sub => {
+                                    if (!existing.substitutions.includes(sub)) {
+                                        existing.substitutions.push(sub);
+                                    }
+                                });
+                            }
+                            
+                            // Update other fields if they're better/newer
+                            if (importedEntry.dilution && !existing.dilution) existing.dilution = importedEntry.dilution;
+                            if (importedEntry.typicalUsage && !existing.typicalUsage) existing.typicalUsage = importedEntry.typicalUsage;
+                            if (importedEntry.olfactoryFamily && !existing.olfactoryFamily) existing.olfactoryFamily = importedEntry.olfactoryFamily;
+                        } else {
+                            // Add new entry
+                            ingredientDatabase.push({
+                                id: Date.now() + Math.random(),
+                                name: importedEntry.name || 'Unknown',
+                                notes: importedEntry.notes || '',
+                                substitutions: Array.isArray(importedEntry.substitutions) ? importedEntry.substitutions : [],
+                                dilution: parseFloat(importedEntry.dilution) || 1.0,
+                                typicalUsage: parseFloat(importedEntry.typicalUsage) || 0,
+                                olfactoryFamily: importedEntry.olfactoryFamily || ''
+                            });
+                        }
+                    });
+
+                    if (currentTab === 'database') {
+                        renderDatabase();
+                    }
+                    alert('Database imported and merged successfully!');
+                } catch (error) {
+                    alert('Error importing database: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
+        let currentSort = { field: 'name', direction: 'asc' };
+        let filteredDatabase = [];
+        
+        function renderDatabase() {
+            const searchTerm = document.getElementById('databaseSearch').value.toLowerCase();
+            
+            // Filter database
+            filteredDatabase = ingredientDatabase.filter(entry =>
+                entry.name.toLowerCase().includes(searchTerm) ||
+                entry.notes.toLowerCase().includes(searchTerm) ||
+                entry.olfactoryFamily.toLowerCase().includes(searchTerm) ||
+                entry.substitutions.some(sub => sub.toLowerCase().includes(searchTerm))
+            );
+            
+            // Sort database
+            filteredDatabase.sort((a, b) => {
+                let aVal = a[currentSort.field] || '';
+                let bVal = b[currentSort.field] || '';
+                
+                if (currentSort.field === 'substitutions') {
+                    aVal = aVal.join(', ');
+                    bVal = bVal.join(', ');
+                }
+                
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+                
+                if (currentSort.direction === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            const container = document.getElementById('databaseTable');
+            
+            if (filteredDatabase.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">No ingredients in database</div>';
+                return;
+            }
+            
+            const getSortIndicator = (field) => {
+                if (currentSort.field === field) {
+                    return `<span class="sort-indicator">${currentSort.direction === 'asc' ? '↑' : '↓'}</span>`;
+                }
+                return '<span class="sort-indicator">↕</span>';
+            };
+            
+            container.innerHTML = `
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortDatabase('name')">Name ${getSortIndicator('name')}</th>
+                            <th onclick="sortDatabase('olfactoryFamily')">Family ${getSortIndicator('olfactoryFamily')}</th>
+                            <th onclick="sortDatabase('dilution')">Dilution ${getSortIndicator('dilution')}</th>
+                            <th onclick="sortDatabase('typicalUsage')">Usage ${getSortIndicator('typicalUsage')}</th>
+                            <th onclick="sortDatabase('notes')">Notes ${getSortIndicator('notes')}</th>
+                            <th onclick="sortDatabase('substitutions')">Substitutions ${getSortIndicator('substitutions')}</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredDatabase.map(entry => `
+                            <tr id="db-row-${entry.id}">
+                                <td><strong>${entry.name}</strong></td>
+                                <td>${entry.olfactoryFamily}</td>
+                                <td>${entry.dilution}</td>
+                                <td>${entry.typicalUsage}μL</td>
+                                <td class="notes-cell" title="${entry.notes}">${entry.notes}</td>
+                                <td class="subs-cell" title="${entry.substitutions.join(', ')}">${entry.substitutions.join(', ')}</td>
+                                <td class="db-actions">
+                                    <button onclick="editDatabaseEntry(${entry.id})" class="db-btn" title="Edit">
+                                        <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function sortDatabase(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            renderDatabase();
+        }
+        
+        function filterDatabase() {
+            renderDatabase();
+        }
+        
+        let editingDatabaseEntry = null;
+        
+        function editDatabaseEntry(entryId) {
+            const entry = ingredientDatabase.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            editingDatabaseEntry = entryId;
+            
+            const row = document.getElementById(`db-row-${entryId}`);
+            if (!row) return;
+            
+            row.innerHTML = `
+                <td><input type="text" class="db-edit-input" value="${entry.name}" id="edit-db-name-${entryId}"></td>
+                <td><input type="text" class="db-edit-input" value="${entry.olfactoryFamily}" id="edit-db-family-${entryId}" placeholder="e.g., Citrus, Woody, Floral"></td>
+                <td><input type="number" class="db-edit-input" value="${entry.dilution}" id="edit-db-dilution-${entryId}" step="0.001" min="0" max="1"></td>
+                <td><input type="number" class="db-edit-input" value="${entry.typicalUsage}" id="edit-db-usage-${entryId}" step="0.1" min="0"></td>
+                <td><textarea class="db-edit-textarea" id="edit-db-notes-${entryId}" placeholder="Notes about this ingredient...">${entry.notes}</textarea></td>
+                <td><textarea class="db-edit-textarea" id="edit-db-subs-${entryId}" placeholder="Comma-separated substitutions">${entry.substitutions.join(', ')}</textarea></td>
+                <td class="db-actions">
+                    <button onclick="saveDatabaseEntry(${entryId})" class="db-btn" title="Save" style="color: #10b981;">
+                        <i data-lucide="check" style="width: 12px; height: 12px;"></i>
+                    </button>
+                    <button onclick="cancelEditDatabase()" class="db-btn" title="Cancel" style="color: #ef4444;">
+                        <i data-lucide="x" style="width: 12px; height: 12px;"></i>
+                    </button>
+                </td>
+            `;
+        }
+        
+        function saveDatabaseEntry(entryId) {
+            const entry = ingredientDatabase.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            const name = document.getElementById(`edit-db-name-${entryId}`).value.trim();
+            const family = document.getElementById(`edit-db-family-${entryId}`).value.trim();
+            const dilution = parseFloat(document.getElementById(`edit-db-dilution-${entryId}`).value);
+            const usage = parseFloat(document.getElementById(`edit-db-usage-${entryId}`).value);
+            const notes = document.getElementById(`edit-db-notes-${entryId}`).value.trim();
+            const subsText = document.getElementById(`edit-db-subs-${entryId}`).value.trim();
+            
+            if (!name) {
+                alert('Ingredient name cannot be empty');
+                return;
+            }
+            
+            // Update entry
+            entry.name = name;
+            entry.olfactoryFamily = family;
+            entry.dilution = isNaN(dilution) ? 1.0 : dilution;
+            entry.typicalUsage = isNaN(usage) ? 0 : usage;
+            entry.notes = notes;
+            entry.substitutions = subsText ? subsText.split(',').map(s => s.trim()).filter(s => s) : [];
+            
+            editingDatabaseEntry = null;
+            renderDatabase();
+        }
+        
+        function cancelEditDatabase() {
+            editingDatabaseEntry = null;
+            renderDatabase();
+        }
     </script>
 </body>
 </html>

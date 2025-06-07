@@ -1,0 +1,770 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-06-07T22:58:40.630Z",
+  "totalItems": 109,
+  "inventory": [
+    {
+      "id": 1749337063882.2603,
+      "name": "2-Isobutyl Quinoline",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 0.1
+    },
+    {
+      "id": 1749337063882.3594,
+      "name": "Aldehyde C-10",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.5552,
+      "name": "Aldehyde C-12 MNA",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.5972,
+      "name": "Aldehyde C-6",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.2898,
+      "name": "Allyl Caproate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9226,
+      "name": "Ambrettolide",
+      "amount": 8,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.142,
+      "name": "Ambroxan",
+      "amount": 54,
+      "unit": "ml",
+      "dilution": 0.1
+    },
+    {
+      "id": 1749337063883.608,
+      "name": "Angelica Root CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.2532,
+      "name": "Anisic Aldehyde",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.6323,
+      "name": "Anisyl Acetate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8682,
+      "name": "Anisyl Acetone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.254,
+      "name": "Armoise Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9727,
+      "name": "Basil Oil",
+      "amount": 5,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337106729,
+      "name": "Bergamot Oil",
+      "amount": 30,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.018,
+      "name": "Beta Pinene",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.5903,
+      "name": "Birch Tar Oil",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.788,
+      "name": "Black Currant Bud Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.2278,
+      "name": "Boronia Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.851,
+      "name": "Calone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 0.1
+    },
+    {
+      "id": 1749337063883.3691,
+      "name": "Carrot Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.3042,
+      "name": "Cashmeran",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9683,
+      "name": "Cassia CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.888,
+      "name": "Cassie Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1758,
+      "name": "Cedarwood Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.7778,
+      "name": "Champaca Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.2988,
+      "name": "Citral",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.2725,
+      "name": "Citronellol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1323,
+      "name": "Clary Sage Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.7212,
+      "name": "Clary Sage Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9036,
+      "name": "Cognac Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.694,
+      "name": "Coranol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.8486,
+      "name": "Cypress By-Absolute",
+      "amount": 1,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.4849,
+      "name": "Damascone Alpha",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.4587,
+      "name": "Damascone Beta",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9915,
+      "name": "Dihydro Myrcenol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.8765,
+      "name": "Dynamone",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9446,
+      "name": "Dynascone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.7021,
+      "name": "Ethyl Caproate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.3787,
+      "name": "Ethyl Maltol",
+      "amount": 8,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.5017,
+      "name": "Ethyl Methyl-2-Butyrate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9023,
+      "name": "Evernyl",
+      "amount": 8,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8513,
+      "name": "Fennel Oil",
+      "amount": 5,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.2708,
+      "name": "Fir Balsam Absolute",
+      "amount": 10,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.4963,
+      "name": "Fragonia Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1575,
+      "name": "Frankincense Frereana",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.0479,
+      "name": "Galaxolide",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.375,
+      "name": "Galbanum CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.642,
+      "name": "Geosmin",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 0.01
+    },
+    {
+      "id": 1749337063882.1653,
+      "name": "Geraniol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.3262,
+      "name": "Geranium Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.065,
+      "name": "Hedione",
+      "amount": 19,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.669,
+      "name": "Helvetolide",
+      "amount": 19,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.4998,
+      "name": "Hexenol-3-Cis",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.8794,
+      "name": "Hyssop Decumbens Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.1936,
+      "name": "Iso E Super",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1714,
+      "name": "Juniper Berry CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.0942,
+      "name": "Kephalis",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.076,
+      "name": "Labdanum Absolute",
+      "amount": 2,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.4185,
+      "name": "Lavender Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.0483,
+      "name": "Lemon Oil",
+      "amount": 15,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9902,
+      "name": "Lime Oil",
+      "amount": 15,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.7783,
+      "name": "Linalool",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.265,
+      "name": "Linalyl Acetate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.5903,
+      "name": "Lyral",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.4717,
+      "name": "Manzanate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9963,
+      "name": "Marjoram Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.4387,
+      "name": "Mastic Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.5344,
+      "name": "Melissa Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.2676,
+      "name": "Methyl Anthranilate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 0.5
+    },
+    {
+      "id": 1749337063882.7737,
+      "name": "Methyl Benzoate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.02,
+      "name": "Mimosa Absolute",
+      "amount": 1,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.7925,
+      "name": "Muscone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.021,
+      "name": "Myrrh CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337119537,
+      "name": "Neroli Oil",
+      "amount": 10,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.6633,
+      "name": "Niaouli Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9104,
+      "name": "Norlimbanol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9275,
+      "name": "Oakmoss Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1724,
+      "name": "Oakwood Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 0.5
+    },
+    {
+      "id": 1749337063883.0276,
+      "name": "Orris Butter",
+      "amount": 0.3,
+      "unit": "ml",
+      "dilution": 0.15
+    },
+    {
+      "id": 1749337063883.7576,
+      "name": "Osmanthus Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.3042,
+      "name": "Palo Santo",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8394,
+      "name": "Paradisadmide",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8381,
+      "name": "Patchouli Absolute",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.1277,
+      "name": "Patchouli Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.4622,
+      "name": "Patchoulol",
+      "amount": 8,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.7683,
+      "name": "Petitgrain Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.7063,
+      "name": "Phenyl Ethyl Alcohol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.0774,
+      "name": "Pineapple Ester",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.012,
+      "name": "Pink Pepper Oil",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8079,
+      "name": "Polysantol",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.6238,
+      "name": "Pyralone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.3584,
+      "name": "Raspberry Ketone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 0.1
+    },
+    {
+      "id": 1749337063883.7595,
+      "name": "Rose Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.012,
+      "name": "Rosemary Antioxidant CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.8267,
+      "name": "Rosemary Verbenone Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.273,
+      "name": "Rosewood Leaf Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.3,
+      "name": "Sage Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.5208,
+      "name": "Sandalwood Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.943,
+      "name": "Star Anise Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.221,
+      "name": "Sweet Orange Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.8977,
+      "name": "Tarragon Oil",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.8694,
+      "name": "Thyme Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.213,
+      "name": "Triethyl Citrate",
+      "amount": 250,
+      "unit": "g",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.9958,
+      "name": "Valspice",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063882.0435,
+      "name": "Veloutone",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.9207,
+      "name": "Vetiver Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.744,
+      "name": "Vetiveryl Acetate",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.0227,
+      "name": "Wormwood Oil",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1
+    },
+    {
+      "id": 1749337063883.0378,
+      "name": "Yuzu Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1
+    }
+  ]
+}
