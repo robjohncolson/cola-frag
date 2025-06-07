@@ -1,0 +1,477 @@
+{
+  "version": "1.0",
+  "timestamp": "2024-12-28T00:00:00.000Z",
+  "totalItems": 52,
+  "source": "Eden Botanicals - Multiple Receipts",
+  "notes": "Consolidated inventory from 4 Eden Botanicals receipts. Most items are essential oils/absolutes at neat concentration unless noted.",
+  "inventory": [
+    {
+      "id": 5001,
+      "name": "Palo Santo",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Bursera graveolens wood oil"
+    },
+    {
+      "id": 5002,
+      "name": "Petitgrain Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Citrus aurantium leaf absolute"
+    },
+    {
+      "id": 5003,
+      "name": "Oakmoss Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals", 
+      "notes": "Evernia prunastri - IFRA restricted, use sparingly"
+    },
+    {
+      "id": 5004,
+      "name": "Frankincense Frereana",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic, Boswellia frereana"
+    },
+    {
+      "id": 5005,
+      "name": "Juniper Berry CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic CO2 extract"
+    },
+    {
+      "id": 5006,
+      "name": "Angelica Root CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Organic CO2 extract - phototoxic"
+    },
+    {
+      "id": 5007,
+      "name": "Clary Sage Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Salvia sclarea absolute"
+    },
+    {
+      "id": 5008,
+      "name": "Patchouli Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic Pogostemon cablin"
+    },
+    {
+      "id": 5009,
+      "name": "Vetiver Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Haiti, Organic Chrysopogon zizanioides"
+    },
+    {
+      "id": 5010,
+      "name": "Sweet Orange Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic Citrus sinensis"
+    },
+    {
+      "id": 5011,
+      "name": "Cassia CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Cinnamomum cassia CO2 extract"
+    },
+    {
+      "id": 5012,
+      "name": "Cedarwood Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Atlas Cedar absolute"
+    },
+    {
+      "id": 5013,
+      "name": "Sandalwood Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Royal Hawaiian - Organic Santalum paniculatum"
+    },
+    {
+      "id": 5014,
+      "name": "Osmanthus Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Osmanthus fragrans - precious floral absolute"
+    },
+    {
+      "id": 5015,
+      "name": "Labdanum Absolute",
+      "amount": 2,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Clear - Cistus ladanifer resin absolute"
+    },
+    {
+      "id": 5016,
+      "name": "Geranium Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Pelargonium graveolens absolute"
+    },
+    {
+      "id": 5017,
+      "name": "Melissa Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Organic - True Melissa officinalis (expensive)"
+    },
+    {
+      "id": 5018,
+      "name": "Star Anise Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Illicium verum"
+    },
+    {
+      "id": 5019,
+      "name": "Yuzu Oil",
+      "amount": 1,
+      "unit": "ml", 
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Distilled Citrus junos"
+    },
+    {
+      "id": 5020,
+      "name": "Oakwood Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 0.5,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - 50% dilution in carrier"
+    },
+    {
+      "id": 5021,
+      "name": "Orris Butter",
+      "amount": 0.3,
+      "unit": "ml",
+      "dilution": 0.15,
+      "brand": "Eden Botanicals",
+      "notes": "Tiny sample (6 drops) - 15% irones, extremely precious"
+    },
+    {
+      "id": 5022,
+      "name": "Rose Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Bulgaria - Rosa damascena absolute"
+    },
+    {
+      "id": 5023,
+      "name": "Galbanum CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Ferula galbaniflua CO2 extract"
+    },
+    {
+      "id": 5024,
+      "name": "Champaca Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Red - Michelia champaca absolute"
+    },
+    {
+      "id": 5025,
+      "name": "Mimosa Absolute",
+      "amount": 1,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Acacia dealbata absolute - powdery floral"
+    },
+    {
+      "id": 5026,
+      "name": "Niaouli Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic Melaleuca quinquenervia"
+    },
+    {
+      "id": 5027,
+      "name": "Cassie Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Acacia farnesiana absolute - mimosa-like"
+    },
+    {
+      "id": 5028,
+      "name": "Myrrh CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic Commiphora myrrha CO2"
+    },
+    {
+      "id": 5029,
+      "name": "Fragonia Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Agonis fragrans - rare Australian oil"
+    },
+    {
+      "id": 5030,
+      "name": "Cypress By-Absolute",
+      "amount": 1,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Cupressus sempervirens by-absolute"
+    },
+    {
+      "id": 5031,
+      "name": "Hyssop Decumbens Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Hyssopus officinalis var. decumbens"
+    },
+    {
+      "id": 5032,
+      "name": "Armoise Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Mugwort, Artemisia vulgaris"
+    },
+    {
+      "id": 5033,
+      "name": "Thyme Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - ct Thymol, Organic Thymus vulgaris"
+    },
+    {
+      "id": 5034,
+      "name": "Rosemary Antioxidant CO2",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic antioxidant extract"
+    },
+    {
+      "id": 5035,
+      "name": "Rosemary Verbenone Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - ct Verbenone, Organic"
+    },
+    {
+      "id": 5036,
+      "name": "Lavender Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Lavandula angustifolia absolute"
+    },
+    {
+      "id": 5037,
+      "name": "Clary Sage Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic essential oil (vs absolute)"
+    },
+    {
+      "id": 5038,
+      "name": "Sage Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic Salvia officinalis"
+    },
+    {
+      "id": 5039,
+      "name": "Marjoram Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Sweet, Organic Origanum majorana"
+    },
+    {
+      "id": 5040,
+      "name": "Basil Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Sweet ct Linalool, Organic"
+    },
+    {
+      "id": 5041,
+      "name": "Fennel Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Sweet, Organic Foeniculum vulgare"
+    },
+    {
+      "id": 5042,
+      "name": "Carrot Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Daucus carota seed absolute"
+    },
+    {
+      "id": 5043,
+      "name": "Mastic Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Leaf/Branch - Organic Pistacia lentiscus"
+    },
+    {
+      "id": 5044,
+      "name": "Rosewood Leaf Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - Organic sustainable source"
+    },
+    {
+      "id": 5045,
+      "name": "Dynamone",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Synthetic aromachemical - fruity lactone"
+    },
+    {
+      "id": 5046,
+      "name": "Fir Balsam Absolute",
+      "amount": 10,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "5g x 2 units - Abies balsamea resin absolute"
+    },
+    {
+      "id": 5047,
+      "name": "Cognac Oil",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Sample - vintage wine/brandy accord"
+    },
+    {
+      "id": 5048,
+      "name": "Black Currant Bud Absolute",
+      "amount": 2,
+      "unit": "g",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Ribes nigrum - cassis buds absolute"
+    },
+    {
+      "id": 5049,
+      "name": "Pink Pepper Oil",
+      "amount": 4,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "4 x 1ml samples - Schinus molle"
+    },
+    {
+      "id": 5050,
+      "name": "Boronia Absolute",
+      "amount": 1,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Boronia megastigma - rare Australian floral"
+    },
+    {
+      "id": 5051,
+      "name": "Lime Oil",
+      "amount": 15,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Expressed - Citrus aurantifolia"
+    },
+    {
+      "id": 5052,
+      "name": "Lemon Oil",
+      "amount": 15,
+      "unit": "ml",
+      "dilution": 1.0,
+      "brand": "Eden Botanicals",
+      "notes": "Organic - Citrus limon"
+    }
+  ]
+} 
