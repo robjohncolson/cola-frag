@@ -232,6 +232,56 @@
         .bg-indigo-50 { background-color: #eef2ff; }
         .bg-red-50 { background-color: #fef2f2; }
         .bg-orange-50 { background-color: #fff7ed; }
+        
+        /* Edit mode styles */
+        .ingredient-edit {
+            background: #fef3c7 !important;
+            border: 2px solid #f59e0b !important;
+        }
+        .edit-input {
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            margin-bottom: 4px;
+            outline: none;
+        }
+        .edit-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        .edit-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        .btn-save {
+            background: #10b981;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        .btn-save:hover {
+            background: #059669;
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        .btn-edit {
+            background: transparent;
+            color: #3b82f6;
+            padding: 4px;
+        }
+        .btn-edit:hover {
+            color: #2563eb;
+        }
     </style>
 </head>
 <body>
@@ -517,6 +567,81 @@
             render();
         }
 
+        // Edit functionality
+        let editingIngredient = null;
+        let originalIngredientData = null;
+
+        function startEditIngredient(ingredientId) {
+            // If already editing another ingredient, cancel that first
+            if (editingIngredient && editingIngredient !== ingredientId) {
+                cancelEditIngredient();
+            }
+
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+
+            editingIngredient = ingredientId;
+            originalIngredientData = { ...ingredient }; // Store original data for cancel
+            render();
+        }
+
+        function saveEditIngredient(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+
+            // Get values from edit inputs
+            const nameInput = document.querySelector(`#edit-name-${ingredientId}`);
+            const dilutionInput = document.querySelector(`#edit-dilution-${ingredientId}`);
+            const volumeInput = document.querySelector(`#edit-volume-${ingredientId}`);
+
+            if (!nameInput || !dilutionInput || !volumeInput) return;
+
+            const newName = nameInput.value.trim();
+            const newDilution = parseFloat(dilutionInput.value);
+            const newVolume = parseFloat(volumeInput.value);
+
+            // Validate inputs
+            if (!newName) {
+                alert('Ingredient name cannot be empty');
+                return;
+            }
+            if (isNaN(newDilution) || newDilution <= 0 || newDilution > 1) {
+                alert('Dilution must be between 0 and 1 (e.g., 0.1 for 10%)');
+                return;
+            }
+            if (isNaN(newVolume) || newVolume < 0) {
+                alert('Volume must be a positive number');
+                return;
+            }
+
+            // Update ingredient
+            ingredient.name = newName;
+            ingredient.dilution = newDilution;
+            ingredient.volume = newVolume;
+
+            // Clear edit state
+            editingIngredient = null;
+            originalIngredientData = null;
+
+            render();
+        }
+
+        function cancelEditIngredient() {
+            if (editingIngredient && originalIngredientData) {
+                // Restore original data
+                const ingredient = ingredients.find(i => i.id === editingIngredient);
+                if (ingredient) {
+                    ingredient.name = originalIngredientData.name;
+                    ingredient.dilution = originalIngredientData.dilution;
+                    ingredient.volume = originalIngredientData.volume;
+                }
+            }
+
+            editingIngredient = null;
+            originalIngredientData = null;
+            render();
+        }
+
         function render() {
             // Update stats
             document.getElementById('totalActives').textContent = getTotalActives().toFixed(2);
@@ -573,25 +698,54 @@
                             if (!ingredient) return;
 
                             const cardDiv = document.createElement('div');
-                            cardDiv.className = 'ingredient-card';
-                            cardDiv.draggable = true;
-                            cardDiv.ondragstart = () => draggedItem = ingredient.id;
+                            const isEditing = editingIngredient === ingredient.id;
+                            cardDiv.className = `ingredient-card ${isEditing ? 'ingredient-edit' : ''}`;
+                            cardDiv.draggable = !isEditing;
+                            if (!isEditing) {
+                                cardDiv.ondragstart = () => draggedItem = ingredient.id;
+                            }
 
-                            cardDiv.innerHTML = `
-                                <div class="ingredient-header">
-                                    <div class="ingredient-info">
-                                        <h4 class="ingredient-name">${ingredient.name}</h4>
-                                        <p class="ingredient-details">${ingredient.volume}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
-                                        <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                            if (isEditing) {
+                                cardDiv.innerHTML = `
+                                    <div class="ingredient-header">
+                                        <div class="ingredient-info">
+                                            <input type="text" id="edit-name-${ingredient.id}" class="edit-input" value="${ingredient.name}" placeholder="Ingredient name">
+                                            <div style="display: flex; gap: 4px;">
+                                                <input type="number" id="edit-volume-${ingredient.id}" class="edit-input" value="${ingredient.volume}" step="0.1" placeholder="Volume (μL)" style="flex: 1;">
+                                                <input type="number" id="edit-dilution-${ingredient.id}" class="edit-input" value="${ingredient.dilution}" step="0.001" min="0" max="1" placeholder="Dilution" style="flex: 1;">
+                                            </div>
+                                            <p class="ingredient-actives" style="margin-top: 4px;">Preview: ${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                                        </div>
                                     </div>
-                                    <div class="ingredient-actions">
-                                        <i data-lucide="move" class="icon-sm text-gray"></i>
-                                        <button onclick="deleteIngredient(${ingredient.id})" class="btn-red">
-                                            <i data-lucide="trash-2" class="icon-sm"></i>
+                                    <div class="edit-actions">
+                                        <button onclick="saveEditIngredient(${ingredient.id})" class="btn btn-save">
+                                            <i data-lucide="check" class="icon-sm"></i> Save
+                                        </button>
+                                        <button onclick="cancelEditIngredient()" class="btn btn-cancel">
+                                            <i data-lucide="x" class="icon-sm"></i> Cancel
                                         </button>
                                     </div>
-                                </div>
-                            `;
+                                `;
+                            } else {
+                                cardDiv.innerHTML = `
+                                    <div class="ingredient-header">
+                                        <div class="ingredient-info">
+                                            <h4 class="ingredient-name">${ingredient.name}</h4>
+                                            <p class="ingredient-details">${ingredient.volume}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
+                                            <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                                        </div>
+                                        <div class="ingredient-actions">
+                                            <i data-lucide="move" class="icon-sm text-gray"></i>
+                                            <button onclick="startEditIngredient(${ingredient.id})" class="btn-edit">
+                                                <i data-lucide="edit" class="icon-sm"></i>
+                                            </button>
+                                            <button onclick="deleteIngredient(${ingredient.id})" class="btn-red">
+                                                <i data-lucide="trash-2" class="icon-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }
 
                             gridDiv.appendChild(cardDiv);
                         });
@@ -622,6 +776,9 @@
                     else if (iconName === 'upload') el.innerHTML = '↑';
                     else if (iconName === 'trash-2') el.innerHTML = '×';
                     else if (iconName === 'move') el.innerHTML = '⌖';
+                    else if (iconName === 'edit') el.innerHTML = '✎';
+                    else if (iconName === 'check') el.innerHTML = '✓';
+                    else if (iconName === 'x') el.innerHTML = '×';
                     else el.innerHTML = iconName;
                 });
             }
@@ -638,6 +795,19 @@
             
             document.getElementById('groupName').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') addGroup();
+            });
+
+            // Global keyboard shortcuts for edit mode
+            document.addEventListener('keydown', (e) => {
+                if (editingIngredient) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        saveEditIngredient(editingIngredient);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancelEditIngredient();
+                    }
+                }
             });
 
             // Initial render
