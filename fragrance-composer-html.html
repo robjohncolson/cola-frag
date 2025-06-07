@@ -1771,6 +1771,11 @@
         function updateDatabaseNotes(ingredientName, notes) {
             const dbEntry = getOrCreateDatabaseEntry(ingredientName);
             dbEntry.notes = notes.trim();
+            
+            // Refresh database view if we're on the database tab
+            if (currentTab === 'database') {
+                renderDatabase();
+            }
         }
 
         function substituteIngredient(ingredientId, substituteName = null) {
@@ -2212,7 +2217,7 @@
                                                 <span class="inventory-star ${inventoryStatus.available ? 'available' : 'missing'}" 
                                                       onclick="toggleInlineInventoryForm(${ingredient.id})"
                                                       title="${inventoryStatus.available ? 'In inventory - click to edit' : 'Not in inventory - click to add'}">
-                                                    ${inventoryStatus.available ? '⭐' : '⭐'}
+                                                    ${inventoryStatus.available ? '⭐' : '☆'}
                                                 </span>
                                                 <button onclick="toggleIngredientExpansion(${ingredient.id})" class="expand-toggle">
                                                     ${isExpanded ? '▼' : '▶'} ${isExpanded ? 'Less' : 'More'}
