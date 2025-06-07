@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragrance Composition Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9fafb;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            background: white;
+            min-height: 100vh;
+        }
+        .title {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #1f2937;
+        }
+        .form-section {
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .form-flex {
+            display: flex;
+            gap: 12px;
+        }
+        .input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn-blue {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-blue:hover {
+            background: #2563eb;
+        }
+        .btn-green {
+            background: #10b981;
+            color: white;
+        }
+        .btn-green:hover {
+            background: #059669;
+        }
+        .btn-red {
+            background: transparent;
+            color: #ef4444;
+            padding: 4px;
+        }
+        .btn-red:hover {
+            color: #dc2626;
+        }
+        .stats-section {
+            background: #dbeafe;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .stats-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+        .stats-text {
+            color: #1d4ed8;
+            margin-bottom: 4px;
+        }
+        .group {
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .group-header {
+            padding: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+        }
+        .group-header:hover {
+            background: rgba(0,0,0,0.02);
+        }
+        .group-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .group-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .group-count {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .group-stats {
+            text-align: right;
+        }
+        .group-actives {
+            font-weight: bold;
+        }
+        .group-percentage {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .group-content {
+            border-top: 1px solid #e5e7eb;
+            padding: 16px;
+            min-height: 100px;
+        }
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .ingredient-card {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: move;
+            transition: box-shadow 0.2s;
+        }
+        .ingredient-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .ingredient-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+        }
+        .ingredient-info {
+            flex: 1;
+        }
+        .ingredient-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .ingredient-details {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .ingredient-actives {
+            font-size: 12px;
+            font-weight: 500;
+            color: #2563eb;
+        }
+        .ingredient-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: 8px;
+        }
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+        .icon-sm {
+            width: 14px;
+            height: 14px;
+        }
+        .text-gray {
+            color: #9ca3af;
+        }
+        /* Group color classes */
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-purple-50 { background-color: #faf5ff; }
+        .bg-yellow-50 { background-color: #fefce8; }
+        .bg-pink-50 { background-color: #fdf2f8; }
+        .bg-indigo-50 { background-color: #eef2ff; }
+        .bg-red-50 { background-color: #fef2f2; }
+        .bg-orange-50 { background-color: #fff7ed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Fragrance Composition Tracker</h1>
+        
+        <!-- Add Ingredient Form -->
+        <div class="form-section">
+            <h2 class="form-title">Add Ingredient</h2>
+            <div class="form-grid">
+                <input type="text" id="ingredientName" class="input" placeholder="Ingredient name">
+                <input type="number" id="ingredientDilution" class="input" step="0.001" placeholder="Dilution (0.1 = 10%)" value="1.0">
+                <input type="number" id="ingredientVolume" class="input" step="0.1" placeholder="Volume (μL)" value="0">
+                <button onclick="addIngredient()" class="btn btn-blue">
+                    <i data-lucide="plus" class="icon"></i>
+                    Add
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Group Form -->
+        <div class="form-section">
+            <h2 class="form-title">Add Group/Accord</h2>
+            <div class="form-flex">
+                <input type="text" id="groupName" class="input" placeholder="Group name (e.g., Citrus, Musks, Pineapple Accord)" style="flex: 1;">
+                <button onclick="addGroup()" class="btn btn-green">
+                    <i data-lucide="plus" class="icon"></i>
+                    Add Group
+                </button>
+            </div>
+        </div>
+
+        <!-- Total Composition Stats -->
+        <div class="stats-section">
+            <h2 class="stats-title">Total Composition</h2>
+            <p class="stats-text">Total Active Material: <span id="totalActives">0.00</span> μL</p>
+            <p class="stats-text">Total Ingredients: <span id="totalIngredients">0</span></p>
+        </div>
+
+        <!-- Groups Container -->
+        <div id="groupsContainer"></div>
+    </div>
+
+    <script>
+        // Application state
+        let ingredients = [];
+        let groups = {
+            'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' }
+        };
+        let draggedItem = null;
+
+        const groupColors = [
+            'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-yellow-50', 
+            'bg-pink-50', 'bg-indigo-50', 'bg-red-50', 'bg-orange-50'
+        ];
+
+        // Utility functions
+        function getActives(ingredient) {
+            return ingredient.volume * ingredient.dilution;
+        }
+
+        function getTotalActives() {
+            return ingredients.reduce((sum, ing) => sum + getActives(ing), 0);
+        }
+
+        function getGroupActives(groupName) {
+            const groupIngredients = groups[groupName].ingredients.map(id => 
+                ingredients.find(i => i.id === id)
+            ).filter(Boolean);
+            return groupIngredients.reduce((sum, ing) => sum + getActives(ing), 0);
+        }
+
+        function getGroupPercentage(groupName) {
+            const total = getTotalActives();
+            if (total === 0) return 0;
+            return (getGroupActives(groupName) / total * 100).toFixed(1);
+        }
+
+        function getIngredientPercentage(ingredient) {
+            const total = getTotalActives();
+            if (total === 0) return 0;
+            return (getActives(ingredient) / total * 100).toFixed(2);
+        }
+
+        // Main functions
+        function addIngredient() {
+            const name = document.getElementById('ingredientName').value.trim();
+            const dilution = parseFloat(document.getElementById('ingredientDilution').value);
+            const volume = parseFloat(document.getElementById('ingredientVolume').value);
+
+            if (!name) return;
+
+            const ingredient = {
+                id: Date.now(),
+                name: name,
+                dilution: dilution,
+                volume: volume,
+                group: 'Unassigned'
+            };
+
+            ingredients.push(ingredient);
+            groups['Unassigned'].ingredients.push(ingredient.id);
+
+            // Clear form
+            document.getElementById('ingredientName').value = '';
+            document.getElementById('ingredientDilution').value = '1.0';
+            document.getElementById('ingredientVolume').value = '0';
+
+            render();
+        }
+
+        function addGroup() {
+            const name = document.getElementById('groupName').value.trim();
+            if (!name || groups[name]) return;
+
+            const colorIndex = Object.keys(groups).length % groupColors.length;
+            groups[name] = {
+                ingredients: [],
+                expanded: true,
+                color: groupColors[colorIndex]
+            };
+
+            document.getElementById('groupName').value = '';
+            render();
+        }
+
+        function deleteIngredient(id) {
+            const ingredient = ingredients.find(i => i.id === id);
+            if (ingredient) {
+                groups[ingredient.group].ingredients = groups[ingredient.group].ingredients.filter(i => i !== id);
+            }
+            ingredients = ingredients.filter(i => i.id !== id);
+            render();
+        }
+
+        function moveIngredient(ingredientId, targetGroup) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient || ingredient.group === targetGroup) return;
+
+            // Remove from old group
+            groups[ingredient.group].ingredients = groups[ingredient.group].ingredients.filter(i => i !== ingredientId);
+            
+            // Add to new group
+            groups[targetGroup].ingredients.push(ingredientId);
+            
+            // Update ingredient group
+            ingredient.group = targetGroup;
+            
+            render();
+        }
+
+        function toggleGroup(groupName) {
+            groups[groupName].expanded = !groups[groupName].expanded;
+            render();
+        }
+
+        function render() {
+            // Update stats
+            document.getElementById('totalActives').textContent = getTotalActives().toFixed(2);
+            document.getElementById('totalIngredients').textContent = ingredients.length;
+
+            // Render groups
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = '';
+
+            Object.entries(groups).forEach(([groupName, groupData]) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = `group ${groupData.color}`;
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'group-header';
+                headerDiv.onclick = () => toggleGroup(groupName);
+
+                headerDiv.innerHTML = `
+                    <div class="group-header-left">
+                        <i data-lucide="${groupData.expanded ? 'chevron-down' : 'chevron-right'}" class="icon"></i>
+                        <h3 class="group-title">${groupName}</h3>
+                        <span class="group-count">(${groupData.ingredients.length} ingredients)</span>
+                    </div>
+                    <div class="group-stats">
+                        <div class="group-actives">${getGroupActives(groupName).toFixed(2)} μL actives</div>
+                        <div class="group-percentage">${getGroupPercentage(groupName)}% of total</div>
+                    </div>
+                `;
+
+                groupDiv.appendChild(headerDiv);
+
+                if (groupData.expanded) {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'group-content';
+                    
+                    // Add drag and drop handlers
+                    contentDiv.ondragover = (e) => e.preventDefault();
+                    contentDiv.ondrop = (e) => {
+                        e.preventDefault();
+                        if (draggedItem) {
+                            moveIngredient(draggedItem, groupName);
+                            draggedItem = null;
+                        }
+                    };
+
+                    if (groupData.ingredients.length === 0) {
+                        contentDiv.innerHTML = '<div class="drop-zone">Drop ingredients here or drag from other groups</div>';
+                    } else {
+                        const gridDiv = document.createElement('div');
+                        gridDiv.className = 'ingredients-grid';
+
+                        groupData.ingredients.forEach(ingredientId => {
+                            const ingredient = ingredients.find(i => i.id === ingredientId);
+                            if (!ingredient) return;
+
+                            const cardDiv = document.createElement('div');
+                            cardDiv.className = 'ingredient-card';
+                            cardDiv.draggable = true;
+                            cardDiv.ondragstart = () => draggedItem = ingredient.id;
+
+                            cardDiv.innerHTML = `
+                                <div class="ingredient-header">
+                                    <div class="ingredient-info">
+                                        <h4 class="ingredient-name">${ingredient.name}</h4>
+                                        <p class="ingredient-details">${ingredient.volume}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
+                                        <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                                    </div>
+                                    <div class="ingredient-actions">
+                                        <i data-lucide="move" class="icon-sm text-gray"></i>
+                                        <button onclick="deleteIngredient(${ingredient.id})" class="btn-red">
+                                            <i data-lucide="trash-2" class="icon-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+
+                            gridDiv.appendChild(cardDiv);
+                        });
+
+                        contentDiv.appendChild(gridDiv);
+                    }
+
+                    groupDiv.appendChild(contentDiv);
+                }
+
+                container.appendChild(groupDiv);
+            });
+
+            // Initialize Lucide icons
+            lucide.createIcons();
+        }
+
+        // Handle Enter key in form inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('ingredientName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addIngredient();
+            });
+            
+            document.getElementById('groupName').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addGroup();
+            });
+
+            // Initial render
+            render();
+        });
+    </script>
+</body>
+</html>
