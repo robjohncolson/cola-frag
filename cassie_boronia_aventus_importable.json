@@ -1,0 +1,306 @@
+{
+  "version": "1.0",
+  "timestamp": "2024-12-28T00:00:00.000Z",
+  "totalActives": 310.57,
+  "formulaName": "Corrected Enhanced Aventus Formula - Ratio Optimized",
+  "description": "Authentic yet sophisticated interpretation of Aventus with proper active ratios, enhanced green complexity, tropical-musk bridge, and Mediterranean character",
+  "ingredients": [
+    {
+      "id": 1,
+      "name": "Hedione",
+      "dilution": 1.0,
+      "volume": 77,
+      "group": "Synthetic Backbone",
+      "notes": "Heart/floral radiance"
+    },
+    {
+      "id": 2,
+      "name": "Iso E Super",
+      "dilution": 1.0,
+      "volume": 47,
+      "group": "Synthetic Backbone",
+      "notes": "Woody backbone"
+    },
+    {
+      "id": 3,
+      "name": "Helvetolide",
+      "dilution": 1.0,
+      "volume": 47,
+      "group": "Synthetic Backbone",
+      "notes": "Musk base - diffusive fruity character"
+    },
+    {
+      "id": 4,
+      "name": "Bergamot Oil",
+      "dilution": 1.0,
+      "volume": 33,
+      "group": "Enhanced Citrus",
+      "notes": "Citrus opening - main natural component"
+    },
+    {
+      "id": 5,
+      "name": "Ambroxan",
+      "dilution": 0.1,
+      "volume": 330,
+      "group": "Synthetic Backbone",
+      "notes": "Ambergris note - ozonic smoothness"
+    },
+    {
+      "id": 6,
+      "name": "Galaxolide",
+      "dilution": 0.27,
+      "volume": 29,
+      "group": "Synthetic Backbone",
+      "notes": "Clean-powdery musk foundation"
+    },
+    {
+      "id": 7,
+      "name": "Patchouli Oil",
+      "dilution": 1.0,
+      "volume": 13,
+      "group": "Woody Naturals",
+      "notes": "Earthy depth - main woody player"
+    },
+    {
+      "id": 8,
+      "name": "Linalyl Acetate",
+      "dilution": 1.0,
+      "volume": 11,
+      "group": "Enhanced Citrus",
+      "notes": "Strengthened opening freshness - ratio corrected"
+    },
+    {
+      "id": 9,
+      "name": "Lyral",
+      "dilution": 1.0,
+      "volume": 10,
+      "group": "Synthetic Backbone",
+      "notes": "Enhanced backbone strength - ratio corrected"
+    },
+    {
+      "id": 10,
+      "name": "Petitgrain Absolute",
+      "dilution": 0.5,
+      "volume": 10,
+      "group": "Green Complex",
+      "notes": "Bitter orange leaves - green bridge"
+    },
+    {
+      "id": 11,
+      "name": "Sweet Orange Oil",
+      "dilution": 1.0,
+      "volume": 7,
+      "group": "Enhanced Citrus",
+      "notes": "Enhanced sweet citrus - opening modifier"
+    },
+    {
+      "id": 12,
+      "name": "Evernyl",
+      "dilution": 0.23,
+      "volume": 7,
+      "group": "Synthetic Backbone",
+      "notes": "Strengthened woody-earthy depth - ratio corrected"
+    },
+    {
+      "id": 13,
+      "name": "Juniper Berry Oil",
+      "dilution": 0.1,
+      "volume": 5,
+      "group": "Green Complex",
+      "notes": "Gin-like complexity - Mediterranean character"
+    },
+    {
+      "id": 14,
+      "name": "Coranol",
+      "dilution": 1.0,
+      "volume": 5,
+      "group": "Synthetic Backbone",
+      "notes": "Green/metallic - adds freshness"
+    },
+    {
+      "id": 15,
+      "name": "Linalool",
+      "dilution": 1.0,
+      "volume": 5,
+      "group": "Enhanced Citrus",
+      "notes": "Floral/citrus - soft opening"
+    },
+    {
+      "id": 16,
+      "name": "Clary Sage Absolute",
+      "dilution": 0.23,
+      "volume": 4,
+      "group": "Green Complex",
+      "notes": "Herbaceous - green/aromatic"
+    },
+    {
+      "id": 17,
+      "name": "Birch Tar Oil",
+      "dilution": 0.01,
+      "volume": 3.5,
+      "group": "Smoky Core",
+      "notes": "Balanced smoky signature - ratio corrected"
+    },
+    {
+      "id": 18,
+      "name": "Black Currant Bud Absolute",
+      "dilution": 0.1,
+      "volume": 3,
+      "group": "Green Complex",
+      "notes": "Balanced green-fruity tartness - ratio corrected"
+    },
+    {
+      "id": 19,
+      "name": "Patchoulol",
+      "dilution": 0.23,
+      "volume": 3,
+      "group": "Woody Naturals",
+      "notes": "Woody depth modifier"
+    },
+    {
+      "id": 20,
+      "name": "Pink Pepper Oil",
+      "dilution": 1.0,
+      "volume": 3,
+      "group": "Spicy",
+      "notes": "Spicy/rosy - adds warmth"
+    },
+    {
+      "id": 21,
+      "name": "Paradisadmide",
+      "dilution": 0.01,
+      "volume": 40,
+      "group": "Musk Enhancement",
+      "notes": "Tropical-animalic sophistication - guava-musk bridge"
+    },
+    {
+      "id": 22,
+      "name": "Pineapple Ester",
+      "dilution": 0.25,
+      "volume": 2,
+      "group": "Citrus Top",
+      "notes": "Authentic pineapple signature"
+    },
+    {
+      "id": 23,
+      "name": "2-Isobutyl Quinoline",
+      "dilution": 0.1,
+      "volume": 2,
+      "group": "Smoky Core",
+      "notes": "Leather/animalic - smoky complexity"
+    },
+    {
+      "id": 24,
+      "name": "Neroli Oil",
+      "dilution": 1.0,
+      "volume": 1,
+      "group": "Floral",
+      "notes": "Orange blossom - floral touch"
+    },
+    {
+      "id": 25,
+      "name": "Galbanum Oil",
+      "dilution": 0.1,
+      "volume": 1,
+      "group": "Green Complex",
+      "notes": "Sharp green bite - Mediterranean complexity"
+    },
+    {
+      "id": 26,
+      "name": "Damascone Alpha",
+      "dilution": 0.1,
+      "volume": 1,
+      "group": "Synthetic Backbone",
+      "notes": "Rose/fruity - final touch"
+    },
+    {
+      "id": 27,
+      "name": "Cassie Absolute",
+      "dilution": 0.01,
+      "volume": 8,
+      "group": "Floral Bridge",
+      "notes": "Honey-spicy floral bridge - elderflower substitute"
+    },
+    {
+      "id": 28,
+      "name": "Boronia Absolute",
+      "dilution": 0.01,
+      "volume": 8,
+      "group": "Floral Bridge",
+      "notes": "Honey-violet sophistication - elderflower substitute"
+    },
+    {
+      "id": 29,
+      "name": "Labdanum Absolute",
+      "dilution": 0.23,
+      "volume": 0.7,
+      "group": "Resinous",
+      "notes": "Proper resinous-amber complexity - ratio corrected"
+    },
+    {
+      "id": 30,
+      "name": "Cypress By-Absolute",
+      "dilution": 1.0,
+      "volume": 0.06,
+      "group": "Woody Naturals",
+      "notes": "Mediterranean woody refinement"
+    }
+  ],
+  "groups": {
+    "Synthetic Backbone": {
+      "ingredients": [1, 2, 3, 5, 6, 9, 12, 14, 26],
+      "expanded": true,
+      "color": "bg-blue-50"
+    },
+    "Enhanced Citrus": {
+      "ingredients": [4, 8, 11, 15],
+      "expanded": true,
+      "color": "bg-yellow-50"
+    },
+    "Woody Naturals": {
+      "ingredients": [7, 19, 30],
+      "expanded": true,
+      "color": "bg-green-50"
+    },
+    "Green Complex": {
+      "ingredients": [10, 13, 16, 18, 25],
+      "expanded": true,
+      "color": "bg-green-50"
+    },
+    "Floral Bridge": {
+      "ingredients": [27, 28],
+      "expanded": true,
+      "color": "bg-pink-50"
+    },
+    "Smoky Core": {
+      "ingredients": [17, 23],
+      "expanded": true,
+      "color": "bg-red-50"
+    },
+    "Spicy": {
+      "ingredients": [20],
+      "expanded": true,
+      "color": "bg-orange-50"
+    },
+    "Floral": {
+      "ingredients": [24],
+      "expanded": true,
+      "color": "bg-purple-50"
+    },
+    "Citrus Top": {
+      "ingredients": [22],
+      "expanded": true,
+      "color": "bg-yellow-50"
+    },
+    "Musk Enhancement": {
+      "ingredients": [21],
+      "expanded": true,
+      "color": "bg-indigo-50"
+    },
+    "Resinous": {
+      "ingredients": [29],
+      "expanded": true,
+      "color": "bg-orange-50"
+    }
+  }
+} 
