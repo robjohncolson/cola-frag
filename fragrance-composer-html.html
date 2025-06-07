@@ -515,6 +515,130 @@
                 max-height: 150px;
             }
         }
+        
+        /* Notes and Substitution Styles */
+        .ingredient-notes {
+            font-size: 11px;
+            color: #6b7280;
+            font-style: italic;
+            margin-top: 4px;
+            padding: 4px;
+            background: #f9fafb;
+            border-radius: 3px;
+            border-left: 3px solid #d1d5db;
+        }
+        
+        .ingredient-substituted {
+            border-left: 3px solid #f59e0b !important;
+            background: #fefbf3 !important;
+        }
+        
+        .substitution-info {
+            font-size: 11px;
+            color: #d97706;
+            font-weight: 500;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .notes-textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 11px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .substitution-controls {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .substitution-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 120px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .suggestion-item {
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .suggestion-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-source {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+        
+        .btn-substitute {
+            background: #f59e0b;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        
+        .btn-substitute:hover {
+            background: #d97706;
+        }
+        
+        .btn-clear-sub {
+            background: #6b7280;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+        }
+        
+        .btn-clear-sub:hover {
+            background: #4b5563;
+        }
+        
+        .expand-toggle {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-left: 4px;
+        }
+        
+        .expand-toggle:hover {
+            color: #374151;
+        }
     </style>
 </head>
 <body>
@@ -681,79 +805,67 @@
         // Inventory Management
         let inventory = [];
         
-        // Perfumer's Apprentice receipts data (from your receipts)
-        const paReceiptsData = [
-            // Receipt 1
-            { name: "Aldehyde C-12 MNA", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Ambroxan", amount: 4, unit: "ml", dilution: 0.1 },
-            { name: "Calone", amount: 4, unit: "ml", dilution: 0.1 },
-            { name: "Damascone Beta", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Ethyl Maltol", amount: 8, unit: "g", dilution: 1.0 },
-            { name: "Hedione", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Iso E Super", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Linalool", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Methyl Anthranilate", amount: 4, unit: "ml", dilution: 0.5 },
-            { name: "Raspberry Ketone", amount: 4, unit: "ml", dilution: 0.1 },
+        // Notes and Substitutions
+        let expandedIngredients = new Set(); // Track which ingredient cards are expanded
+        
+        // Common aromachemical substitutions database
+        const substitutionDatabase = {
+            // Citrus substitutions
+            "bergamot oil": ["lemon oil", "sweet orange oil", "citral", "limonene"],
+            "sweet orange oil": ["bergamot oil", "mandarin oil", "citral", "valencene"],
+            "lemon oil": ["bergamot oil", "citral", "limonene"],
             
-            // Receipt 2
-            { name: "Birch Tar Oil (Rectified)", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Coranol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Alpha Damascone", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Ethyl Methyl-2-Butyrate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Galaxolide", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Helvetolide", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "2-Isobutyl Quinoline", amount: 4, unit: "ml", dilution: 0.1 },
-            { name: "Linalyl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Lyral", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Methyl Benzoate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Paradisamide", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Patchoulol Crystals", amount: 8, unit: "g", dilution: 1.0 },
-            { name: "Pineapple Essence", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Valspice", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Evernyl (Veramoss)", amount: 8, unit: "g", dilution: 1.0 },
+            // Woody substitutions  
+            "iso e super": ["timbersilk", "kephalis", "cashmeran"],
+            "cashmeran": ["iso e super", "kephalis", "polysantol"],
+            "kephalis": ["iso e super", "cashmeran", "timbersilk"],
             
-            // Receipt 3
-            { name: "Aldehyde C-10", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Allyl Caproate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Ambrettolide", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Beta Pinene", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Dynascone", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Ethyl Caproate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Geosmin", amount: 4, unit: "ml", dilution: 0.01 },
-            { name: "Manzanate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Muscone", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Pyralone", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Triethyl Citrate", amount: 250, unit: "g", dilution: 1.0 },
-            { name: "Veloutone", amount: 4, unit: "ml", dilution: 1.0 },
+            // Musk substitutions
+            "helvetolide": ["galaxolide", "ambrettolide", "muscone"],
+            "galaxolide": ["helvetolide", "ambrettolide", "exaltolide"],
+            "ambrettolide": ["helvetolide", "galaxolide", "muscone"],
+            "muscone": ["ambrettolide", "helvetolide", "civetone"],
             
-            // Receipt 4
-            { name: "Aldehyde C-6", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Anisic Aldehyde", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Anisyl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Anisyl Acetone", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Basil Sweet Oil", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Cashmeran", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Citral", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Citronellol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Dihydro Myrcenol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Fennel Sweet Oil", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Geraniol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Hexenol-3-Cis", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Kephalis", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Norlimbanol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Patchouli Absolute", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Phenyl Ethyl Alcohol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Polysantol", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Tarragon Oil", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Vetiveryl Acetate", amount: 4, unit: "ml", dilution: 1.0 },
-            { name: "Wormwood Oil", amount: 4, unit: "ml", dilution: 1.0 },
+            // Floral substitutions
+            "hedione": ["methyl anthranilate", "linalool", "phenyl ethyl alcohol"],
+            "lyral": ["lily aldehyde", "hydroxycitronellal", "linalool"],
+            "linalool": ["linalyl acetate", "hedione", "phenyl ethyl alcohol"],
+            "linalyl acetate": ["linalool", "lavender oil", "bergamyl acetate"],
             
-            // Receipt 5 (larger quantities)
-            { name: "Ambrettolide", amount: 4, unit: "ml", dilution: 1.0 }, // Givaudan version
-            { name: "Ambroxan", amount: 50, unit: "g", dilution: 0.1 }, // Large size
-            { name: "Hedione", amount: 15, unit: "ml", dilution: 1.0 }, // Large size  
-            { name: "Helvetolide", amount: 15, unit: "ml", dilution: 1.0 } // Large size
-        ];
+            // Aldehyde substitutions
+            "aldehyde c-12 mna": ["aldehyde c-10", "aldehyde c-11", "aldehyde c-12"],
+            "aldehyde c-10": ["aldehyde c-12 mna", "aldehyde c-11", "decanal"],
+            "aldehyde c-6": ["hexanal", "aldehyde c-8", "aldehyde c-10"],
+            
+            // Amber substitutions
+            "ambroxan": ["ambrocenide", "ambergris tincture", "labdanol"],
+            
+            // Animalic substitutions
+            "2-isobutyl quinoline": ["civet absolute", "castoreum", "indole"],
+            "birch tar oil": ["cade oil", "guaiacol", "phenolic compounds"],
+            
+            // Green substitutions
+            "galbanum oil": ["violet leaf absolute", "green leaves accord", "hexenol-3-cis"],
+            "petitgrain bigarade oil": ["clary sage oil", "petitgrain paraguay", "neroli oil"],
+            
+            // Fruity substitutions
+            "beta pinene": ["alpha pinene", "limonene", "fruit terpenes"],
+            "manzanate": ["apple ester", "ethyl butyrate", "fruit accord"],
+            "veloutone": ["gamma undecalactone", "peach aldehyde", "fruity lactones"],
+            "ethyl caproate": ["ethyl butyrate", "pineapple ester", "fruit esters"],
+            
+            // Spice substitutions
+            "pink pepper oil": ["black pepper oil", "coriander oil", "cardamom oil"],
+            "coranol": ["coriander oil", "metallic aldehydes", "green aldehydes"],
+            
+            // Patchouli substitutions
+            "patchouli oil": ["patchoulol", "dark patchouli oil", "patchouli fraction"],
+            "patchoulol crystals": ["patchouli oil", "synthetic patchoulol"],
+            
+            // Synthetic backbone
+            "evernyl": ["oakmoss absolute", "treemoss", "mousse de chene"],
+            "octyl salicylate": ["homosalate", "sunscreen molecules", "salicylates"]
+        };
 
         const groupColors = [
             'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-yellow-50', 
@@ -1148,6 +1260,157 @@
             }
         }
 
+        // Notes and Substitution Functions
+        function toggleIngredientExpansion(ingredientId) {
+            if (expandedIngredients.has(ingredientId)) {
+                expandedIngredients.delete(ingredientId);
+            } else {
+                expandedIngredients.add(ingredientId);
+            }
+            render();
+        }
+
+        function updateIngredientNotes(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            const notesTextarea = document.querySelector(`#notes-${ingredientId}`);
+            
+            if (ingredient && notesTextarea) {
+                ingredient.notes = notesTextarea.value;
+                // Don't re-render to avoid losing focus
+            }
+        }
+
+        function substituteIngredient(ingredientId, substituteName = null) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+
+            if (substituteName) {
+                // Apply substitution
+                ingredient.originalName = ingredient.originalName || ingredient.name;
+                ingredient.name = substituteName;
+                ingredient.substituted = true;
+                ingredient.notes = (ingredient.notes || '') + 
+                    `\n[Substituted: ${ingredient.originalName} → ${substituteName}]`;
+            } else {
+                // Get substitution name from input
+                const substitutionInput = document.querySelector(`#substitution-${ingredientId}`);
+                if (substitutionInput && substitutionInput.value.trim()) {
+                    substituteIngredient(ingredientId, substitutionInput.value.trim());
+                    return;
+                }
+            }
+            
+            render();
+            updateRecipeCoverage();
+        }
+
+        function clearSubstitution(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient || !ingredient.substituted) return;
+
+            ingredient.name = ingredient.originalName || ingredient.name;
+            ingredient.substituted = false;
+            delete ingredient.originalName;
+            
+            // Remove substitution note
+            if (ingredient.notes) {
+                ingredient.notes = ingredient.notes.replace(/\n\[Substituted:.*?\]/g, '');
+            }
+            
+            render();
+            updateRecipeCoverage();
+        }
+
+        function getSubstitutionSuggestions(ingredientName) {
+            const normalizedName = ingredientName.toLowerCase().replace(/[®™]/g, '').trim();
+            const suggestions = [];
+            
+            // Check substitution database
+            for (const [key, subs] of Object.entries(substitutionDatabase)) {
+                if (normalizedName.includes(key) || key.includes(normalizedName)) {
+                    subs.forEach(sub => {
+                        if (!suggestions.some(s => s.name.toLowerCase() === sub.toLowerCase())) {
+                            suggestions.push({
+                                name: sub,
+                                source: 'database',
+                                reason: 'Similar function'
+                            });
+                        }
+                    });
+                    break;
+                }
+            }
+            
+            // Check inventory for available alternatives
+            inventory.forEach(item => {
+                const itemName = item.name.toLowerCase().replace(/[®™]/g, '');
+                
+                // Skip if it's the same ingredient
+                if (itemName === normalizedName) return;
+                
+                // Look for similar ingredients in inventory
+                if (itemName.includes(normalizedName.split(' ')[0]) || 
+                    normalizedName.includes(itemName.split(' ')[0])) {
+                    if (!suggestions.some(s => s.name.toLowerCase() === item.name.toLowerCase())) {
+                        suggestions.push({
+                            name: item.name,
+                            source: 'inventory',
+                            reason: `${item.amount}${item.unit} available`
+                        });
+                    }
+                }
+            });
+            
+            return suggestions.slice(0, 5); // Limit to 5 suggestions
+        }
+
+        function showSubstitutionSuggestions(ingredientId, inputElement) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+
+            const suggestions = getSubstitutionSuggestions(ingredient.name);
+            if (suggestions.length === 0) return;
+
+            // Remove existing dropdown
+            const existing = document.querySelector('.suggestions-dropdown');
+            if (existing) existing.remove();
+
+            // Create dropdown
+            const dropdown = document.createElement('div');
+            dropdown.className = 'suggestions-dropdown';
+            
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.onclick = () => {
+                    substituteIngredient(ingredientId, suggestion.name);
+                    dropdown.remove();
+                };
+                
+                item.innerHTML = `
+                    <span>${suggestion.name}</span>
+                    <span class="suggestion-source">${suggestion.reason}</span>
+                `;
+                
+                dropdown.appendChild(item);
+            });
+
+            // Position and show dropdown
+            const container = inputElement.parentElement;
+            container.style.position = 'relative';
+            container.appendChild(dropdown);
+
+            // Remove dropdown when clicking elsewhere
+            setTimeout(() => {
+                document.addEventListener('click', function closeDropdown(e) {
+                    if (!dropdown.contains(e.target) && e.target !== inputElement) {
+                        dropdown.remove();
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            }, 0);
+        }
+
         // Main functions
         function addIngredient() {
             const name = document.getElementById('ingredientName').value.trim();
@@ -1161,7 +1424,9 @@
                 name: name,
                 dilution: dilution,
                 volume: volume,
-                group: 'Unassigned'
+                group: 'Unassigned',
+                notes: '',
+                substituted: false
             };
 
             ingredients.push(ingredient);
@@ -1353,7 +1618,8 @@
 
                             const cardDiv = document.createElement('div');
                             const isEditing = editingIngredient === ingredient.id;
-                            cardDiv.className = `ingredient-card ${isEditing ? 'ingredient-edit' : ''}`;
+                            const isSubstituted = ingredient.substituted;
+                            cardDiv.className = `ingredient-card ${isEditing ? 'ingredient-edit' : ''} ${isSubstituted ? 'ingredient-substituted' : ''}`;
                             cardDiv.draggable = !isEditing;
                             if (!isEditing) {
                                 cardDiv.ondragstart = () => draggedItem = ingredient.id;
@@ -1381,12 +1647,52 @@
                                     </div>
                                 `;
                             } else {
+                                const isExpanded = expandedIngredients.has(ingredient.id);
+                                const isSubstituted = ingredient.substituted;
+                                
                                 cardDiv.innerHTML = `
                                     <div class="ingredient-header">
                                         <div class="ingredient-info">
-                                            <h4 class="ingredient-name">${ingredient.name}</h4>
+                                            ${isSubstituted ? `<div class="substitution-info">
+                                                <i data-lucide="arrow-right" class="icon-sm"></i>
+                                                Substituted: ${ingredient.originalName}
+                                                <button onclick="clearSubstitution(${ingredient.id})" class="btn-clear-sub">
+                                                    <i data-lucide="x" class="icon-sm"></i>
+                                                </button>
+                                            </div>` : ''}
+                                            <div style="display: flex; align-items: center; gap: 4px;">
+                                                <h4 class="ingredient-name">${ingredient.name}</h4>
+                                                <button onclick="toggleIngredientExpansion(${ingredient.id})" class="expand-toggle">
+                                                    ${isExpanded ? '▼' : '▶'} ${isExpanded ? 'Less' : 'More'}
+                                                </button>
+                                            </div>
                                             <p class="ingredient-details">${ingredient.volume}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
                                             <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                                            
+                                            ${ingredient.notes ? `<div class="ingredient-notes">${ingredient.notes}</div>` : ''}
+                                            
+                                            ${isExpanded ? `
+                                                <div class="substitution-controls">
+                                                    <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">Notes:</div>
+                                                    <textarea id="notes-${ingredient.id}" 
+                                                             class="notes-textarea" 
+                                                             placeholder="Add notes about this ingredient..."
+                                                             onblur="updateIngredientNotes(${ingredient.id})">${ingredient.notes || ''}</textarea>
+                                                    
+                                                    <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Substitution:</div>
+                                                    <div class="substitution-form">
+                                                        <input type="text" 
+                                                               id="substitution-${ingredient.id}" 
+                                                               class="input" 
+                                                               placeholder="Enter substitute ingredient"
+                                                               onfocus="showSubstitutionSuggestions(${ingredient.id}, this)"
+                                                               style="font-size: 11px;">
+                                                        <button onclick="substituteIngredient(${ingredient.id})" class="btn btn-substitute">
+                                                            <i data-lucide="arrow-right" class="icon-sm"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ` : ''}
                                         </div>
                                         <div class="ingredient-actions">
                                             <i data-lucide="move" class="icon-sm text-gray"></i>
@@ -1439,6 +1745,7 @@
                     else if (iconName === 'package') el.innerHTML = '📦';
                     else if (iconName === 'file-text') el.innerHTML = '📄';
                     else if (iconName === 'database') el.innerHTML = '🗄️';
+                    else if (iconName === 'arrow-right') el.innerHTML = '→';
                     else el.innerHTML = iconName;
                 });
             }
