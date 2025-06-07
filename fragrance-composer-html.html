@@ -264,6 +264,29 @@
             </div>
         </div>
 
+        <!-- Import/Export Section -->
+        <div class="form-section">
+            <h2 class="form-title">Import/Export Recipe</h2>
+            <div class="form-flex" style="margin-bottom: 12px;">
+                <button onclick="exportRecipe()" class="btn btn-blue">
+                    <i data-lucide="download" class="icon"></i>
+                    Export Recipe
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRecipe(event)">
+                <button onclick="document.getElementById('importFile').click()" class="btn btn-green">
+                    <i data-lucide="upload" class="icon"></i>
+                    Import Recipe
+                </button>
+                <button onclick="clearAll()" class="btn btn-red" style="background: #ef4444; color: white; padding: 8px 16px;">
+                    <i data-lucide="trash-2" class="icon"></i>
+                    Clear All
+                </button>
+            </div>
+            <div>
+                <textarea id="jsonPreview" class="input" placeholder="JSON preview will appear here..." style="width: 100%; height: 80px; resize: vertical; font-family: monospace; font-size: 12px;" readonly></textarea>
+            </div>
+        </div>
+
         <!-- Total Composition Stats -->
         <div class="stats-section">
             <h2 class="stats-title">Total Composition</h2>
@@ -314,6 +337,112 @@
             const total = getTotalActives();
             if (total === 0) return 0;
             return (getActives(ingredient) / total * 100).toFixed(2);
+        }
+
+        // Import/Export functions
+        function exportRecipe() {
+            const recipeData = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                totalActives: getTotalActives(),
+                ingredients: ingredients,
+                groups: groups
+            };
+
+            const jsonString = JSON.stringify(recipeData, null, 2);
+            
+            // Update preview
+            document.getElementById('jsonPreview').value = jsonString;
+
+            // Download file
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fragrance-recipe-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importRecipe(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const recipeData = JSON.parse(e.target.result);
+                    
+                    // Validate the data structure
+                    if (!recipeData.ingredients || !recipeData.groups) {
+                        throw new Error('Invalid recipe format');
+                    }
+
+                    // Clear existing data
+                    ingredients = [];
+                    groups = { 'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' } };
+
+                    // Import ingredients
+                    if (Array.isArray(recipeData.ingredients)) {
+                        ingredients = recipeData.ingredients.map(ing => ({
+                            id: ing.id || Date.now() + Math.random(),
+                            name: ing.name || 'Unknown',
+                            dilution: parseFloat(ing.dilution) || 1.0,
+                            volume: parseFloat(ing.volume) || 0,
+                            group: ing.group || 'Unassigned'
+                        }));
+                    }
+
+                    // Import groups
+                    if (typeof recipeData.groups === 'object') {
+                        Object.entries(recipeData.groups).forEach(([groupName, groupData]) => {
+                            groups[groupName] = {
+                                ingredients: Array.isArray(groupData.ingredients) ? groupData.ingredients : [],
+                                expanded: groupData.expanded !== false,
+                                color: groupData.color || 'bg-gray-100'
+                            };
+                        });
+                    }
+
+                    // Update preview
+                    document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
+
+                    render();
+                    alert('Recipe imported successfully!');
+                } catch (error) {
+                    alert('Error importing recipe: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all ingredients and groups? This cannot be undone.')) {
+                ingredients = [];
+                groups = { 'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' } };
+                document.getElementById('jsonPreview').value = '';
+                render();
+            }
+        }
+
+        function updateJsonPreview() {
+            if (ingredients.length > 0 || Object.keys(groups).length > 1) {
+                const recipeData = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    totalActives: getTotalActives(),
+                    ingredients: ingredients,
+                    groups: groups
+                };
+                document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
+            } else {
+                document.getElementById('jsonPreview').value = '';
+            }
         }
 
         // Main functions
@@ -478,6 +607,9 @@
 
             // Initialize Lucide icons
             lucide.createIcons();
+            
+            // Update JSON preview
+            updateJsonPreview();
         }
 
         // Handle Enter key in form inputs
