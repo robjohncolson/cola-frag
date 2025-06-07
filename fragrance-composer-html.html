@@ -1221,53 +1221,133 @@
 
         function findInventoryMatch(ingredientName) {
             return inventory.find(item => {
-                const itemName = item.name.toLowerCase().replace(/[®™]/g, '');
-                const searchName = ingredientName.toLowerCase().replace(/[®™]/g, '');
+                const itemName = item.name.toLowerCase().replace(/[®™]/g, '').trim();
+                const searchName = ingredientName.toLowerCase().replace(/[®™]/g, '').trim();
                 
                 // Exact match
                 if (itemName === searchName) return true;
                 
-                // Handle common name variations with exact mapping
-                const variations = {
-                    'iso e super': ['iso e super', 'isoesuper'],
-                    'hedione': ['hedione hc', 'hedione'],
-                    'ambroxan': ['ambroxan'],
-                    'helvetolide': ['helvetolide'],
-                    'lyral': ['leerall', 'lyral'],
-                    'evernyl': ['veramoss', 'evernyl'],
-                    'birch tar oil': ['birch tar', 'birch tar rectified'],
-                    'bergamot oil': ['bergamot', 'bergamot essential oil'],
-                    'sweet orange oil': ['sweet orange', 'orange oil'],
-                    'lemon oil': ['lemon', 'lemon essential oil'],
-                    'patchouli oil': ['patchouli', 'patchouli essential oil'],
-                    'pink pepper oil': ['pink pepper', 'pink peppercorn oil']
+                // Normalize common variations (remove/standardize suffixes)
+                const normalizeIngredientName = (name) => {
+                    return name
+                        .replace(/\s+(essential\s+)?oil$/i, '')
+                        .replace(/\s+co2$/i, '')
+                        .replace(/\s+absolute$/i, '')
+                        .replace(/\s+eo$/i, '') // Remove EO suffix
+                        .replace(/\s+by-absolute$/i, ' absolute')
+                        .trim();
                 };
                 
-                // Check if ingredient name matches any known variation
-                for (const [key, variants] of Object.entries(variations)) {
-                    if (searchName === key || variants.includes(searchName)) {
-                        // Check if inventory item matches any variant of this ingredient
-                        if (itemName === key || variants.includes(itemName)) {
-                            return true;
-                        }
-                    }
-                }
+                const normalizedItem = normalizeIngredientName(itemName);
+                const normalizedSearch = normalizeIngredientName(searchName);
                 
-                // Only allow partial matches for very specific cases (avoid false positives)
-                // Word-boundary matching for compound ingredients only
-                const searchWords = searchName.split(' ');
-                const itemWords = itemName.split(' ');
+                // Check normalized names
+                if (normalizedItem === normalizedSearch) return true;
                 
-                // For single-word ingredients, require exact match to avoid bergamot->bergamyl issues
-                if (searchWords.length === 1 && itemWords.length === 1) {
-                    return false; // Already handled by exact match above
-                }
+                // Handle specific common variations
+                const variations = {
+                    // Citrus oils
+                    'bergamot': ['bergamot oil', 'bergamot eo', 'bergamot essential oil'],
+                    'bergamot oil': ['bergamot', 'bergamot eo', 'bergamot essential oil'],
+                    'sweet orange': ['sweet orange oil', 'orange oil', 'orange'],
+                    'sweet orange oil': ['sweet orange', 'orange oil', 'orange'],
+                    'lemon': ['lemon oil', 'lemon eo', 'lemon essential oil'],
+                    'lemon oil': ['lemon', 'lemon eo', 'lemon essential oil'],
+                    'lime': ['lime oil', 'lime eo', 'lime essential oil'],
+                    'lime oil': ['lime', 'lime eo', 'lime essential oil'],
+                    
+                    // CO2 vs Oil variations
+                    'juniper berry oil': ['juniper berry co2', 'juniper berry'],
+                    'juniper berry co2': ['juniper berry oil', 'juniper berry'],
+                    'galbanum oil': ['galbanum co2', 'galbanum'],
+                    'galbanum co2': ['galbanum oil', 'galbanum'],
+                    'angelica root oil': ['angelica root co2', 'angelica root'],
+                    'angelica root co2': ['angelica root oil', 'angelica root'],
+                    'myrrh oil': ['myrrh co2', 'myrrh'],
+                    'myrrh co2': ['myrrh oil', 'myrrh'],
+                    'cassia oil': ['cassia co2', 'cassia'],
+                    'cassia co2': ['cassia oil', 'cassia'],
+                    
+                    // Essential oils vs absolutes
+                    'clary sage oil': ['clary sage absolute', 'clary sage'],
+                    'clary sage absolute': ['clary sage oil', 'clary sage'],
+                    'lavender oil': ['lavender absolute', 'lavender'],
+                    'lavender absolute': ['lavender oil', 'lavender'],
+                    'geranium oil': ['geranium absolute', 'geranium'],
+                    'geranium absolute': ['geranium oil', 'geranium'],
+                    
+                    // Wood oils
+                    'patchouli': ['patchouli oil', 'patchouli eo'],
+                    'patchouli oil': ['patchouli', 'patchouli eo'],
+                    'sandalwood': ['sandalwood oil', 'sandalwood eo'],
+                    'sandalwood oil': ['sandalwood', 'sandalwood eo'],
+                    'cedarwood': ['cedarwood oil', 'cedarwood absolute', 'cedarwood eo'],
+                    'cedarwood oil': ['cedarwood', 'cedarwood absolute', 'cedarwood eo'],
+                    'cedarwood absolute': ['cedarwood', 'cedarwood oil', 'cedarwood eo'],
+                    'vetiver': ['vetiver oil', 'vetiver eo'],
+                    'vetiver oil': ['vetiver', 'vetiver eo'],
+                    
+                    // Spice oils
+                    'pink pepper': ['pink pepper oil', 'pink peppercorn oil'],
+                    'pink pepper oil': ['pink pepper', 'pink peppercorn oil'],
+                    'star anise': ['star anise oil', 'star anise eo'],
+                    'star anise oil': ['star anise', 'star anise eo'],
+                    'thyme': ['thyme oil', 'thyme eo'],
+                    'thyme oil': ['thyme', 'thyme eo'],
+                    
+                    // Herb oils
+                    'basil': ['basil oil', 'basil eo'],
+                    'basil oil': ['basil', 'basil eo'],
+                    'fennel': ['fennel oil', 'fennel eo'],
+                    'fennel oil': ['fennel', 'fennel eo'],
+                    'marjoram': ['marjoram oil', 'marjoram eo'],
+                    'marjoram oil': ['marjoram', 'marjoram eo'],
+                    'sage': ['sage oil', 'sage eo'],
+                    'sage oil': ['sage', 'sage eo'],
+                    
+                    // Special cases
+                    'cypress by-absolute': ['cypress absolute', 'cypress'],
+                    'cypress absolute': ['cypress by-absolute', 'cypress'],
+                    'birch tar oil': ['birch tar', 'birch tar rectified'],
+                    'birch tar': ['birch tar oil', 'birch tar rectified'],
+                    
+                    // Synthetics
+                    'iso e super': ['isoesuper', 'iso-e-super'],
+                    'hedione': ['hedione hc'],
+                    'lyral': ['leerall'],
+                    'evernyl': ['veramoss']
+                };
                 
-                // For multi-word ingredients, check if all words in search are in item name
-                // This handles cases like "hedione hc" matching "hedione"
-                if (searchWords.length > 1 && searchWords.every(word => itemWords.includes(word))) {
-                    return true;
-                }
+                // Check bidirectional variations
+                const checkVariations = (name1, name2) => {
+                    if (variations[name1] && variations[name1].includes(name2)) return true;
+                    if (variations[name2] && variations[name2].includes(name1)) return true;
+                    return false;
+                };
+                
+                if (checkVariations(normalizedSearch, normalizedItem)) return true;
+                if (checkVariations(searchName, itemName)) return true;
+                
+                // Final fallback: check if core ingredient name matches
+                // Remove common suffixes and check again
+                const getCoreIngredientName = (name) => {
+                    return name
+                        .replace(/\s+(oil|absolute|co2|eo|essential oil|by-absolute)$/i, '')
+                        .replace(/\s+decumbens$/i, '') // For hyssop decumbens
+                        .replace(/\s+verbenone$/i, '') // For rosemary verbenone
+                        .replace(/\s+antioxidant$/i, '') // For rosemary antioxidant
+                        .replace(/\s+leaf$/i, '') // For rosewood leaf
+                        .replace(/\s+frereana$/i, '') // For frankincense frereana
+                        .replace(/\s+bud$/i, '') // For black currant bud
+                        .replace(/\s+berry$/i, '') // For juniper berry
+                        .replace(/\s+root$/i, '') // For angelica root
+                        .trim();
+                };
+                
+                const coreItem = getCoreIngredientName(normalizedItem);
+                const coreSearch = getCoreIngredientName(normalizedSearch);
+                
+                if (coreItem === coreSearch && coreItem.length > 3) return true;
                 
                 return false;
             });
