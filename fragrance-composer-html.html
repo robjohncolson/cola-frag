@@ -1256,6 +1256,21 @@
                                 <span>5.0 (Strong)</span>
                             </div>
                         </div>
+                        
+                        <!-- Containment Area Size -->
+                        <div style="margin-bottom: 8px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                🧱 Containment Area: <span id="boundaryValue">12</span>
+                            </label>
+                            <input type="range" id="boundarySlider" min="8" max="20" step="1" value="12" 
+                                   style="width: 100%; margin-bottom: 4px;" 
+                                   oninput="updateBoundarySize(this.value)">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #6b7280;">
+                                <span>8 (Small)</span>
+                                <span>14 (Medium)</span>
+                                <span>20 (Large)</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Statistics Summary -->
@@ -1356,6 +1371,7 @@
         
         // Power Controls for Scaling
         let spherePower = 2.0; // Default to squared for sphere sizing
+        let boundarySize = 12; // Default containment area size
         
         // Notes and Substitutions
         let expandedIngredients = new Set(); // Track which ingredient cards are expanded
@@ -3624,6 +3640,9 @@
             directionalLight.position.set(5, 5, 5);
             scene.add(directionalLight);
             
+            // Create boundary walls for particle containment
+            createBoundaryWalls();
+            
             // Add mouse event listeners
             container.addEventListener('mousemove', onMolecularMouseMove);
             container.addEventListener('click', onMolecularClick);
@@ -4095,6 +4114,16 @@
             }
         }
         
+        function updateBoundarySize(value) {
+            boundarySize = parseFloat(value);
+            document.getElementById('boundaryValue').textContent = boundarySize.toFixed(0);
+            
+            // Update boundary walls in real-time
+            if (currentTab === 'visualizer') {
+                createBoundaryWalls();
+            }
+        }
+        
         function initializeGravitationalSystem() {
             // Physics constants
             window.gravitationalConstant = 2.0; // Tunable gravity strength
@@ -4165,6 +4194,27 @@
                 // Update position: p = p + v * dt
                 mol.mesh.position.x += userData.velocity.x * window.timeStep;
                 mol.mesh.position.y += userData.velocity.y * window.timeStep;
+                
+                // Boundary collision detection and bouncing
+                const restitution = 0.8; // Bounce coefficient (0.8 = loses 20% velocity on bounce)
+                
+                // Check X boundaries
+                if (mol.mesh.position.x > boundarySize) {
+                    mol.mesh.position.x = boundarySize;
+                    userData.velocity.x *= -restitution; // Reverse and dampen X velocity
+                } else if (mol.mesh.position.x < -boundarySize) {
+                    mol.mesh.position.x = -boundarySize;
+                    userData.velocity.x *= -restitution;
+                }
+                
+                // Check Y boundaries  
+                if (mol.mesh.position.y > boundarySize) {
+                    mol.mesh.position.y = boundarySize;
+                    userData.velocity.y *= -restitution; // Reverse and dampen Y velocity
+                } else if (mol.mesh.position.y < -boundarySize) {
+                    mol.mesh.position.y = -boundarySize;
+                    userData.velocity.y *= -restitution;
+                }
                 
                 // Update wireframe position
                 if (userData.wireframeMesh) {
@@ -4333,6 +4383,81 @@
         function createMolecularGeometry(shape, radius) {
             // All geometries are now spheres
             return new THREE.SphereGeometry(radius, 16, 12);
+        }
+        
+        function createBoundaryWalls() {
+            const wallThickness = 0.1;
+            const wallHeight = 2;
+            
+            // Remove existing boundary walls if they exist
+            const existingWalls = scene.getObjectByName('boundaryWalls');
+            if (existingWalls) {
+                scene.remove(existingWalls);
+            }
+            
+            // Create boundary walls group
+            const wallsGroup = new THREE.Group();
+            wallsGroup.name = 'boundaryWalls';
+            
+            // Wall material - subtle, semi-transparent
+            const wallMaterial = new THREE.MeshPhongMaterial({
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.15,
+                emissive: 0x1e40af,
+                emissiveIntensity: 0.1
+            });
+            
+            // Create 4 walls around the boundary
+            
+            // Top wall
+            const topWallGeometry = new THREE.BoxGeometry(boundarySize * 2, wallThickness, wallHeight);
+            const topWall = new THREE.Mesh(topWallGeometry, wallMaterial);
+            topWall.position.set(0, boundarySize, 0);
+            wallsGroup.add(topWall);
+            
+            // Bottom wall
+            const bottomWallGeometry = new THREE.BoxGeometry(boundarySize * 2, wallThickness, wallHeight);
+            const bottomWall = new THREE.Mesh(bottomWallGeometry, wallMaterial);
+            bottomWall.position.set(0, -boundarySize, 0);
+            wallsGroup.add(bottomWall);
+            
+            // Left wall
+            const leftWallGeometry = new THREE.BoxGeometry(wallThickness, boundarySize * 2, wallHeight);
+            const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+            leftWall.position.set(-boundarySize, 0, 0);
+            wallsGroup.add(leftWall);
+            
+            // Right wall
+            const rightWallGeometry = new THREE.BoxGeometry(wallThickness, boundarySize * 2, wallHeight);
+            const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
+            rightWall.position.set(boundarySize, 0, 0);
+            wallsGroup.add(rightWall);
+            
+            // Add corner markers for better visibility
+            const cornerGeometry = new THREE.SphereGeometry(0.2, 8, 6);
+            const cornerMaterial = new THREE.MeshPhongMaterial({
+                color: 0x3b82f6,
+                emissive: 0x1e40af,
+                emissiveIntensity: 0.3
+            });
+            
+            // Add corner spheres
+            const corners = [
+                [boundarySize, boundarySize, 0],
+                [boundarySize, -boundarySize, 0],
+                [-boundarySize, boundarySize, 0],
+                [-boundarySize, -boundarySize, 0]
+            ];
+            
+            corners.forEach(([x, y, z]) => {
+                const corner = new THREE.Mesh(cornerGeometry, cornerMaterial);
+                corner.position.set(x, y, z);
+                wallsGroup.add(corner);
+            });
+            
+            scene.add(wallsGroup);
+            console.log('🧱 Boundary walls created');
         }
         
         function createFragrancePlane() {
