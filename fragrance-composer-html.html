@@ -1271,6 +1271,21 @@
                                 <span>20 (Large)</span>
                             </div>
                         </div>
+                        
+                        <!-- Time Speed Control -->
+                        <div style="margin-bottom: 8px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                ⏱️ Time Speed: <span id="timeSpeedValue">1.0</span>x
+                            </label>
+                            <input type="range" id="timeSpeedSlider" min="0.01" max="3.0" step="0.01" value="1.0" 
+                                   style="width: 100%; margin-bottom: 4px;" 
+                                   oninput="updateTimeSpeed(this.value)">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #6b7280;">
+                                <span>0.01x (Slow-Mo)</span>
+                                <span>1.0x (Normal)</span>
+                                <span>3.0x (Fast)</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Statistics Summary -->
@@ -1372,6 +1387,7 @@
         // Power Controls for Scaling
         let spherePower = 2.0; // Default to squared for sphere sizing
         let boundarySize = 12; // Default containment area size
+        let timeSpeed = 1.0; // Time speed multiplier (1.0 = normal speed)
         
         // Notes and Substitutions
         let expandedIngredients = new Set(); // Track which ingredient cards are expanded
@@ -4124,6 +4140,15 @@
             }
         }
         
+        function updateTimeSpeed(value) {
+            timeSpeed = parseFloat(value);
+            const displayValue = timeSpeed >= 1.0 ? timeSpeed.toFixed(1) : timeSpeed.toFixed(2);
+            document.getElementById('timeSpeedValue').textContent = displayValue;
+            
+            // Time speed affects physics in real-time, no need to re-render
+            console.log(`Time speed set to ${displayValue}x`);
+        }
+        
         function initializeGravitationalSystem() {
             // Physics constants
             window.gravitationalConstant = 2.0; // Tunable gravity strength
@@ -4184,16 +4209,19 @@
                 const accelX = userData.force.x / mass;
                 const accelY = userData.force.y / mass;
                 
+                // Calculate effective time step with speed multiplier
+                const effectiveTimeStep = window.timeStep * timeSpeed;
+                
                 // Update velocity: v = v + a * dt
-                userData.velocity.x += accelX * window.timeStep;
-                userData.velocity.y += accelY * window.timeStep;
+                userData.velocity.x += accelX * effectiveTimeStep;
+                userData.velocity.y += accelY * effectiveTimeStep;
                 
                 // Apply dampening to settle the system
                 userData.velocity.multiplyScalar(window.dampening);
                 
                 // Update position: p = p + v * dt
-                mol.mesh.position.x += userData.velocity.x * window.timeStep;
-                mol.mesh.position.y += userData.velocity.y * window.timeStep;
+                mol.mesh.position.x += userData.velocity.x * effectiveTimeStep;
+                mol.mesh.position.y += userData.velocity.y * effectiveTimeStep;
                 
                 // Boundary collision detection and bouncing
                 const restitution = 0.8; // Bounce coefficient (0.8 = loses 20% velocity on bounce)
@@ -4562,15 +4590,17 @@
             if (molecularMotion) {
                 molecules.forEach(mol => {
                     const speed = mol.mesh.userData.rotationSpeed;
-                    mol.mesh.rotation.x += speed.x;
-                    mol.mesh.rotation.y += speed.y;
-                    mol.mesh.rotation.z += speed.z;
+                    // Apply time speed to rotation
+                    const effectiveRotationSpeed = timeSpeed;
+                    mol.mesh.rotation.x += speed.x * effectiveRotationSpeed;
+                    mol.mesh.rotation.y += speed.y * effectiveRotationSpeed;
+                    mol.mesh.rotation.z += speed.z * effectiveRotationSpeed;
                     
                     // Also rotate wireframe
                     if (mol.mesh.userData.wireframeMesh) {
-                        mol.mesh.userData.wireframeMesh.rotation.x += speed.x;
-                        mol.mesh.userData.wireframeMesh.rotation.y += speed.y;
-                        mol.mesh.userData.wireframeMesh.rotation.z += speed.z;
+                        mol.mesh.userData.wireframeMesh.rotation.x += speed.x * effectiveRotationSpeed;
+                        mol.mesh.userData.wireframeMesh.rotation.y += speed.y * effectiveRotationSpeed;
+                        mol.mesh.userData.wireframeMesh.rotation.z += speed.z * effectiveRotationSpeed;
                     }
                 });
             }
