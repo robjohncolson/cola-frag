@@ -4145,11 +4145,12 @@
                     bestPosition = { x: 0, y: 0 };
                 } else {
                     // Find the tightest valid position near the center
-                    const searchRadius = 20; // Search area
-                    const stepSize = 0.1; // Fine-grained search
+                    const searchRadius = 8; // Much smaller search area for tight packing
+                    const stepSize = 0.2; // Faster search
                     
-                    for (let angle = 0; angle < Math.PI * 2; angle += 0.2) {
-                        for (let distance = territory.territoryRadius; distance < searchRadius; distance += stepSize) {
+                    // Simple spiral search from center outward
+                    for (let distance = 0; distance < searchRadius; distance += stepSize) {
+                        for (let angle = 0; angle < Math.PI * 2; angle += 0.3) {
                             const testX = Math.cos(angle) * distance;
                             const testY = Math.sin(angle) * distance;
                             
@@ -4159,7 +4160,7 @@
                                 const dx = testX - existingTerritory.centerX;
                                 const dy = testY - existingTerritory.centerY;
                                 const distanceBetween = Math.sqrt(dx * dx + dy * dy);
-                                const minDistance = territory.territoryRadius + existingTerritory.territoryRadius + 0.1; // Minimal buffer
+                                const minDistance = territory.territoryRadius + existingTerritory.territoryRadius + 0.05; // Very minimal buffer
                                 
                                 if (distanceBetween < minDistance) {
                                     validPosition = false;
@@ -4168,17 +4169,13 @@
                             }
                             
                             if (validPosition) {
-                                const distanceFromCenter = Math.sqrt(testX * testX + testY * testY);
-                                if (distanceFromCenter < minDistanceFromCenter) {
-                                    minDistanceFromCenter = distanceFromCenter;
-                                    bestPosition = { x: testX, y: testY };
-                                }
-                                // Take first valid position at this distance (spiraling outward)
-                                break;
+                                bestPosition = { x: testX, y: testY };
+                                minDistanceFromCenter = distance;
+                                break; // Take the first valid position at this distance
                             }
                         }
                         
-                        // If we found a position at this angle, move to next angle
+                        // If we found a valid position, stop searching
                         if (minDistanceFromCenter < Infinity) {
                             break;
                         }
@@ -4438,8 +4435,8 @@
                 return sum + Math.max(0.1, 1.0 - activeRatio);
             }, 0) / ingredients.length;
             
-            // Create plane geometry (sized for tighter packing)
-            const planeGeometry = new THREE.PlaneGeometry(25, 25, 32, 32);
+            // Create plane geometry (sized for very tight packing)
+            const planeGeometry = new THREE.PlaneGeometry(16, 16, 32, 32);
             
             // Create material with combined color and lighting
             const planeMaterial = new THREE.MeshPhongMaterial({
