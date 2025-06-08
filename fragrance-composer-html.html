@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fragrance Composition Tracker</title>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" onerror="console.warn('Failed to load Lucide icons')"></script>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js" onerror="console.warn('Failed to load Three.js')"></script>
     <style>
         * {
             margin: 0;
@@ -1170,14 +1171,14 @@
                             Visualization Mode
                         </h2>
                         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <button onclick="setVisualizationMode('treemap')" id="treemapModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
-                                📊 Treemap
+                            <button onclick="resetCameraView()" class="btn" style="flex: 1; background: #3b82f6; color: white; font-size: 11px;">
+                                🔄 Reset View
                             </button>
-                            <button onclick="setVisualizationMode('bottle')" id="bottleModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
-                                🧪 Bottle
+                            <button onclick="toggleMolecularMotion()" id="motionToggle" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
+                                ⚡ Start Motion
                             </button>
-                            <button onclick="setVisualizationMode('bubble')" id="bubbleModeBtn" class="btn" style="flex: 1; background: #3b82f6; color: white; font-size: 11px;">
-                                ⚫ Bubbles
+                            <button onclick="exportVisualizationImage()" class="btn" style="flex: 1; background: #10b981; color: white; font-size: 11px;">
+                                📸 Screenshot
                             </button>
                         </div>
                         <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
@@ -1228,9 +1229,13 @@
             <div id="visualizationContainer" class="groups-container" style="display: none;">
                 <div style="display: flex; height: 100%; gap: 16px;">
                     <!-- Main Visualization Area -->
-                    <div style="flex: 1; background: white; border-radius: 8px; padding: 20px; border: 1px solid #e5e7eb;">
-                        <canvas id="visualizationCanvas" style="width: 100%; height: 500px; cursor: pointer;"></canvas>
-                        <div id="visualizationTooltip" style="position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000;"></div>
+                    <div style="flex: 1; background: #000; border-radius: 8px; padding: 0; border: 1px solid #1f2937; position: relative; overflow: hidden;">
+                        <div id="molecularVisualization" style="width: 100%; height: 500px; cursor: grab;"></div>
+                        <div id="visualizationTooltip" style="position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; border: 1px solid #3b82f6;"></div>
+                        <div id="visualizationHUD" style="position: absolute; top: 10px; left: 10px; color: #64748b; font-size: 11px; font-family: monospace; z-index: 999;">
+                            <div>Molecules: <span id="moleculeCount">0</span></div>
+                            <div>Camera: <span id="cameraInfo">Ready</span></div>
+                        </div>
                     </div>
                     
                     <!-- Legend Sidebar -->
@@ -3451,456 +3456,315 @@
             renderDatabase();
         }
         
-        // Visualization Functions
-        let currentVisualizationMode = 'bubble';
-        let canvas, ctx, tooltip;
-        let visualizationData = [];
-        let hoveredElement = null;
+        // 3D Molecular Visualization
+        let scene, camera, renderer, raycaster, mouse;
+        let molecules = [];
+        let molecularMotion = false;
+        let hoveredMolecule = null;
+        let ingredientColors = new Map();
+        let ingredientShapes = new Map();
         
-        function setVisualizationMode(mode) {
-            currentVisualizationMode = mode;
-            
-            // Update button states
-            document.getElementById('treemapModeBtn').className = mode === 'treemap' ? 'btn' : 'btn';
-            document.getElementById('bottleModeBtn').className = mode === 'bottle' ? 'btn' : 'btn';
-            document.getElementById('bubbleModeBtn').className = mode === 'bubble' ? 'btn' : 'btn';
-            
-            if (mode === 'treemap') {
-                document.getElementById('treemapModeBtn').style.background = '#3b82f6';
-                document.getElementById('bottleModeBtn').style.background = '#6b7280';
-                document.getElementById('bubbleModeBtn').style.background = '#6b7280';
-            } else if (mode === 'bottle') {
-                document.getElementById('treemapModeBtn').style.background = '#6b7280';
-                document.getElementById('bottleModeBtn').style.background = '#3b82f6';
-                document.getElementById('bubbleModeBtn').style.background = '#6b7280';
-            } else if (mode === 'bubble') {
-                document.getElementById('treemapModeBtn').style.background = '#6b7280';
-                document.getElementById('bottleModeBtn').style.background = '#6b7280';
-                document.getElementById('bubbleModeBtn').style.background = '#3b82f6';
+        function initializeMolecularVisualization() {
+            if (typeof THREE === 'undefined') {
+                console.error('Three.js not loaded');
+                return;
             }
             
-            renderVisualization();
-        }
-        
-        function initializeVisualization() {
-            canvas = document.getElementById('visualizationCanvas');
-            tooltip = document.getElementById('visualizationTooltip');
+            const container = document.getElementById('molecularVisualization');
+            if (!container) return;
             
-            if (!canvas) return;
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
             
-            ctx = canvas.getContext('2d');
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 20);
             
-            // Set canvas size
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 40;
-            canvas.height = 500;
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            
+            // Mouse interaction setup
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Add ambient light for general illumination
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+            
+            // Add point light for dramatic effect
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
             
             // Add mouse event listeners
-            canvas.addEventListener('mousemove', handleVisualizationMouseMove);
-            canvas.addEventListener('mouseleave', handleVisualizationMouseLeave);
+            container.addEventListener('mousemove', onMolecularMouseMove);
+            container.addEventListener('click', onMolecularClick);
+            container.addEventListener('wheel', onMolecularWheel);
+            container.addEventListener('mousedown', onMolecularMouseDown);
+            container.addEventListener('mouseup', onMolecularMouseUp);
             
-            renderVisualization();
+            // Start animation loop
+            animateMolecularScene();
+            
+            console.log('3D Molecular visualization initialized');
+        }
+        
+        function assignIngredientVisuals() {
+            // Shape categories based on ingredient type/family
+            const shapeCategories = {
+                // Citrus family
+                citrus: 'sphere',
+                bergamot: 'sphere',
+                lemon: 'sphere',
+                orange: 'sphere',
+                lime: 'sphere',
+                grapefruit: 'sphere',
+                
+                // Woody family
+                woody: 'cube',
+                wood: 'cube',
+                cedar: 'cube',
+                sandalwood: 'cube',
+                vetiver: 'cube',
+                patchouli: 'cube',
+                
+                // Floral family
+                floral: 'octahedron',
+                rose: 'octahedron',
+                jasmine: 'octahedron',
+                lavender: 'octahedron',
+                geranium: 'octahedron',
+                
+                // Musk/animalic
+                musk: 'tetrahedron',
+                animalic: 'tetrahedron',
+                ambergris: 'tetrahedron',
+                civet: 'tetrahedron',
+                
+                // Spice
+                spice: 'dodecahedron',
+                pepper: 'dodecahedron',
+                cinnamon: 'dodecahedron',
+                clove: 'dodecahedron'
+            };
+            
+            ingredients.forEach(ingredient => {
+                // Assign shape based on ingredient name
+                let shape = 'sphere'; // default
+                const name = ingredient.name.toLowerCase();
+                
+                for (const [category, categoryShape] of Object.entries(shapeCategories)) {
+                    if (name.includes(category)) {
+                        shape = categoryShape;
+                        break;
+                    }
+                }
+                
+                ingredientShapes.set(ingredient.name, shape);
+                
+                // Assign unique color
+                if (!ingredientColors.has(ingredient.name)) {
+                    const hue = (ingredient.name.charCodeAt(0) * 137.5) % 360;
+                    const saturation = 70 + (ingredient.name.length * 5) % 30;
+                    const lightness = 50 + (ingredient.name.charCodeAt(1) * 3) % 20;
+                    ingredientColors.set(ingredient.name, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
+                }
+            });
         }
         
         function renderVisualization() {
-            if (!canvas || !ctx) {
-                setTimeout(initializeVisualization, 100);
+            if (!scene || !renderer) {
+                setTimeout(initializeMolecularVisualization, 100);
                 return;
             }
             
             if (ingredients.length === 0) {
-                renderEmptyVisualization();
+                renderEmptyMolecularScene();
                 return;
             }
             
-            // Prepare data
-            prepareVisualizationData();
+            // Clear existing molecules
+            molecules.forEach(mol => scene.remove(mol.mesh));
+            molecules = [];
             
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Assign visual properties
+            assignIngredientVisuals();
             
-            // Render based on mode
-            if (currentVisualizationMode === 'treemap') {
-                renderTreemap();
-            } else if (currentVisualizationMode === 'bottle') {
-                renderBottle();
-            } else if (currentVisualizationMode === 'bubble') {
-                renderBubble();
-            }
+            // Create molecules for each ingredient
+            const totalActives = getTotalActives();
+            const maxRadius = 2.0;
+            const minRadius = 0.3;
+            
+            ingredients.forEach((ingredient, index) => {
+                const actives = getActives(ingredient);
+                const percentage = totalActives > 0 ? (actives / totalActives) * 100 : 0;
+                
+                // Size based on percentage
+                const radius = minRadius + (percentage / 100) * (maxRadius - minRadius);
+                
+                // Create geometry based on shape
+                const shape = ingredientShapes.get(ingredient.name) || 'sphere';
+                const geometry = createMolecularGeometry(shape, radius);
+                
+                // Create glowing material
+                const color = new THREE.Color(ingredientColors.get(ingredient.name) || '#ffffff');
+                const material = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color.clone().multiplyScalar(0.3),
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                // Create mesh
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Position randomly in 3D space
+                const spread = 15;
+                mesh.position.set(
+                    (Math.random() - 0.5) * spread,
+                    (Math.random() - 0.5) * spread,
+                    (Math.random() - 0.5) * spread
+                );
+                
+                // Add rotation
+                mesh.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+                
+                // Store ingredient data
+                mesh.userData = {
+                    ingredient: ingredient,
+                    originalPosition: mesh.position.clone(),
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.02,
+                        y: (Math.random() - 0.5) * 0.02,
+                        z: (Math.random() - 0.5) * 0.02
+                    }
+                };
+                
+                scene.add(mesh);
+                molecules.push({ mesh, ingredient });
+            });
+            
+            // Update HUD
+            document.getElementById('moleculeCount').textContent = molecules.length;
+            document.getElementById('cameraInfo').textContent = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
             
             // Update legend and stats
             updateVisualizationLegend();
             updateVisualizationStats();
         }
         
-        function renderEmptyVisualization() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function createMolecularGeometry(shape, radius) {
+            switch (shape) {
+                case 'cube':
+                    return new THREE.BoxGeometry(radius * 2, radius * 2, radius * 2);
+                case 'octahedron':
+                    return new THREE.OctahedronGeometry(radius);
+                case 'tetrahedron':
+                    return new THREE.TetrahedronGeometry(radius);
+                case 'dodecahedron':
+                    return new THREE.DodecahedronGeometry(radius);
+                case 'sphere':
+                default:
+                    return new THREE.SphereGeometry(radius, 16, 12);
+            }
+        }
+        
+        function renderEmptyMolecularScene() {
+            molecules.forEach(mol => scene.remove(mol.mesh));
+            molecules = [];
             
-            // Draw empty state
-            ctx.fillStyle = '#f3f4f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Add ingredients to your recipe to see visualization', canvas.width / 2, canvas.height / 2);
-            
-            // Clear legend and stats
-            document.getElementById('visualizationLegend').innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No data to display</div>';
+            document.getElementById('moleculeCount').textContent = '0';
+            document.getElementById('visualizationLegend').innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No molecules to display</div>';
             document.getElementById('visualizerStats').innerHTML = '<div style="color: #9ca3af;">Add ingredients to see statistics</div>';
         }
         
-        function prepareVisualizationData() {
-            // Group ingredients by their groups
-            const groupedData = {};
-            const totalVolume = getTotalActives();
+        function animateMolecularScene() {
+            requestAnimationFrame(animateMolecularScene);
             
-            Object.entries(groups).forEach(([groupName, groupData]) => {
-                if (groupData.ingredients.length === 0) return;
-                
-                const groupIngredients = groupData.ingredients.map(id => 
-                    ingredients.find(i => i.id === id)
-                ).filter(Boolean);
-                
-                if (groupIngredients.length === 0) return;
-                
-                const groupVolume = groupIngredients.reduce((sum, ing) => sum + getActives(ing), 0);
-                const groupPercentage = totalVolume > 0 ? (groupVolume / totalVolume) * 100 : 0;
-                
-                groupedData[groupName] = {
-                    name: groupName,
-                    ingredients: groupIngredients.map(ingredient => {
-                        const actives = getActives(ingredient);
-                        const inventoryStatus = getInventoryStatus(ingredient.name);
-                        
-                        return {
-                            id: ingredient.id,
-                            name: ingredient.name,
-                            volume: ingredient.volume,
-                            actives: actives,
-                            percentage: totalVolume > 0 ? (actives / totalVolume) * 100 : 0,
-                            groupPercentage: groupVolume > 0 ? (actives / groupVolume) * 100 : 0,
-                            dilution: ingredient.dilution,
-                            hasInventory: inventoryStatus.available,
-                            inventoryAmount: inventoryStatus.amount,
-                            inventoryUnit: inventoryStatus.unit,
-                            isCompoundSubstitute: ingredient.isCompoundSubstitute,
-                            originalIngredient: ingredient.originalIngredient
-                        };
-                    }),
-                    totalVolume: groupVolume,
-                    percentage: groupPercentage,
-                    color: getGroupColor(groupName),
-                    expanded: groupData.expanded
-                };
-            });
-            
-            visualizationData = Object.values(groupedData);
-        }
-        
-        function getGroupColor(groupName) {
-            const groupInfo = groups[groupName];
-            if (groupInfo && groupInfo.color) {
-                // Convert CSS class to hex color
-                const colorMap = {
-                    'bg-gray-100': '#f3f4f6',
-                    'bg-blue-50': '#eff6ff',
-                    'bg-green-50': '#f0fdf4',
-                    'bg-purple-50': '#faf5ff',
-                    'bg-yellow-50': '#fefce8',
-                    'bg-pink-50': '#fdf2f8',
-                    'bg-indigo-50': '#eef2ff',
-                    'bg-red-50': '#fef2f2',
-                    'bg-orange-50': '#fff7ed'
-                };
-                
-                const borderColorMap = {
-                    'bg-gray-100': '#6b7280',
-                    'bg-blue-50': '#3b82f6',
-                    'bg-green-50': '#10b981',
-                    'bg-purple-50': '#8b5cf6',
-                    'bg-yellow-50': '#f59e0b',
-                    'bg-pink-50': '#ec4899',
-                    'bg-indigo-50': '#6366f1',
-                    'bg-red-50': '#ef4444',
-                    'bg-orange-50': '#f97316'
-                };
-                
-                return {
-                    fill: colorMap[groupInfo.color] || '#f3f4f6',
-                    border: borderColorMap[groupInfo.color] || '#6b7280'
-                };
-            }
-            
-            return { fill: '#f3f4f6', border: '#6b7280' };
-        }
-        
-        // Treemap implementation
-        function renderTreemap() {
-            if (visualizationData.length === 0) return;
-            
-            const padding = 4;
-            const headerHeight = 20;
-            
-            // Calculate layout using simple treemap algorithm
-            let y = 0;
-            
-            visualizationData.forEach(group => {
-                if (group.totalVolume === 0) return;
-                
-                const groupHeight = Math.max(50, (group.percentage / 100) * (canvas.height - padding * visualizationData.length));
-                
-                // Draw group header
-                ctx.fillStyle = group.color.border;
-                ctx.fillRect(0, y, canvas.width, headerHeight);
-                
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText(`${group.name} (${group.percentage.toFixed(1)}%)`, 8, y + 14);
-                
-                // Layout ingredients in this group
-                let x = 0;
-                const availableWidth = canvas.width;
-                const availableHeight = groupHeight - headerHeight;
-                
-                group.ingredients.forEach((ingredient, index) => {
-                    const ingredientWidth = (ingredient.groupPercentage / 100) * availableWidth;
-                    
-                    // Store bounds for hover detection
-                    ingredient.bounds = {
-                        x: x,
-                        y: y + headerHeight,
-                        width: ingredientWidth,
-                        height: availableHeight,
-                        group: group
-                    };
-                    
-                    // Draw ingredient rectangle
-                    ctx.fillStyle = group.color.fill;
-                    ctx.fillRect(x, y + headerHeight, ingredientWidth, availableHeight);
-                    
-                    // Draw border (dashed if no inventory)
-                    ctx.strokeStyle = group.color.border;
-                    ctx.lineWidth = ingredient.hasInventory ? 2 : 1;
-                    
-                    if (!ingredient.hasInventory) {
-                        ctx.setLineDash([5, 5]);
-                    } else {
-                        ctx.setLineDash([]);
-                    }
-                    
-                    ctx.strokeRect(x, y + headerHeight, ingredientWidth, availableHeight);
-                    
-                    // Draw ingredient label if there's space
-                    if (ingredientWidth > 60 && availableHeight > 30) {
-                        ctx.fillStyle = group.color.border;
-                        ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
-                        ctx.textAlign = 'center';
-                        
-                        const textX = x + ingredientWidth / 2;
-                        const textY = y + headerHeight + availableHeight / 2;
-                        
-                        // Ingredient name
-                        ctx.fillText(ingredient.name.substring(0, Math.floor(ingredientWidth / 7)), textX, textY - 5);
-                        
-                        // Percentage
-                        ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
-                        ctx.fillText(`${ingredient.percentage.toFixed(1)}%`, textX, textY + 8);
-                    }
-                    
-                    x += ingredientWidth;
-                });
-                
-                y += groupHeight + padding;
-            });
-            
-            ctx.setLineDash([]); // Reset line dash
-        }
-        
-        // Placeholder functions for other visualization modes
-        function renderBottle() {
-            // TODO: Implement bottle visualization
-            ctx.fillStyle = '#f3f4f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Bottle visualization coming soon!', canvas.width / 2, canvas.height / 2);
-        }
-        
-        function renderBubble() {
-            if (visualizationData.length === 0) return;
-            
-            // Create bubbles for all ingredients
-            const bubbles = [];
-            const padding = 10;
-            const minRadius = 15;
-            const maxRadius = 80;
-            
-            // Calculate total actives for scaling
-            const totalActives = getTotalActives();
-            
-            // Create bubble data
-            visualizationData.forEach(group => {
-                group.ingredients.forEach(ingredient => {
-                    const percentage = ingredient.percentage;
-                    const radius = Math.max(minRadius, Math.min(maxRadius, (percentage / 100) * maxRadius * 3));
-                    
-                    bubbles.push({
-                        ingredient: ingredient,
-                        group: group,
-                        radius: radius,
-                        x: Math.random() * (canvas.width - radius * 2) + radius,
-                        y: Math.random() * (canvas.height - radius * 2) + radius,
-                        vx: (Math.random() - 0.5) * 2,
-                        vy: (Math.random() - 0.5) * 2,
-                        targetX: 0,
-                        targetY: 0
-                    });
-                });
-            });
-            
-            // Position bubbles using simple force simulation
-            for (let iteration = 0; iteration < 50; iteration++) {
-                // Apply forces between bubbles
-                for (let i = 0; i < bubbles.length; i++) {
-                    for (let j = i + 1; j < bubbles.length; j++) {
-                        const bubble1 = bubbles[i];
-                        const bubble2 = bubbles[j];
-                        
-                        const dx = bubble2.x - bubble1.x;
-                        const dy = bubble2.y - bubble1.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const minDistance = bubble1.radius + bubble2.radius + padding;
-                        
-                        if (distance < minDistance && distance > 0) {
-                            const force = (minDistance - distance) / distance * 0.5;
-                            const fx = dx * force;
-                            const fy = dy * force;
-                            
-                            bubble1.vx -= fx;
-                            bubble1.vy -= fy;
-                            bubble2.vx += fx;
-                            bubble2.vy += fy;
-                        }
-                    }
-                }
-                
-                // Apply velocity and boundary constraints
-                bubbles.forEach(bubble => {
-                    bubble.vx *= 0.8; // Damping
-                    bubble.vy *= 0.8;
-                    
-                    bubble.x += bubble.vx;
-                    bubble.y += bubble.vy;
-                    
-                    // Boundary constraints
-                    if (bubble.x - bubble.radius < 0) {
-                        bubble.x = bubble.radius;
-                        bubble.vx *= -0.5;
-                    }
-                    if (bubble.x + bubble.radius > canvas.width) {
-                        bubble.x = canvas.width - bubble.radius;
-                        bubble.vx *= -0.5;
-                    }
-                    if (bubble.y - bubble.radius < 0) {
-                        bubble.y = bubble.radius;
-                        bubble.vy *= -0.5;
-                    }
-                    if (bubble.y + bubble.radius > canvas.height) {
-                        bubble.y = canvas.height - bubble.radius;
-                        bubble.vy *= -0.5;
-                    }
+            // Rotate molecules if motion is enabled
+            if (molecularMotion) {
+                molecules.forEach(mol => {
+                    const speed = mol.mesh.userData.rotationSpeed;
+                    mol.mesh.rotation.x += speed.x;
+                    mol.mesh.rotation.y += speed.y;
+                    mol.mesh.rotation.z += speed.z;
                 });
             }
             
-            // Store bubble positions for hover detection
-            visualizationData.forEach(group => {
-                group.ingredients.forEach(ingredient => {
-                    const bubble = bubbles.find(b => b.ingredient === ingredient);
-                    if (bubble) {
-                        ingredient.bubble = {
-                            x: bubble.x,
-                            y: bubble.y,
-                            radius: bubble.radius
-                        };
-                    }
-                });
-            });
-            
-            // Draw bubbles
-            bubbles.forEach(bubble => {
-                const ingredient = bubble.ingredient;
-                const group = bubble.group;
-                
-                // Draw shadow
-                ctx.shadowColor = 'rgba(0,0,0,0.2)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetX = 3;
-                ctx.shadowOffsetY = 3;
-                
-                // Main bubble
-                ctx.fillStyle = group.color.fill;
-                ctx.beginPath();
-                ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Border (solid for inventory, dashed for missing)
-                ctx.shadowColor = 'transparent';
-                ctx.strokeStyle = group.color.border;
-                ctx.lineWidth = ingredient.hasInventory ? 3 : 2;
-                
-                if (!ingredient.hasInventory) {
-                    ctx.setLineDash([8, 4]);
-                } else {
-                    ctx.setLineDash([]);
-                }
-                
-                ctx.stroke();
-                
-                // Inventory status indicator
-                if (ingredient.hasInventory) {
-                    // Gold star
-                    ctx.fillStyle = '#fbbf24';
-                    ctx.font = `${Math.min(bubble.radius * 0.3, 16)}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText('⭐', bubble.x - bubble.radius * 0.6, bubble.y - bubble.radius * 0.4);
-                }
-                
-                // Ingredient name and percentage
-                ctx.fillStyle = group.color.border;
-                ctx.setLineDash([]);
-                
-                if (bubble.radius > 25) {
-                    // Ingredient name
-                    const fontSize = Math.min(bubble.radius * 0.2, 14);
-                    ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-                    ctx.textAlign = 'center';
-                    
-                    const maxWidth = bubble.radius * 1.6;
-                    let text = ingredient.name;
-                    
-                    // Truncate if too long
-                    while (ctx.measureText(text).width > maxWidth && text.length > 3) {
-                        text = text.substring(0, text.length - 1);
-                    }
-                    if (text !== ingredient.name) text += '...';
-                    
-                    ctx.fillText(text, bubble.x, bubble.y - 2);
-                    
-                    // Percentage
-                    const percentageSize = Math.min(bubble.radius * 0.15, 12);
-                    ctx.font = `${percentageSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-                    ctx.fillText(`${ingredient.percentage.toFixed(1)}%`, bubble.x, bubble.y + percentageSize);
-                }
-                
-                ctx.shadowColor = 'transparent';
-            });
-            
-            ctx.setLineDash([]);
+            renderer.render(scene, camera);
         }
+        
+        // Mouse interaction variables
+        let isMouseDown = false;
+        let mouseX = 0, mouseY = 0;
+        let cameraDistance = 20;
+        
+        function onMolecularMouseMove(event) {
+            const rect = event.target.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            // Raycasting for hover detection
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(molecules.map(m => m.mesh));
+            
+            if (intersects.length > 0) {
+                const intersected = intersects[0].object;
+                const ingredient = intersected.userData.ingredient;
+                
+                if (hoveredMolecule !== intersected) {
+                    // Reset previous hover
+                    if (hoveredMolecule) {
+                        hoveredMolecule.material.emissive.multiplyScalar(0.5);
+                    }
+                    
+                    // Set new hover
+                    hoveredMolecule = intersected;
+                    intersected.material.emissive.multiplyScalar(2);
+                    
+                    // Show tooltip
+                    showMolecularTooltip(event, ingredient);
+                }
+            } else {
+                if (hoveredMolecule) {
+                    hoveredMolecule.material.emissive.multiplyScalar(0.5);
+                    hoveredMolecule = null;
+                    hideMolecularTooltip();
+                }
+            }
+            
+            // Camera rotation when dragging
+            if (isMouseDown) {
+                const deltaX = event.clientX - mouseX;
+                const deltaY = event.clientY - mouseY;
+                
+                const spherical = new THREE.Spherical();
+                spherical.setFromVector3(camera.position);
+                spherical.theta -= deltaX * 0.01;
+                spherical.phi += deltaY * 0.01;
+                spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+                
+                camera.position.setFromSpherical(spherical);
+                camera.lookAt(0, 0, 0);
+                
+                document.getElementById('cameraInfo').textContent = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+            }
+            
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+        
+
+        
+
         
         function updateVisualizationLegend() {
             const legend = document.getElementById('visualizationLegend');
@@ -3973,87 +3837,7 @@
             `;
         }
         
-        function handleVisualizationMouseMove(event) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-            
-            // Find hovered element
-            let found = null;
-            
-            if (currentVisualizationMode === 'treemap') {
-                // Treemap hit detection
-                visualizationData.forEach(group => {
-                    group.ingredients.forEach(ingredient => {
-                        if (ingredient.bounds &&
-                            mouseX >= ingredient.bounds.x &&
-                            mouseX <= ingredient.bounds.x + ingredient.bounds.width &&
-                            mouseY >= ingredient.bounds.y &&
-                            mouseY <= ingredient.bounds.y + ingredient.bounds.height) {
-                            found = ingredient;
-                        }
-                    });
-                });
-            } else if (currentVisualizationMode === 'bubble') {
-                // Bubble hit detection
-                visualizationData.forEach(group => {
-                    group.ingredients.forEach(ingredient => {
-                        if (ingredient.bubble) {
-                            const dx = mouseX - ingredient.bubble.x;
-                            const dy = mouseY - ingredient.bubble.y;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            
-                            if (distance <= ingredient.bubble.radius) {
-                                found = ingredient;
-                            }
-                        }
-                    });
-                });
-            }
-            
-            if (found !== hoveredElement) {
-                hoveredElement = found;
-                
-                if (hoveredElement) {
-                    // Show tooltip
-                    const groupName = currentVisualizationMode === 'treemap' ? 
-                        hoveredElement.bounds.group.name : 
-                        visualizationData.find(g => g.ingredients.includes(hoveredElement)).name;
-                    
-                    const tooltipHTML = `
-                        <div style="font-weight: 600;">${hoveredElement.name}</div>
-                        <div style="margin: 4px 0;">
-                            Volume: ${hoveredElement.volume.toFixed(1)}μL @ ${(hoveredElement.dilution * 100).toFixed(1)}%<br>
-                            Actives: ${hoveredElement.actives.toFixed(2)}μL (${hoveredElement.percentage.toFixed(1)}%)<br>
-                            Group: ${groupName}
-                        </div>
-                        <div style="color: ${hoveredElement.hasInventory ? '#10b981' : '#ef4444'};">
-                            ${hoveredElement.hasInventory ? 
-                                `✓ In Stock: ${hoveredElement.inventoryAmount}${hoveredElement.inventoryUnit}` : 
-                                '✗ Not in Inventory'
-                            }
-                        </div>
-                    `;
-                    
-                    tooltip.innerHTML = tooltipHTML;
-                    tooltip.style.left = (event.clientX + 10) + 'px';
-                    tooltip.style.top = (event.clientY - 10) + 'px';
-                    tooltip.style.opacity = '1';
-                } else {
-                    // Hide tooltip
-                    tooltip.style.opacity = '0';
-                }
-                
-                // Update cursor
-                canvas.style.cursor = hoveredElement ? 'pointer' : 'default';
-            }
-        }
-        
-        function handleVisualizationMouseLeave() {
-            hoveredElement = null;
-            tooltip.style.opacity = '0';
-            canvas.style.cursor = 'default';
-        }
+
         
         // Smart Load All Functions
         function loadAllFiles(event) {
@@ -4360,9 +4144,97 @@
             });
         }
 
-        // Initialize visualization when page loads
+        function onMolecularClick(event) {
+            console.log('Molecular click detected');
+        }
+        
+        function onMolecularWheel(event) {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1.1 : 0.9;
+            camera.position.multiplyScalar(delta);
+            cameraDistance = camera.position.length();
+            
+            // Limit zoom
+            if (cameraDistance < 5) {
+                camera.position.normalize().multiplyScalar(5);
+            } else if (cameraDistance > 50) {
+                camera.position.normalize().multiplyScalar(50);
+            }
+            
+            document.getElementById('cameraInfo').textContent = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+        }
+        
+        function onMolecularMouseDown(event) {
+            isMouseDown = true;
+            document.getElementById('molecularVisualization').style.cursor = 'grabbing';
+        }
+        
+        function onMolecularMouseUp(event) {
+            isMouseDown = false;
+            document.getElementById('molecularVisualization').style.cursor = 'grab';
+        }
+        
+        function showMolecularTooltip(event, ingredient) {
+            const tooltip = document.getElementById('visualizationTooltip');
+            const inventoryStatus = getInventoryStatus(ingredient.name);
+            
+            const tooltipHTML = `
+                <div style="font-weight: 600; color: ${ingredientColors.get(ingredient.name)};">${ingredient.name}</div>
+                <div style="margin: 4px 0; font-size: 11px;">
+                    Shape: ${ingredientShapes.get(ingredient.name) || 'sphere'}<br>
+                    Volume: ${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%<br>
+                    Actives: ${getActives(ingredient).toFixed(2)}μL (${getIngredientPercentage(ingredient)}%)<br>
+                    Group: ${ingredient.group}
+                </div>
+                <div style="color: ${inventoryStatus.available ? '#10b981' : '#ef4444'}; font-size: 11px;">
+                    ${inventoryStatus.available ? 
+                        `✓ In Stock: ${inventoryStatus.amount}${inventoryStatus.unit}` : 
+                        '✗ Not in Inventory'
+                    }
+                </div>
+            `;
+            
+            tooltip.innerHTML = tooltipHTML;
+            tooltip.style.left = (event.clientX + 10) + 'px';
+            tooltip.style.top = (event.clientY - 10) + 'px';
+            tooltip.style.opacity = '1';
+        }
+        
+        function hideMolecularTooltip() {
+            document.getElementById('visualizationTooltip').style.opacity = '0';
+        }
+        
+        function resetCameraView() {
+            camera.position.set(0, 0, 20);
+            camera.lookAt(0, 0, 0);
+            cameraDistance = 20;
+            document.getElementById('cameraInfo').textContent = '0.0, 0.0, 20.0';
+        }
+        
+        function toggleMolecularMotion() {
+            molecularMotion = !molecularMotion;
+            const button = document.getElementById('motionToggle');
+            if (molecularMotion) {
+                button.innerHTML = '⏸️ Stop Motion';
+                button.style.background = '#ef4444';
+            } else {
+                button.innerHTML = '⚡ Start Motion';
+                button.style.background = '#6b7280';
+            }
+        }
+        
+        function exportVisualizationImage() {
+            if (!renderer) return;
+            
+            const link = document.createElement('a');
+            link.download = `fragrance-molecular-view-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = renderer.domElement.toDataURL();
+            link.click();
+        }
+
+        // Initialize molecular visualization when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(initializeVisualization, 500);
+            setTimeout(initializeMolecularVisualization, 500);
         });
     </script>
 </body>
