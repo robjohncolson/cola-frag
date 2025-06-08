@@ -4157,6 +4157,10 @@
             
             // Create molecules for each ingredient
             const totalActives = getTotalActives();
+            const totalSquaredActives = ingredients.reduce((sum, ing) => {
+                const actives = getActives(ing);
+                return sum + (actives * actives);
+            }, 0);
             const maxRadius = 2.0;
             const minRadius = 0.3;
             
@@ -4164,7 +4168,7 @@
                 const actives = getActives(ingredient);
                 const squaredActives = actives * actives; // Square the active amount for more dramatic visual differences
                 const percentage = totalActives > 0 ? (actives / totalActives) * 100 : 0;
-                const squaredPercentage = totalActives > 0 ? (squaredActives / (totalActives * totalActives)) * 100 : 0;
+                const squaredPercentage = totalSquaredActives > 0 ? (squaredActives / totalSquaredActives) * 100 : 0;
                 
                 // Size based on squared percentage for more dramatic visual differences
                 const radius = minRadius + (squaredPercentage / 100) * (maxRadius - minRadius);
