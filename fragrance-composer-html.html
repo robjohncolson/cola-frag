@@ -626,6 +626,97 @@
             background: #4b5563;
         }
         
+        /* Compound Substitution Styles */
+        .compound-substitution-group {
+            border: 2px dashed #f59e0b;
+            border-radius: 8px;
+            background: linear-gradient(to right, #fefbf3, #fffef7);
+            padding: 12px;
+            margin: 8px 0;
+            position: relative;
+        }
+        
+        .compound-substitution-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: #d97706;
+            background: #fef3c7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .compound-substitution-controls {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .compound-substitution-form {
+            background: #fffbf5;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+        
+        .compound-ingredient-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .compound-ingredient-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .compound-ingredient-input {
+            flex: 2;
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .compound-percentage-input {
+            flex: 1;
+            padding: 4px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        .percentage-total {
+            font-size: 11px;
+            color: #d97706;
+            font-weight: 500;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        .percentage-total.valid {
+            color: #059669;
+        }
+        
+        .percentage-total.invalid {
+            color: #dc2626;
+        }
+        
+        .btn-compound {
+            background: #f59e0b;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        
+        .btn-compound:hover {
+            background: #d97706;
+        }
+        
         .expand-toggle {
             background: transparent;
             border: none;
@@ -1809,6 +1900,210 @@
             render(); // Re-render to update stars and colors
         }
 
+        // Compound Substitution Functions
+        function showCompoundSubstitutionForm(ingredientId) {
+            // Hide regular substitution form and show compound form
+            const regularForm = document.querySelector(`#substitution-form-regular-${ingredientId}`);
+            const compoundForm = document.querySelector(`#substitution-form-compound-${ingredientId}`);
+            
+            if (regularForm) regularForm.style.display = 'none';
+            if (compoundForm) {
+                compoundForm.style.display = 'block';
+                updateCompoundPercentageTotal(ingredientId);
+            }
+        }
+        
+        function hideCompoundSubstitutionForm(ingredientId) {
+            const regularForm = document.querySelector(`#substitution-form-regular-${ingredientId}`);
+            const compoundForm = document.querySelector(`#substitution-form-compound-${ingredientId}`);
+            
+            if (regularForm) regularForm.style.display = 'block';
+            if (compoundForm) compoundForm.style.display = 'none';
+        }
+        
+        function updateCompoundPercentageTotal(ingredientId) {
+            const inputs = document.querySelectorAll(`[id^="compound-percentage-${ingredientId}-"]`);
+            let total = 0;
+            
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                total += value;
+            });
+            
+            const totalDisplay = document.querySelector(`#compound-total-${ingredientId}`);
+            if (totalDisplay) {
+                totalDisplay.textContent = `Total: ${total}%`;
+                totalDisplay.className = 'percentage-total';
+                
+                if (total === 100) {
+                    totalDisplay.classList.add('valid');
+                } else {
+                    totalDisplay.classList.add('invalid');
+                }
+            }
+        }
+        
+        function addCompoundIngredientRow(ingredientId) {
+            const container = document.querySelector(`#compound-ingredients-${ingredientId}`);
+            if (!container) return;
+            
+            const rowCount = container.children.length;
+            const newRow = document.createElement('div');
+            newRow.className = 'compound-ingredient-row';
+            newRow.innerHTML = `
+                <input type="text" 
+                       class="compound-ingredient-input" 
+                       placeholder="Substitute ingredient ${rowCount + 1}"
+                       id="compound-ingredient-${ingredientId}-${rowCount}">
+                <input type="number" 
+                       class="compound-percentage-input" 
+                       placeholder="%" 
+                       min="0" 
+                       max="100" 
+                       step="0.1"
+                       id="compound-percentage-${ingredientId}-${rowCount}"
+                       onchange="updateCompoundPercentageTotal(${ingredientId})">
+                <button onclick="removeCompoundIngredientRow(this, ${ingredientId})" 
+                        class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
+                    ×
+                </button>
+            `;
+            
+            container.appendChild(newRow);
+        }
+        
+        function removeCompoundIngredientRow(button, ingredientId) {
+            button.parentElement.remove();
+            updateCompoundPercentageTotal(ingredientId);
+        }
+        
+        function applyCompoundSubstitution(ingredientId) {
+            const ingredient = ingredients.find(i => i.id === ingredientId);
+            if (!ingredient) return;
+            
+            // Collect all compound ingredients
+            const container = document.querySelector(`#compound-ingredients-${ingredientId}`);
+            if (!container) return;
+            
+            const compoundIngredients = [];
+            const rows = container.children;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const nameInput = document.querySelector(`#compound-ingredient-${ingredientId}-${i}`);
+                const percentageInput = document.querySelector(`#compound-percentage-${ingredientId}-${i}`);
+                
+                if (nameInput && percentageInput) {
+                    const name = nameInput.value.trim();
+                    const percentage = parseFloat(percentageInput.value) || 0;
+                    
+                    if (name && percentage > 0) {
+                        compoundIngredients.push({ name, percentage });
+                    }
+                }
+            }
+            
+            // Validate total percentage
+            const totalPercentage = compoundIngredients.reduce((sum, ing) => sum + ing.percentage, 0);
+            if (Math.abs(totalPercentage - 100) > 0.1) {
+                alert('Percentages must add up to 100%');
+                return;
+            }
+            
+            if (compoundIngredients.length < 2) {
+                alert('Please add at least 2 substitute ingredients');
+                return;
+            }
+            
+            // Store original ingredient info
+            const originalName = ingredient.name;
+            const originalVolume = ingredient.volume;
+            const originalGroup = ingredient.group;
+            const compoundId = Date.now();
+            
+            // Record in database
+            const dbEntry = getOrCreateDatabaseEntry(originalName);
+            const compoundSub = {
+                type: 'compound',
+                ingredients: compoundIngredients,
+                date: new Date().toISOString()
+            };
+            
+            if (!dbEntry.compoundSubstitutions) {
+                dbEntry.compoundSubstitutions = [];
+            }
+            dbEntry.compoundSubstitutions.push(compoundSub);
+            
+            // Remove original ingredient
+            const originalIndex = ingredients.findIndex(i => i.id === ingredientId);
+            ingredients.splice(originalIndex, 1);
+            groups[originalGroup].ingredients = groups[originalGroup].ingredients.filter(i => i !== ingredientId);
+            
+            // Add new compound ingredients
+            compoundIngredients.forEach((compIng, index) => {
+                const calculatedVolume = (originalVolume * compIng.percentage / 100);
+                
+                const newIngredient = {
+                    id: Date.now() + index,
+                    name: compIng.name,
+                    dilution: ingredient.dilution,
+                    volume: calculatedVolume,
+                    group: originalGroup,
+                    notes: '',
+                    substituted: false,
+                    isCompoundSubstitute: true,
+                    originalIngredient: originalName,
+                    compoundId: compoundId,
+                    compoundPercentage: compIng.percentage
+                };
+                
+                ingredients.push(newIngredient);
+                groups[originalGroup].ingredients.push(newIngredient.id);
+                
+                // Create database entries for substitutes
+                getOrCreateDatabaseEntry(compIng.name);
+            });
+            
+            render();
+        }
+        
+        function undoCompoundSubstitution(compoundId) {
+            // Find all ingredients that are part of this compound substitution
+            const compoundIngredients = ingredients.filter(i => i.compoundId === compoundId);
+            if (compoundIngredients.length === 0) return;
+            
+            const originalName = compoundIngredients[0].originalIngredient;
+            const originalGroup = compoundIngredients[0].group;
+            const originalDilution = compoundIngredients[0].dilution;
+            
+            // Calculate total volume from all compound ingredients
+            const totalVolume = compoundIngredients.reduce((sum, ing) => sum + ing.volume, 0);
+            
+            // Remove all compound ingredients
+            compoundIngredients.forEach(compIng => {
+                const index = ingredients.findIndex(i => i.id === compIng.id);
+                if (index !== -1) {
+                    ingredients.splice(index, 1);
+                }
+                groups[originalGroup].ingredients = groups[originalGroup].ingredients.filter(i => i !== compIng.id);
+            });
+            
+            // Recreate original ingredient
+            const restoredIngredient = {
+                id: Date.now(),
+                name: originalName,
+                dilution: originalDilution,
+                volume: totalVolume,
+                group: originalGroup,
+                notes: '',
+                substituted: false
+            };
+            
+            ingredients.push(restoredIngredient);
+            groups[originalGroup].ingredients.push(restoredIngredient.id);
+            
+            render();
+        }
+
         // Notes and Substitution Functions
         function toggleIngredientExpansion(ingredientId) {
             if (expandedIngredients.has(ingredientId)) {
@@ -2217,10 +2512,92 @@
                         const gridDiv = document.createElement('div');
                         gridDiv.className = 'ingredients-grid';
 
+                        // Group ingredients by compound substitution
+                        const groupedIngredients = {};
+                        const standaloneIngredients = [];
+                        
                         groupData.ingredients.forEach(ingredientId => {
                             const ingredient = ingredients.find(i => i.id === ingredientId);
                             if (!ingredient) return;
-
+                            
+                            if (ingredient.isCompoundSubstitute && ingredient.compoundId) {
+                                if (!groupedIngredients[ingredient.compoundId]) {
+                                    groupedIngredients[ingredient.compoundId] = [];
+                                }
+                                groupedIngredients[ingredient.compoundId].push(ingredient);
+                            } else {
+                                standaloneIngredients.push(ingredient);
+                            }
+                        });
+                        
+                        // Render compound substitution groups first
+                        Object.entries(groupedIngredients).forEach(([compoundId, compoundIngredients]) => {
+                            const groupDiv = document.createElement('div');
+                            groupDiv.className = 'compound-substitution-group';
+                            
+                            const originalName = compoundIngredients[0].originalIngredient;
+                            const totalVolume = compoundIngredients.reduce((sum, ing) => sum + ing.volume, 0);
+                            
+                            groupDiv.innerHTML = `
+                                <div class="compound-substitution-header">
+                                    <span>${originalName} → Compound Substitution (${totalVolume.toFixed(1)}μL total)</span>
+                                    <div class="compound-substitution-controls">
+                                        <button onclick="undoCompoundSubstitution(${compoundId})" 
+                                                class="btn" style="background: #6b7280; color: white; font-size: 10px; padding: 2px 6px;">
+                                            🔄 Undo Split
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="compound-ingredients-container">
+                                    ${compoundIngredients.map(ingredient => {
+                                        const inventoryStatus = getInventoryStatus(ingredient.name);
+                                        const isEditing = editingIngredient === ingredient.id;
+                                        
+                                        let cardClasses = 'ingredient-card';
+                                        if (isEditing) cardClasses += ' ingredient-edit';
+                                        if (!isEditing) {
+                                            if (inventoryStatus.available) {
+                                                cardClasses += ' has-inventory';
+                                            } else {
+                                                cardClasses += ' missing-inventory';
+                                            }
+                                        }
+                                        
+                                        return `
+                                            <div class="${cardClasses}" style="margin-bottom: 8px;">
+                                                <div class="ingredient-header">
+                                                    <div class="ingredient-info">
+                                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                                            <h4 class="ingredient-name">${ingredient.name}</h4>
+                                                            <span class="inventory-star ${inventoryStatus.available ? 'available' : 'missing'}" 
+                                                                  onclick="toggleInlineInventoryForm(${ingredient.id})"
+                                                                  title="${inventoryStatus.available ? 'In inventory - click to edit' : 'Not in inventory - click to add'}">
+                                                                ${inventoryStatus.available ? '⭐' : '☆'}
+                                                            </span>
+                                                            <span style="font-size: 10px; color: #d97706; background: #fef3c7; padding: 1px 4px; border-radius: 3px;">
+                                                                ${ingredient.compoundPercentage}% of ${originalName}
+                                                            </span>
+                                                        </div>
+                                                        <p class="ingredient-details">${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
+                                                        <p class="ingredient-actives">${getActives(ingredient).toFixed(2)}μL actives (${getIngredientPercentage(ingredient)}%)</p>
+                                                    </div>
+                                                    <div class="ingredient-actions">
+                                                        <button onclick="deleteIngredient(${ingredient.id})" class="btn-red">
+                                                            <i data-lucide="trash-2" class="icon-sm"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            `;
+                            
+                            gridDiv.appendChild(groupDiv);
+                        });
+                        
+                        // Render standalone ingredients
+                        standaloneIngredients.forEach(ingredient => {
                             const cardDiv = document.createElement('div');
                             const isEditing = editingIngredient === ingredient.id;
                             const isSubstituted = ingredient.substituted;
@@ -2358,7 +2735,7 @@
                                                     </div>
                                                     
                                                     <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Add Substitution:</div>
-                                                    <div class="substitution-form">
+                                                    <div class="substitution-form" id="substitution-form-regular-${ingredient.id}">
                                                         <input type="text" 
                                                                id="substitution-${ingredient.id}" 
                                                                class="input" 
@@ -2368,6 +2745,74 @@
                                                         <button onclick="substituteIngredient(${ingredient.id})" class="btn btn-substitute">
                                                             <i data-lucide="arrow-right" class="icon-sm"></i>
                                                         </button>
+                                                    </div>
+                                                    
+                                                    <div style="margin-top: 8px;">
+                                                        <button onclick="showCompoundSubstitutionForm(${ingredient.id})" 
+                                                                class="btn" style="background: #f59e0b; color: white; font-size: 10px; padding: 3px 6px;">
+                                                            ⚗️ Split Substitution
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div class="compound-substitution-form" 
+                                                         id="substitution-form-compound-${ingredient.id}" 
+                                                         style="display: none;">
+                                                        <div style="font-size: 11px; font-weight: 500; margin-bottom: 8px;">
+                                                            Split "${ingredient.name}" into multiple ingredients:
+                                                        </div>
+                                                        <div id="compound-ingredients-${ingredient.id}">
+                                                            <div class="compound-ingredient-row">
+                                                                <input type="text" 
+                                                                       class="compound-ingredient-input" 
+                                                                       placeholder="Substitute ingredient 1"
+                                                                       id="compound-ingredient-${ingredient.id}-0">
+                                                                <input type="number" 
+                                                                       class="compound-percentage-input" 
+                                                                       placeholder="%" 
+                                                                       min="0" 
+                                                                       max="100" 
+                                                                       step="0.1"
+                                                                       id="compound-percentage-${ingredient.id}-0"
+                                                                       onchange="updateCompoundPercentageTotal(${ingredient.id})">
+                                                                <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
+                                                                        class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                            <div class="compound-ingredient-row">
+                                                                <input type="text" 
+                                                                       class="compound-ingredient-input" 
+                                                                       placeholder="Substitute ingredient 2"
+                                                                       id="compound-ingredient-${ingredient.id}-1">
+                                                                <input type="number" 
+                                                                       class="compound-percentage-input" 
+                                                                       placeholder="%" 
+                                                                       min="0" 
+                                                                       max="100" 
+                                                                       step="0.1"
+                                                                       id="compound-percentage-${ingredient.id}-1"
+                                                                       onchange="updateCompoundPercentageTotal(${ingredient.id})">
+                                                                <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
+                                                                        class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div id="compound-total-${ingredient.id}" class="percentage-total">Total: 0%</div>
+                                                        <div style="margin-top: 8px; display: flex; gap: 4px; justify-content: center;">
+                                                            <button onclick="addCompoundIngredientRow(${ingredient.id})" 
+                                                                    class="btn" style="background: #10b981; color: white; font-size: 10px; padding: 3px 6px;">
+                                                                + Add Ingredient
+                                                            </button>
+                                                            <button onclick="applyCompoundSubstitution(${ingredient.id})" 
+                                                                    class="btn btn-compound">
+                                                                Apply Split
+                                                            </button>
+                                                            <button onclick="hideCompoundSubstitutionForm(${ingredient.id})" 
+                                                                    class="btn" style="background: #6b7280; color: white; font-size: 10px; padding: 3px 6px;">
+                                                                Cancel
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ` : ''}
