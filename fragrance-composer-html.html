@@ -3612,6 +3612,105 @@
             });
         }
         
+        function calculateTerritoryAllocations() {
+            if (ingredients.length === 0) return [];
+            
+            const totalActives = getTotalActives();
+            const territories = [];
+            
+            // Calculate territory data for each ingredient
+            ingredients.forEach((ingredient, index) => {
+                const actives = getActives(ingredient);
+                const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                
+                // Inverse territory calculation: higher ratio = smaller territory
+                // Scale territory radius inversely to active ratio
+                const minTerritoryRadius = 1.5; // Minimum territory for high-concentration ingredients
+                const maxTerritoryRadius = 6.0; // Maximum territory for low-concentration ingredients
+                
+                // Inverse mapping: 100% ratio gets minRadius, 0% ratio gets maxRadius
+                const territoryRadius = maxTerritoryRadius - (activeRatio * (maxTerritoryRadius - minTerritoryRadius));
+                
+                territories.push({
+                    ingredient: ingredient,
+                    activeRatio: activeRatio,
+                    territoryRadius: territoryRadius,
+                    index: index
+                });
+            });
+            
+            return territories;
+        }
+        
+        function assignTerritoryPositions(territories) {
+            if (territories.length === 0) return territories;
+            
+            // Simple circle packing algorithm
+            const visualizationRadius = 12; // Overall area radius
+            const positionedTerritories = [];
+            
+            // Sort by territory size (largest territories first for better packing)
+            const sortedTerritories = [...territories].sort((a, b) => b.territoryRadius - a.territoryRadius);
+            
+            sortedTerritories.forEach((territory, index) => {
+                let position = { x: 0, y: 0 };
+                let attempts = 0;
+                const maxAttempts = 100;
+                
+                if (index === 0) {
+                    // First territory goes in center
+                    position = { x: 0, y: 0 };
+                } else {
+                    // Try to find a non-overlapping position
+                    let validPosition = false;
+                    
+                    while (!validPosition && attempts < maxAttempts) {
+                        // Generate random position within visualization area
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = Math.random() * (visualizationRadius - territory.territoryRadius);
+                        
+                        position.x = Math.cos(angle) * distance;
+                        position.y = Math.sin(angle) * distance;
+                        
+                        // Check if this position overlaps with existing territories
+                        validPosition = true;
+                        for (const existingTerritory of positionedTerritories) {
+                            const dx = position.x - existingTerritory.centerX;
+                            const dy = position.y - existingTerritory.centerY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const minDistance = territory.territoryRadius + existingTerritory.territoryRadius + 0.5; // Small buffer
+                            
+                            if (distance < minDistance) {
+                                validPosition = false;
+                                break;
+                            }
+                        }
+                        
+                        attempts++;
+                    }
+                }
+                
+                // If we couldn't find a valid position, place it randomly
+                if (attempts >= maxAttempts) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * visualizationRadius * 0.8;
+                    position.x = Math.cos(angle) * distance;
+                    position.y = Math.sin(angle) * distance;
+                }
+                
+                // Store the positioned territory
+                const positionedTerritory = {
+                    ...territory,
+                    centerX: position.x,
+                    centerY: position.y
+                };
+                
+                positionedTerritories.push(positionedTerritory);
+            });
+            
+            return positionedTerritories;
+        }
+        
         function renderVisualization() {
             if (!scene || !renderer) {
                 setTimeout(initializeMolecularVisualization, 100);
@@ -3635,6 +3734,10 @@
             
             // Assign visual properties
             assignIngredientVisuals();
+            
+            // Calculate territory allocations
+            const territories = calculateTerritoryAllocations();
+            const positionedTerritories = assignTerritoryPositions(territories);
             
             // Create molecules for each ingredient
             const totalActives = getTotalActives();
@@ -3676,11 +3779,25 @@
                 // Create wireframe mesh for edges
                 const wireframeMesh = new THREE.Mesh(geometry, wireframeMaterial);
                 
-                // Position on a flat plane for total visibility
-                const spread = 15;
-                const x = (Math.random() - 0.5) * spread;
-                const y = (Math.random() - 0.5) * spread;
+                // Find this ingredient's territory
+                const territory = positionedTerritories.find(t => t.ingredient.id === ingredient.id);
+                
+                let x, y;
                 const z = 0; // All molecules on the same plane for perfect visibility
+                
+                if (territory) {
+                    // Position within assigned territory (random position within territory circle)
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * territory.territoryRadius * 0.8; // Stay within 80% of territory
+                    
+                    x = territory.centerX + Math.cos(angle) * distance;
+                    y = territory.centerY + Math.sin(angle) * distance;
+                } else {
+                    // Fallback to old positioning if territory not found
+                    const spread = 15;
+                    x = (Math.random() - 0.5) * spread;
+                    y = (Math.random() - 0.5) * spread;
+                }
                 
                 mesh.position.set(x, y, z);
                 wireframeMesh.position.set(x, y, z);
@@ -3929,8 +4046,11 @@
                 <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px;">
                     ${availableIngredients}/${totalIngredients} spherical molecules available in inventory
                 </div>
+                <div style="font-size: 10px; color: #64748b; margin-bottom: 8px;">
+                    <strong>Territory System Active:</strong> Higher concentration = smaller territory, lower concentration = more roaming space
+                </div>
                 <div style="font-size: 10px; color: #64748b;">
-                    <strong>All molecules are now spheres</strong> - size represents active ingredient concentration
+                    Sphere size represents active concentration • Territory size is inversely proportional
                 </div>
             `;
         }
@@ -4340,12 +4460,19 @@
             const tooltip = document.getElementById('visualizationTooltip');
             const inventoryStatus = getInventoryStatus(ingredient.name);
             
+            // Calculate territory info for this ingredient
+            const totalActives = getTotalActives();
+            const actives = getActives(ingredient);
+            const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+            const territoryRadius = 6.0 - (activeRatio * 4.5); // Same calculation as in calculateTerritoryAllocations
+            
             const tooltipHTML = `
                 <div style="font-weight: 600; color: ${ingredientColors.get(ingredient.name)};">${ingredient.name}</div>
                 <div style="margin: 4px 0; font-size: 11px;">
                     Volume: ${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%<br>
                     Actives: ${getActives(ingredient).toFixed(2)}μL (${getIngredientPercentage(ingredient)}%)<br>
-                    Group: ${ingredient.group}
+                    Group: ${ingredient.group}<br>
+                    Territory: ${territoryRadius.toFixed(1)} radius (${activeRatio > 0.1 ? 'constrained' : 'roaming'})
                 </div>
                 <div style="color: ${inventoryStatus.available ? '#10b981' : '#ef4444'}; font-size: 11px;">
                     ${inventoryStatus.available ? 
