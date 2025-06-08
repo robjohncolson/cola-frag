@@ -4205,7 +4205,7 @@
                 return;
             }
             
-            // Clear existing molecules
+            // Clear existing molecules and plane
             molecules.forEach(mol => {
                 if (mol.group) {
                     scene.remove(mol.group);
@@ -4214,6 +4214,12 @@
                 }
             });
             molecules = [];
+            
+            // Remove existing fragrance plane if it exists
+            const existingPlane = scene.getObjectByName('fragrancePlane');
+            if (existingPlane) {
+                scene.remove(existingPlane);
+            }
             
             // Assign visual properties
             assignIngredientVisuals();
@@ -4336,6 +4342,9 @@
                 molecules.push({ mesh, ingredient, group: moleculeGroup });
             });
             
+            // Create the fragrance field plane
+            createFragrancePlane();
+            
             // Update HUD
             document.getElementById('moleculeCount').textContent = molecules.length;
             document.getElementById('cameraInfo').textContent = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
@@ -4350,6 +4359,77 @@
             return new THREE.SphereGeometry(radius, 16, 12);
         }
         
+        function createFragrancePlane() {
+            if (ingredients.length === 0) return;
+            
+            // Calculate combined color from all ingredients weighted by their active amounts and impact
+            const totalActives = getTotalActives();
+            let combinedR = 0, combinedG = 0, combinedB = 0;
+            let totalWeight = 0;
+            
+            ingredients.forEach(ingredient => {
+                const actives = getActives(ingredient);
+                const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                const inverseLuminosity = Math.max(0.1, 1.0 - activeRatio); // High-impact ingredients have more influence
+                const weight = actives * inverseLuminosity; // Weight by both amount and impact
+                
+                const color = new THREE.Color(ingredientColors.get(ingredient.name) || '#ffffff');
+                combinedR += color.r * weight;
+                combinedG += color.g * weight;
+                combinedB += color.b * weight;
+                totalWeight += weight;
+            });
+            
+            // Normalize the combined color
+            if (totalWeight > 0) {
+                combinedR /= totalWeight;
+                combinedG /= totalWeight;
+                combinedB /= totalWeight;
+            }
+            
+            const planeColor = new THREE.Color(combinedR, combinedG, combinedB);
+            
+            // Calculate overall composition intensity
+            const averageImpact = ingredients.reduce((sum, ing) => {
+                const actives = getActives(ing);
+                const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                return sum + Math.max(0.1, 1.0 - activeRatio);
+            }, 0) / ingredients.length;
+            
+            // Create plane geometry (large enough to cover the visualization area)
+            const planeGeometry = new THREE.PlaneGeometry(40, 40, 32, 32);
+            
+            // Create material with combined color and lighting
+            const planeMaterial = new THREE.MeshPhongMaterial({
+                color: planeColor,
+                emissive: planeColor.clone().multiplyScalar(0.1 + averageImpact * 0.2), // Subtle glow based on impact
+                transparent: true,
+                opacity: 0.3 + (averageImpact * 0.2), // More visible with higher impact ingredients
+                shininess: 30,
+                specular: planeColor.clone().multiplyScalar(0.3)
+            });
+            
+            // Create the plane mesh
+            const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+            planeMesh.name = 'fragrancePlane';
+            planeMesh.position.set(0, 0, -1); // Position slightly below the spheres
+            planeMesh.rotation.x = 0; // Keep it horizontal
+            
+            // Add subtle vertex displacement for organic feel
+            const positions = planeGeometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const distance = Math.sqrt(x * x + y * y);
+                const wave = Math.sin(distance * 0.1) * 0.2 * averageImpact; // Subtle waves based on impact
+                positions.setZ(i, wave);
+            }
+            positions.needsUpdate = true;
+            planeGeometry.computeVertexNormals();
+            
+            scene.add(planeMesh);
+        }
+        
         function renderEmptyMolecularScene() {
             molecules.forEach(mol => {
                 if (mol.group) {
@@ -4359,6 +4439,12 @@
                 }
             });
             molecules = [];
+            
+            // Remove fragrance plane when empty
+            const existingPlane = scene.getObjectByName('fragrancePlane');
+            if (existingPlane) {
+                scene.remove(existingPlane);
+            }
             
             document.getElementById('moleculeCount').textContent = '0';
             document.getElementById('visualizationLegend').innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No molecules to display</div>';
