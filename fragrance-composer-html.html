@@ -751,15 +751,16 @@
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
-            overflow: hidden;
+            overflow: auto; /* Allow horizontal and vertical scrolling */
             max-height: 400px;
-            overflow-y: auto;
+            min-width: 100%;
         }
         
         .db-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
+            min-width: 800px; /* Ensure table has minimum width for all columns */
         }
         
         .db-table th {
@@ -771,6 +772,16 @@
             cursor: pointer;
             user-select: none;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .db-table th:last-child {
+            background: #e0f2fe; /* Light blue background for actions column */
+            position: sticky;
+            right: 0;
+            z-index: 11;
         }
         
         .db-table th:hover {
@@ -781,6 +792,14 @@
             padding: 6px;
             border-bottom: 1px solid #f3f4f6;
             vertical-align: top;
+        }
+        
+        .db-table td:last-child {
+            background: #f0f9ff; /* Light blue background for actions column */
+            position: sticky;
+            right: 0;
+            z-index: 9;
+            border-left: 1px solid #e0f2fe;
         }
         
         .db-table tr:hover {
@@ -1012,6 +1031,9 @@
                             <i data-lucide="list" class="icon"></i>
                             Ingredient Database
                         </h2>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            💡 <strong>Tip:</strong> Scroll horizontally to see all columns. The blue "Actions" column on the right has edit buttons (✏️).
+                        </div>
                         <div id="databaseTable" class="database-table">
                             <!-- Table will be populated by JavaScript -->
                         </div>
@@ -2597,7 +2619,13 @@
             const container = document.getElementById('databaseTable');
             
             if (filteredDatabase.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">No ingredients in database</div>';
+                container.innerHTML = `
+                    <div style="text-align: center; color: #6b7280; padding: 20px;">
+                        <div style="font-size: 14px; margin-bottom: 8px;">📝 No ingredients in database</div>
+                        <div style="font-size: 11px;">Add ingredients to your recipe to build the database!</div>
+                        <div style="font-size: 11px; margin-top: 4px;">Total database entries: ${ingredientDatabase.length}</div>
+                    </div>
+                `;
                 return;
             }
             
@@ -2633,8 +2661,8 @@
                                 <td class="notes-cell" title="${entry.notes || ''}">${entry.notes || ''}</td>
                                 <td class="subs-cell" title="${(entry.substitutions || []).join(', ')}">${(entry.substitutions || []).join(', ')}</td>
                                 <td class="db-actions">
-                                    <button onclick="editDatabaseEntry(${entry.id})" class="db-btn" title="Edit">
-                                        <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                    <button onclick="editDatabaseEntry(${entry.id})" class="db-btn" title="Edit" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px;">
+                                        ✏️ Edit
                                     </button>
                                 </td>
                             </tr>
@@ -2678,11 +2706,11 @@
                 <td><textarea class="db-edit-textarea" id="edit-db-notes-${entryId}" placeholder="Notes about this ingredient...">${entry.notes || ''}</textarea></td>
                 <td><textarea class="db-edit-textarea" id="edit-db-subs-${entryId}" placeholder="Comma-separated substitutions">${(entry.substitutions || []).join(', ')}</textarea></td>
                 <td class="db-actions">
-                    <button onclick="saveDatabaseEntry(${entryId})" class="db-btn" title="Save" style="color: #10b981;">
-                        <i data-lucide="check" style="width: 12px; height: 12px;"></i>
+                    <button onclick="saveDatabaseEntry(${entryId})" class="db-btn" title="Save" style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 4px;">
+                        ✅ Save
                     </button>
-                    <button onclick="cancelEditDatabase()" class="db-btn" title="Cancel" style="color: #ef4444;">
-                        <i data-lucide="x" style="width: 12px; height: 12px;"></i>
+                    <button onclick="cancelEditDatabase()" class="db-btn" title="Cancel" style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px;">
+                        ❌ Cancel
                     </button>
                 </td>
             `;
