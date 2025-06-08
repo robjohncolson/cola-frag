@@ -1242,18 +1242,18 @@
                             </div>
                         </div>
                         
-                        <!-- Territory Size Power -->
+                        <!-- Gravitational Strength -->
                         <div style="margin-bottom: 8px;">
                             <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
-                                🟣 Territory Size Power: <span id="territoryPowerValue">1.0</span>
+                                🌌 Gravitational Strength: <span id="gravityValue">2.0</span>
                             </label>
-                            <input type="range" id="territoryPowerSlider" min="1" max="3" step="0.1" value="1.0" 
+                            <input type="range" id="gravitySlider" min="0.1" max="5.0" step="0.1" value="2.0" 
                                    style="width: 100%; margin-bottom: 4px;" 
-                                   oninput="updateTerritoryPower(this.value)">
+                                   oninput="updateGravitationalConstant(this.value)">
                             <div style="display: flex; justify-content: space-between; font-size: 10px; color: #6b7280;">
-                                <span>1.0 (Linear)</span>
-                                <span>2.0 (Squared)</span>
-                                <span>3.0 (Cubed)</span>
+                                <span>0.1 (Weak)</span>
+                                <span>2.5 (Medium)</span>
+                                <span>5.0 (Strong)</span>
                             </div>
                         </div>
                     </div>
@@ -1356,7 +1356,6 @@
         
         // Power Controls for Scaling
         let spherePower = 2.0; // Default to squared for sphere sizing
-        let territoryPower = 1.0; // Default to linear for territory sizing
         
         // Notes and Substitutions
         let expandedIngredients = new Set(); // Track which ingredient cards are expanded
@@ -4086,9 +4085,9 @@
             }
         }
         
-        function updateTerritoryPower(value) {
-            territoryPower = parseFloat(value);
-            document.getElementById('territoryPowerValue').textContent = territoryPower.toFixed(1);
+        function updateGravitationalConstant(value) {
+            window.gravitationalConstant = parseFloat(value);
+            document.getElementById('gravityValue').textContent = window.gravitationalConstant.toFixed(1);
             
             // Update visualization in real-time
             if (currentTab === 'visualizer') {
@@ -4098,7 +4097,7 @@
         
         function initializeGravitationalSystem() {
             // Physics constants
-            window.gravitationalConstant = 0.5; // Tunable gravity strength
+            window.gravitationalConstant = 2.0; // Tunable gravity strength
             window.dampening = 0.95; // Velocity dampening to settle system
             window.timeStep = 0.016; // ~60fps physics updates
             window.physicsEnabled = true;
