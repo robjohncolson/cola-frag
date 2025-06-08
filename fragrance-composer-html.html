@@ -974,14 +974,18 @@
                 <p class="subtitle">Create and manage your fragrance formulations</p>
                 
                 <!-- Tab Navigation -->
-                <div style="display: flex; gap: 8px; margin-top: 16px;">
-                    <button onclick="switchTab('composer')" id="composerTab" class="btn" style="flex: 1; font-size: 12px;">
+                <div style="display: flex; gap: 6px; margin-top: 16px;">
+                    <button onclick="switchTab('composer')" id="composerTab" class="btn" style="flex: 1; font-size: 11px;">
                         <i data-lucide="beaker" class="icon"></i>
                         Composer
                     </button>
-                    <button onclick="switchTab('database')" id="databaseTab" class="btn" style="flex: 1; font-size: 12px; background: #6b7280; color: white;">
+                    <button onclick="switchTab('database')" id="databaseTab" class="btn" style="flex: 1; font-size: 11px; background: #6b7280; color: white;">
                         <i data-lucide="database" class="icon"></i>
                         Database
+                    </button>
+                    <button onclick="switchTab('visualizer')" id="visualizerTab" class="btn" style="flex: 1; font-size: 11px; background: #6b7280; color: white;">
+                        <i data-lucide="bar-chart-3" class="icon"></i>
+                        Visualizer
                     </button>
                 </div>
             </div>
@@ -1138,6 +1142,42 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Visualizer Tab Content -->
+                <div id="visualizerContent" style="display: none;">
+                    <!-- View Mode Selection -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="bar-chart-3" class="icon"></i>
+                            Visualization Mode
+                        </h2>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button onclick="setVisualizationMode('treemap')" id="treemapModeBtn" class="btn" style="flex: 1; background: #3b82f6; color: white; font-size: 11px;">
+                                📊 Treemap
+                            </button>
+                            <button onclick="setVisualizationMode('bottle')" id="bottleModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
+                                🧪 Bottle
+                            </button>
+                            <button onclick="setVisualizationMode('bubble')" id="bubbleModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
+                                ⚫ Bubbles
+                            </button>
+                        </div>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            💡 <strong>Hover</strong> over visualization elements to see detailed ingredient information
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics Summary -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="pie-chart" class="icon"></i>
+                            Recipe Statistics
+                        </h2>
+                        <div id="visualizerStats" style="font-size: 12px; color: #4b5563;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1166,8 +1206,27 @@
                 🎉 Recipe Complete! All ingredients are available in your inventory
             </div>
 
+            <!-- Visualization Container -->
+            <div id="visualizationContainer" class="groups-container" style="display: none;">
+                <div style="display: flex; height: 100%; gap: 16px;">
+                    <!-- Main Visualization Area -->
+                    <div style="flex: 1; background: white; border-radius: 8px; padding: 20px; border: 1px solid #e5e7eb;">
+                        <canvas id="visualizationCanvas" style="width: 100%; height: 500px; cursor: pointer;"></canvas>
+                        <div id="visualizationTooltip" style="position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000;"></div>
+                    </div>
+                    
+                    <!-- Legend Sidebar -->
+                    <div style="width: 250px; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e7eb;">
+                        <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #374151;">Groups & Inventory</h3>
+                        <div id="visualizationLegend">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Groups Container -->
-            <div class="groups-container">
+            <div id="groupsContainer" class="groups-container">
                 <!-- Recipe Coverage Analysis -->
                 <div class="recipe-coverage" id="recipeCoverage" style="display: none;">
                     <div class="coverage-header">
@@ -1179,7 +1238,7 @@
                 </div>
                 
                 <div class="container">
-                    <div id="groupsContainer"></div>
+                    <div id="groupsGrid"></div>
                 </div>
             </div>
         </div>
@@ -2489,7 +2548,7 @@
             document.getElementById('totalGroups').textContent = Object.keys(groups).length;
 
             // Render groups
-            const container = document.getElementById('groupsContainer');
+            const container = document.getElementById('groupsGrid');
             container.innerHTML = '';
 
             Object.entries(groups).forEach(([groupName, groupData]) => {
@@ -2982,13 +3041,21 @@
             // Update tab buttons
             document.getElementById('composerTab').className = tabName === 'composer' ? 'btn tab-active' : 'btn tab-inactive';
             document.getElementById('databaseTab').className = tabName === 'database' ? 'btn tab-active' : 'btn tab-inactive';
+            document.getElementById('visualizerTab').className = tabName === 'visualizer' ? 'btn tab-active' : 'btn tab-inactive';
             
-            // Show/hide content
+            // Show/hide sidebar content
             document.getElementById('composerContent').style.display = tabName === 'composer' ? 'block' : 'none';
             document.getElementById('databaseContent').style.display = tabName === 'database' ? 'block' : 'none';
+            document.getElementById('visualizerContent').style.display = tabName === 'visualizer' ? 'block' : 'none';
+            
+            // Show/hide main content areas
+            document.getElementById('groupsContainer').style.display = tabName === 'composer' ? 'block' : 'none';
+            document.getElementById('visualizationContainer').style.display = tabName === 'visualizer' ? 'block' : 'none';
             
             if (tabName === 'database') {
                 renderDatabase();
+            } else if (tabName === 'visualizer') {
+                renderVisualization();
             }
         }
         
@@ -3276,6 +3343,434 @@
             editingDatabaseEntry = null;
             renderDatabase();
         }
+        
+        // Visualization Functions
+        let currentVisualizationMode = 'treemap';
+        let canvas, ctx, tooltip;
+        let visualizationData = [];
+        let hoveredElement = null;
+        
+        function setVisualizationMode(mode) {
+            currentVisualizationMode = mode;
+            
+            // Update button states
+            document.getElementById('treemapModeBtn').className = mode === 'treemap' ? 'btn' : 'btn';
+            document.getElementById('bottleModeBtn').className = mode === 'bottle' ? 'btn' : 'btn';
+            document.getElementById('bubbleModeBtn').className = mode === 'bubble' ? 'btn' : 'btn';
+            
+            if (mode === 'treemap') {
+                document.getElementById('treemapModeBtn').style.background = '#3b82f6';
+                document.getElementById('bottleModeBtn').style.background = '#6b7280';
+                document.getElementById('bubbleModeBtn').style.background = '#6b7280';
+            } else if (mode === 'bottle') {
+                document.getElementById('treemapModeBtn').style.background = '#6b7280';
+                document.getElementById('bottleModeBtn').style.background = '#3b82f6';
+                document.getElementById('bubbleModeBtn').style.background = '#6b7280';
+            } else if (mode === 'bubble') {
+                document.getElementById('treemapModeBtn').style.background = '#6b7280';
+                document.getElementById('bottleModeBtn').style.background = '#6b7280';
+                document.getElementById('bubbleModeBtn').style.background = '#3b82f6';
+            }
+            
+            renderVisualization();
+        }
+        
+        function initializeVisualization() {
+            canvas = document.getElementById('visualizationCanvas');
+            tooltip = document.getElementById('visualizationTooltip');
+            
+            if (!canvas) return;
+            
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 40;
+            canvas.height = 500;
+            
+            // Add mouse event listeners
+            canvas.addEventListener('mousemove', handleVisualizationMouseMove);
+            canvas.addEventListener('mouseleave', handleVisualizationMouseLeave);
+            
+            renderVisualization();
+        }
+        
+        function renderVisualization() {
+            if (!canvas || !ctx) {
+                setTimeout(initializeVisualization, 100);
+                return;
+            }
+            
+            if (ingredients.length === 0) {
+                renderEmptyVisualization();
+                return;
+            }
+            
+            // Prepare data
+            prepareVisualizationData();
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Render based on mode
+            if (currentVisualizationMode === 'treemap') {
+                renderTreemap();
+            } else if (currentVisualizationMode === 'bottle') {
+                renderBottle();
+            } else if (currentVisualizationMode === 'bubble') {
+                renderBubble();
+            }
+            
+            // Update legend and stats
+            updateVisualizationLegend();
+            updateVisualizationStats();
+        }
+        
+        function renderEmptyVisualization() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw empty state
+            ctx.fillStyle = '#f3f4f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Add ingredients to your recipe to see visualization', canvas.width / 2, canvas.height / 2);
+            
+            // Clear legend and stats
+            document.getElementById('visualizationLegend').innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No data to display</div>';
+            document.getElementById('visualizerStats').innerHTML = '<div style="color: #9ca3af;">Add ingredients to see statistics</div>';
+        }
+        
+        function prepareVisualizationData() {
+            // Group ingredients by their groups
+            const groupedData = {};
+            const totalVolume = getTotalActives();
+            
+            Object.entries(groups).forEach(([groupName, groupData]) => {
+                if (groupData.ingredients.length === 0) return;
+                
+                const groupIngredients = groupData.ingredients.map(id => 
+                    ingredients.find(i => i.id === id)
+                ).filter(Boolean);
+                
+                if (groupIngredients.length === 0) return;
+                
+                const groupVolume = groupIngredients.reduce((sum, ing) => sum + getActives(ing), 0);
+                const groupPercentage = totalVolume > 0 ? (groupVolume / totalVolume) * 100 : 0;
+                
+                groupedData[groupName] = {
+                    name: groupName,
+                    ingredients: groupIngredients.map(ingredient => {
+                        const actives = getActives(ingredient);
+                        const inventoryStatus = getInventoryStatus(ingredient.name);
+                        
+                        return {
+                            id: ingredient.id,
+                            name: ingredient.name,
+                            volume: ingredient.volume,
+                            actives: actives,
+                            percentage: totalVolume > 0 ? (actives / totalVolume) * 100 : 0,
+                            groupPercentage: groupVolume > 0 ? (actives / groupVolume) * 100 : 0,
+                            dilution: ingredient.dilution,
+                            hasInventory: inventoryStatus.available,
+                            inventoryAmount: inventoryStatus.amount,
+                            inventoryUnit: inventoryStatus.unit,
+                            isCompoundSubstitute: ingredient.isCompoundSubstitute,
+                            originalIngredient: ingredient.originalIngredient
+                        };
+                    }),
+                    totalVolume: groupVolume,
+                    percentage: groupPercentage,
+                    color: getGroupColor(groupName),
+                    expanded: groupData.expanded
+                };
+            });
+            
+            visualizationData = Object.values(groupedData);
+        }
+        
+        function getGroupColor(groupName) {
+            const groupInfo = groups[groupName];
+            if (groupInfo && groupInfo.color) {
+                // Convert CSS class to hex color
+                const colorMap = {
+                    'bg-gray-100': '#f3f4f6',
+                    'bg-blue-50': '#eff6ff',
+                    'bg-green-50': '#f0fdf4',
+                    'bg-purple-50': '#faf5ff',
+                    'bg-yellow-50': '#fefce8',
+                    'bg-pink-50': '#fdf2f8',
+                    'bg-indigo-50': '#eef2ff',
+                    'bg-red-50': '#fef2f2',
+                    'bg-orange-50': '#fff7ed'
+                };
+                
+                const borderColorMap = {
+                    'bg-gray-100': '#6b7280',
+                    'bg-blue-50': '#3b82f6',
+                    'bg-green-50': '#10b981',
+                    'bg-purple-50': '#8b5cf6',
+                    'bg-yellow-50': '#f59e0b',
+                    'bg-pink-50': '#ec4899',
+                    'bg-indigo-50': '#6366f1',
+                    'bg-red-50': '#ef4444',
+                    'bg-orange-50': '#f97316'
+                };
+                
+                return {
+                    fill: colorMap[groupInfo.color] || '#f3f4f6',
+                    border: borderColorMap[groupInfo.color] || '#6b7280'
+                };
+            }
+            
+            return { fill: '#f3f4f6', border: '#6b7280' };
+        }
+        
+        // Treemap implementation
+        function renderTreemap() {
+            if (visualizationData.length === 0) return;
+            
+            const padding = 4;
+            const headerHeight = 20;
+            
+            // Calculate layout using simple treemap algorithm
+            let y = 0;
+            
+            visualizationData.forEach(group => {
+                if (group.totalVolume === 0) return;
+                
+                const groupHeight = Math.max(50, (group.percentage / 100) * (canvas.height - padding * visualizationData.length));
+                
+                // Draw group header
+                ctx.fillStyle = group.color.border;
+                ctx.fillRect(0, y, canvas.width, headerHeight);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`${group.name} (${group.percentage.toFixed(1)}%)`, 8, y + 14);
+                
+                // Layout ingredients in this group
+                let x = 0;
+                const availableWidth = canvas.width;
+                const availableHeight = groupHeight - headerHeight;
+                
+                group.ingredients.forEach((ingredient, index) => {
+                    const ingredientWidth = (ingredient.groupPercentage / 100) * availableWidth;
+                    
+                    // Store bounds for hover detection
+                    ingredient.bounds = {
+                        x: x,
+                        y: y + headerHeight,
+                        width: ingredientWidth,
+                        height: availableHeight,
+                        group: group
+                    };
+                    
+                    // Draw ingredient rectangle
+                    ctx.fillStyle = group.color.fill;
+                    ctx.fillRect(x, y + headerHeight, ingredientWidth, availableHeight);
+                    
+                    // Draw border (dashed if no inventory)
+                    ctx.strokeStyle = group.color.border;
+                    ctx.lineWidth = ingredient.hasInventory ? 2 : 1;
+                    
+                    if (!ingredient.hasInventory) {
+                        ctx.setLineDash([5, 5]);
+                    } else {
+                        ctx.setLineDash([]);
+                    }
+                    
+                    ctx.strokeRect(x, y + headerHeight, ingredientWidth, availableHeight);
+                    
+                    // Draw ingredient label if there's space
+                    if (ingredientWidth > 60 && availableHeight > 30) {
+                        ctx.fillStyle = group.color.border;
+                        ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+                        ctx.textAlign = 'center';
+                        
+                        const textX = x + ingredientWidth / 2;
+                        const textY = y + headerHeight + availableHeight / 2;
+                        
+                        // Ingredient name
+                        ctx.fillText(ingredient.name.substring(0, Math.floor(ingredientWidth / 7)), textX, textY - 5);
+                        
+                        // Percentage
+                        ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+                        ctx.fillText(`${ingredient.percentage.toFixed(1)}%`, textX, textY + 8);
+                    }
+                    
+                    x += ingredientWidth;
+                });
+                
+                y += groupHeight + padding;
+            });
+            
+            ctx.setLineDash([]); // Reset line dash
+        }
+        
+        // Placeholder functions for other visualization modes
+        function renderBottle() {
+            // TODO: Implement bottle visualization
+            ctx.fillStyle = '#f3f4f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Bottle visualization coming soon!', canvas.width / 2, canvas.height / 2);
+        }
+        
+        function renderBubble() {
+            // TODO: Implement bubble visualization
+            ctx.fillStyle = '#f3f4f6';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Bubble visualization coming soon!', canvas.width / 2, canvas.height / 2);
+        }
+        
+        function updateVisualizationLegend() {
+            const legend = document.getElementById('visualizationLegend');
+            if (!legend) return;
+            
+            if (visualizationData.length === 0) {
+                legend.innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No data to display</div>';
+                return;
+            }
+            
+            const legendHTML = visualizationData.map(group => `
+                <div style="margin-bottom: 12px; padding: 8px; border-radius: 6px; background: ${group.color.fill}; border: 1px solid ${group.color.border};">
+                    <div style="font-weight: 600; font-size: 12px; color: ${group.color.border}; margin-bottom: 4px;">
+                        ${group.name}
+                    </div>
+                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 6px;">
+                        ${group.totalVolume.toFixed(1)}μL (${group.percentage.toFixed(1)}%)
+                    </div>
+                    <div style="font-size: 10px;">
+                        ${group.ingredients.map(ing => `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                <span>${ing.hasInventory ? '⭐' : '☆'} ${ing.name}</span>
+                                <span>${ing.percentage.toFixed(1)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            legend.innerHTML = legendHTML;
+        }
+        
+        function updateVisualizationStats() {
+            const stats = document.getElementById('visualizerStats');
+            if (!stats) return;
+            
+            if (ingredients.length === 0) {
+                stats.innerHTML = '<div style="color: #9ca3af;">Add ingredients to see statistics</div>';
+                return;
+            }
+            
+            const totalActives = getTotalActives();
+            const totalIngredients = ingredients.length;
+            const totalGroups = visualizationData.length;
+            const availableIngredients = ingredients.filter(ing => getInventoryStatus(ing.name).available).length;
+            const coverage = totalIngredients > 0 ? (availableIngredients / totalIngredients * 100).toFixed(1) : 0;
+            
+            stats.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937;">Total Actives</div>
+                        <div style="font-size: 16px; color: #3b82f6;">${totalActives.toFixed(2)} μL</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937;">Ingredients</div>
+                        <div style="font-size: 16px; color: #3b82f6;">${totalIngredients}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937;">Groups</div>
+                        <div style="font-size: 16px; color: #3b82f6;">${totalGroups}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #1f2937;">Coverage</div>
+                        <div style="font-size: 16px; color: ${coverage >= 100 ? '#10b981' : coverage >= 50 ? '#f59e0b' : '#ef4444'};">${coverage}%</div>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #6b7280;">
+                    ${availableIngredients}/${totalIngredients} ingredients available in inventory
+                </div>
+            `;
+        }
+        
+        function handleVisualizationMouseMove(event) {
+            if (currentVisualizationMode !== 'treemap') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            // Find hovered element
+            let found = null;
+            
+            visualizationData.forEach(group => {
+                group.ingredients.forEach(ingredient => {
+                    if (ingredient.bounds &&
+                        mouseX >= ingredient.bounds.x &&
+                        mouseX <= ingredient.bounds.x + ingredient.bounds.width &&
+                        mouseY >= ingredient.bounds.y &&
+                        mouseY <= ingredient.bounds.y + ingredient.bounds.height) {
+                        found = ingredient;
+                    }
+                });
+            });
+            
+            if (found !== hoveredElement) {
+                hoveredElement = found;
+                
+                if (hoveredElement) {
+                    // Show tooltip
+                    const tooltipHTML = `
+                        <div style="font-weight: 600;">${hoveredElement.name}</div>
+                        <div style="margin: 4px 0;">
+                            Volume: ${hoveredElement.volume.toFixed(1)}μL @ ${(hoveredElement.dilution * 100).toFixed(1)}%<br>
+                            Actives: ${hoveredElement.actives.toFixed(2)}μL (${hoveredElement.percentage.toFixed(1)}%)<br>
+                            Group: ${hoveredElement.bounds.group.name}
+                        </div>
+                        <div style="color: ${hoveredElement.hasInventory ? '#10b981' : '#ef4444'};">
+                            ${hoveredElement.hasInventory ? 
+                                `✓ In Stock: ${hoveredElement.inventoryAmount}${hoveredElement.inventoryUnit}` : 
+                                '✗ Not in Inventory'
+                            }
+                        </div>
+                    `;
+                    
+                    tooltip.innerHTML = tooltipHTML;
+                    tooltip.style.left = (event.clientX + 10) + 'px';
+                    tooltip.style.top = (event.clientY - 10) + 'px';
+                    tooltip.style.opacity = '1';
+                } else {
+                    // Hide tooltip
+                    tooltip.style.opacity = '0';
+                }
+                
+                // Update cursor
+                canvas.style.cursor = hoveredElement ? 'pointer' : 'default';
+            }
+        }
+        
+        function handleVisualizationMouseLeave() {
+            hoveredElement = null;
+            tooltip.style.opacity = '0';
+            canvas.style.cursor = 'default';
+        }
+        
+        // Initialize visualization when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeVisualization, 500);
+        });
     </script>
 </body>
 </html>
