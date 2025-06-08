@@ -1356,12 +1356,33 @@
 
         // Import/Export functions
         function exportRecipe() {
+            // Collect compound substitution information
+            const compoundSubstitutions = {};
+            ingredients.forEach(ingredient => {
+                if (ingredient.isCompoundSubstitute && ingredient.compoundId) {
+                    if (!compoundSubstitutions[ingredient.compoundId]) {
+                        compoundSubstitutions[ingredient.compoundId] = {
+                            originalIngredient: ingredient.originalIngredient,
+                            originalGroup: ingredient.group,
+                            substitutes: []
+                        };
+                    }
+                    compoundSubstitutions[ingredient.compoundId].substitutes.push({
+                        name: ingredient.name,
+                        percentage: ingredient.compoundPercentage,
+                        volume: ingredient.volume,
+                        dilution: ingredient.dilution
+                    });
+                }
+            });
+
             const recipeData = {
-                version: "1.0",
+                version: "1.1",
                 timestamp: new Date().toISOString(),
                 totalActives: getTotalActives(),
                 ingredients: ingredients,
-                groups: groups
+                groups: groups,
+                compoundSubstitutions: compoundSubstitutions
             };
 
             const jsonString = JSON.stringify(recipeData, null, 2);
@@ -1437,6 +1458,13 @@
                         });
                     }
 
+                    // Handle compound substitutions (for version 1.1+)
+                    if (recipeData.compoundSubstitutions && typeof recipeData.compoundSubstitutions === 'object') {
+                        // The compound substitutions are already in the ingredients array with proper metadata
+                        // We just need to make sure they're properly linked
+                        console.log('Imported compound substitutions:', Object.keys(recipeData.compoundSubstitutions).length);
+                    }
+
                     // Update preview
                     document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
 
@@ -1463,12 +1491,33 @@
 
         function updateJsonPreview() {
             if (ingredients.length > 0 || Object.keys(groups).length > 1) {
+                // Collect compound substitution information for preview
+                const compoundSubstitutions = {};
+                ingredients.forEach(ingredient => {
+                    if (ingredient.isCompoundSubstitute && ingredient.compoundId) {
+                        if (!compoundSubstitutions[ingredient.compoundId]) {
+                            compoundSubstitutions[ingredient.compoundId] = {
+                                originalIngredient: ingredient.originalIngredient,
+                                originalGroup: ingredient.group,
+                                substitutes: []
+                            };
+                        }
+                        compoundSubstitutions[ingredient.compoundId].substitutes.push({
+                            name: ingredient.name,
+                            percentage: ingredient.compoundPercentage,
+                            volume: ingredient.volume,
+                            dilution: ingredient.dilution
+                        });
+                    }
+                });
+
                 const recipeData = {
-                    version: "1.0",
+                    version: "1.1",
                     timestamp: new Date().toISOString(),
                     totalActives: getTotalActives(),
                     ingredients: ingredients,
-                    groups: groups
+                    groups: groups,
+                    compoundSubstitutions: compoundSubstitutions
                 };
                 document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
             } else {
@@ -2621,12 +2670,27 @@
                             
                             groupDiv.innerHTML = `
                                 <div class="compound-substitution-header">
-                                    <span>${originalName} → Compound Substitution (${totalVolume.toFixed(1)}μL total)</span>
+                                    <div style="display: flex; flex-direction: column; flex: 1;">
+                                        <div style="font-weight: 600; color: #d97706;">
+                                            🔄 SPLIT SUBSTITUTION
+                                        </div>
+                                        <div style="font-size: 11px; color: #92400e; margin-top: 2px;">
+                                            Original: <strong>${originalName}</strong> (${totalVolume.toFixed(1)}μL) → ${compoundIngredients.length} substitutes
+                                        </div>
+                                    </div>
                                     <div class="compound-substitution-controls">
                                         <button onclick="undoCompoundSubstitution(${compoundId})" 
                                                 class="btn" style="background: #6b7280; color: white; font-size: 10px; padding: 2px 6px;">
                                             🔄 Undo Split
                                         </button>
+                                    </div>
+                                </div>
+                                <div style="background: #fefbf3; padding: 8px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid #f59e0b;">
+                                    <div style="font-size: 11px; color: #92400e; font-weight: 500;">
+                                        Split Breakdown:
+                                    </div>
+                                    <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">
+                                        ${compoundIngredients.map(ing => `${ing.name} (${ing.compoundPercentage}%)`).join(' + ')}
                                     </div>
                                 </div>
                                 <div class="compound-ingredients-container">
@@ -2656,7 +2720,7 @@
                                                                 ${inventoryStatus.available ? '⭐' : '☆'}
                                                             </span>
                                                             <span style="font-size: 10px; color: #d97706; background: #fef3c7; padding: 1px 4px; border-radius: 3px;">
-                                                                ${ingredient.compoundPercentage}% of ${originalName}
+                                                                Replaces ${ingredient.compoundPercentage}% of <strong>${originalName}</strong>
                                                             </span>
                                                         </div>
                                                         <p class="ingredient-details">${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%</p>
