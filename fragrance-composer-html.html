@@ -4249,21 +4249,29 @@
                 
                 // Create glowing material with enhanced visibility
                 const color = new THREE.Color(ingredientColors.get(ingredient.name) || '#ffffff');
+                
+                // Calculate inverse luminosity: smaller actives = higher impact = brighter glow
+                const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                const inverseLuminosity = Math.max(0.1, 1.0 - activeRatio); // Invert ratio, minimum 0.1 brightness
+                const emissiveIntensity = 0.2 + (inverseLuminosity * 0.6); // Range from 0.2 to 0.8
+                const opacity = 0.6 + (inverseLuminosity * 0.3); // Range from 0.6 to 0.9
+                
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
-                    emissive: color.clone().multiplyScalar(0.4),
+                    emissive: color.clone().multiplyScalar(emissiveIntensity),
                     shininess: 100,
                     transparent: true,
-                    opacity: 0.85,
+                    opacity: opacity,
                     specular: 0x444444
                 });
                 
                 // Create wireframe overlay for better definition
+                const wireframeIntensity = 1.0 + inverseLuminosity; // Brighter wireframes for high-impact ingredients
                 const wireframeMaterial = new THREE.MeshBasicMaterial({
-                    color: color.clone().multiplyScalar(1.5),
+                    color: color.clone().multiplyScalar(wireframeIntensity),
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.3
+                    opacity: 0.2 + (inverseLuminosity * 0.3) // Range from 0.2 to 0.5
                 });
                 
                 // Create main mesh with solid material
@@ -5213,12 +5221,21 @@
             const minRadius = baseMinRadius / powerMultiplier;
             const sphereRadius = minRadius + (poweredPercentage / 100) * (maxRadius - minRadius);
             
+            // Calculate luminosity for tooltip
+            const tooltipActiveRatio = totalActives > 0 ? actives / totalActives : 0;
+            const tooltipInverseLuminosity = Math.max(0.1, 1.0 - tooltipActiveRatio);
+            const impactRating = tooltipInverseLuminosity > 0.8 ? 'Very High' : 
+                               tooltipInverseLuminosity > 0.6 ? 'High' : 
+                               tooltipInverseLuminosity > 0.4 ? 'Medium' : 
+                               tooltipInverseLuminosity > 0.2 ? 'Low' : 'Very Low';
+            
             const tooltipHTML = `
                 <div style="font-weight: 600; color: ${ingredientColors.get(ingredient.name)};">${ingredient.name}</div>
                 <div style="margin: 4px 0; font-size: 11px;">
                     Volume: ${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%<br>
                     Actives: ${getActives(ingredient).toFixed(2)}μL (${getIngredientPercentage(ingredient)}%)<br>
                     Group: ${ingredient.group}<br>
+                    Impact: ${impactRating} (${(tooltipInverseLuminosity * 100).toFixed(0)}% luminosity)<br>
                     Sphere: ${sphereRadius.toFixed(2)} radius (^${spherePower} scaling)<br>
                     Territory: ${territoryRadius.toFixed(1)} radius (^${territoryPower} scaling, ${poweredActiveRatio > 0.1 ? 'constrained' : 'roaming'})
                 </div>
