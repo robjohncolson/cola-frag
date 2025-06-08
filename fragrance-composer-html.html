@@ -3607,25 +3607,21 @@
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
             
-            // Add ambient light for general illumination
-            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            // Add ambient light for general illumination (reduced to show emissive effects)
+            const ambientLight = new THREE.AmbientLight(0x202020, 0.3);
             scene.add(ambientLight);
             
-            // Add multiple point lights for dramatic effect
-            const pointLight1 = new THREE.PointLight(0xffffff, 1.5, 100);
+            // Add fewer, dimmer point lights for dramatic effect
+            const pointLight1 = new THREE.PointLight(0xffffff, 0.8, 100);
             pointLight1.position.set(10, 10, 10);
             scene.add(pointLight1);
             
-            const pointLight2 = new THREE.PointLight(0x4a9eff, 0.8, 80);
+            const pointLight2 = new THREE.PointLight(0x4a9eff, 0.4, 80);
             pointLight2.position.set(-10, -10, 5);
             scene.add(pointLight2);
             
-            const pointLight3 = new THREE.PointLight(0xff6b4a, 0.6, 60);
-            pointLight3.position.set(0, 15, -10);
-            scene.add(pointLight3);
-            
-            // Add directional light for better visibility
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            // Add directional light for better visibility (reduced intensity)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
             directionalLight.position.set(5, 5, 5);
             scene.add(directionalLight);
             
@@ -4258,9 +4254,9 @@
                 
                 // Calculate inverse luminosity: smaller actives = higher impact = brighter glow
                 const activeRatio = totalActives > 0 ? actives / totalActives : 0;
-                const inverseLuminosity = Math.max(0.05, 1.0 - activeRatio); // Invert ratio, minimum 0.05 brightness
-                const emissiveIntensity = 0.1 + (inverseLuminosity * 1.2); // Range from 0.1 to 1.3 (much more dramatic)
-                const opacity = 0.4 + (inverseLuminosity * 0.6); // Range from 0.4 to 1.0 (more dramatic)
+                const inverseLuminosity = Math.max(0.02, 1.0 - activeRatio); // Invert ratio, minimum 0.02 brightness
+                const emissiveIntensity = 0.05 + (inverseLuminosity * 2.0); // Range from 0.05 to 2.05 (extremely dramatic)
+                const opacity = 0.3 + (inverseLuminosity * 0.7); // Range from 0.3 to 1.0 (very dramatic)
                 
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
@@ -4272,12 +4268,12 @@
                 });
                 
                 // Create wireframe overlay for better definition
-                const wireframeIntensity = 0.5 + (inverseLuminosity * 2.0); // Range from 0.5 to 2.5 (much more dramatic)
+                const wireframeIntensity = 0.3 + (inverseLuminosity * 3.0); // Range from 0.3 to 3.3 (extremely dramatic)
                 const wireframeMaterial = new THREE.MeshBasicMaterial({
                     color: color.clone().multiplyScalar(wireframeIntensity),
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.1 + (inverseLuminosity * 0.7) // Range from 0.1 to 0.8 (more dramatic)
+                    opacity: 0.05 + (inverseLuminosity * 0.9) // Range from 0.05 to 0.95 (very dramatic)
                 });
                 
                 // Create main mesh with solid material
