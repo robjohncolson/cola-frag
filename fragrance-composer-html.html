@@ -4130,64 +4130,103 @@
         function assignTerritoryPositions(territories) {
             if (territories.length === 0) return territories;
             
-            // Simple circle packing algorithm
-            const visualizationRadius = 12; // Overall area radius
+            // Advanced tight circle packing algorithm
             const positionedTerritories = [];
             
             // Sort by territory size (largest territories first for better packing)
             const sortedTerritories = [...territories].sort((a, b) => b.territoryRadius - a.territoryRadius);
             
             sortedTerritories.forEach((territory, index) => {
-                let position = { x: 0, y: 0 };
-                let attempts = 0;
-                const maxAttempts = 100;
+                let bestPosition = { x: 0, y: 0 };
+                let minDistanceFromCenter = Infinity;
                 
                 if (index === 0) {
-                    // First territory goes in center
-                    position = { x: 0, y: 0 };
+                    // First (largest) territory goes in center
+                    bestPosition = { x: 0, y: 0 };
                 } else {
-                    // Try to find a non-overlapping position
-                    let validPosition = false;
+                    // Find the tightest valid position near the center
+                    const searchRadius = 20; // Search area
+                    const stepSize = 0.1; // Fine-grained search
                     
-                    while (!validPosition && attempts < maxAttempts) {
-                        // Generate random position within visualization area
-                        const angle = Math.random() * Math.PI * 2;
-                        const distance = Math.random() * (visualizationRadius - territory.territoryRadius);
-                        
-                        position.x = Math.cos(angle) * distance;
-                        position.y = Math.sin(angle) * distance;
-                        
-                        // Check if this position overlaps with existing territories
-                        validPosition = true;
-                        for (const existingTerritory of positionedTerritories) {
-                            const dx = position.x - existingTerritory.centerX;
-                            const dy = position.y - existingTerritory.centerY;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            const minDistance = territory.territoryRadius + existingTerritory.territoryRadius + 0.5; // Small buffer
+                    for (let angle = 0; angle < Math.PI * 2; angle += 0.2) {
+                        for (let distance = territory.territoryRadius; distance < searchRadius; distance += stepSize) {
+                            const testX = Math.cos(angle) * distance;
+                            const testY = Math.sin(angle) * distance;
                             
-                            if (distance < minDistance) {
-                                validPosition = false;
+                            // Check if this position is valid (no overlaps)
+                            let validPosition = true;
+                            for (const existingTerritory of positionedTerritories) {
+                                const dx = testX - existingTerritory.centerX;
+                                const dy = testY - existingTerritory.centerY;
+                                const distanceBetween = Math.sqrt(dx * dx + dy * dy);
+                                const minDistance = territory.territoryRadius + existingTerritory.territoryRadius + 0.1; // Minimal buffer
+                                
+                                if (distanceBetween < minDistance) {
+                                    validPosition = false;
+                                    break;
+                                }
+                            }
+                            
+                            if (validPosition) {
+                                const distanceFromCenter = Math.sqrt(testX * testX + testY * testY);
+                                if (distanceFromCenter < minDistanceFromCenter) {
+                                    minDistanceFromCenter = distanceFromCenter;
+                                    bestPosition = { x: testX, y: testY };
+                                }
+                                // Take first valid position at this distance (spiraling outward)
                                 break;
                             }
                         }
                         
-                        attempts++;
+                        // If we found a position at this angle, move to next angle
+                        if (minDistanceFromCenter < Infinity) {
+                            break;
+                        }
                     }
-                }
-                
-                // If we couldn't find a valid position, place it randomly
-                if (attempts >= maxAttempts) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = Math.random() * visualizationRadius * 0.8;
-                    position.x = Math.cos(angle) * distance;
-                    position.y = Math.sin(angle) * distance;
+                    
+                    // Fallback: place around existing territories
+                    if (minDistanceFromCenter === Infinity && positionedTerritories.length > 0) {
+                        // Find closest valid position next to any existing territory
+                        for (const existingTerritory of positionedTerritories) {
+                            const minDistanceToExisting = territory.territoryRadius + existingTerritory.territoryRadius + 0.1;
+                            
+                            for (let angle = 0; angle < Math.PI * 2; angle += 0.3) {
+                                const testX = existingTerritory.centerX + Math.cos(angle) * minDistanceToExisting;
+                                const testY = existingTerritory.centerY + Math.sin(angle) * minDistanceToExisting;
+                                
+                                // Check if this position conflicts with other territories
+                                let validPosition = true;
+                                for (const otherTerritory of positionedTerritories) {
+                                    if (otherTerritory === existingTerritory) continue;
+                                    
+                                    const dx = testX - otherTerritory.centerX;
+                                    const dy = testY - otherTerritory.centerY;
+                                    const distanceBetween = Math.sqrt(dx * dx + dy * dy);
+                                    const minDistance = territory.territoryRadius + otherTerritory.territoryRadius + 0.1;
+                                    
+                                    if (distanceBetween < minDistance) {
+                                        validPosition = false;
+                                        break;
+                                    }
+                                }
+                                
+                                if (validPosition) {
+                                    const distanceFromCenter = Math.sqrt(testX * testX + testY * testY);
+                                    if (distanceFromCenter < minDistanceFromCenter) {
+                                        minDistanceFromCenter = distanceFromCenter;
+                                        bestPosition = { x: testX, y: testY };
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 // Store the positioned territory
                 const positionedTerritory = {
                     ...territory,
-                    centerX: position.x,
-                    centerY: position.y
+                    centerX: bestPosition.x,
+                    centerY: bestPosition.y
                 };
                 
                 positionedTerritories.push(positionedTerritory);
@@ -4295,9 +4334,9 @@
                 const z = 0; // All molecules on the same plane for perfect visibility
                 
                 if (territory) {
-                    // Position within assigned territory (random position within territory circle)
+                    // Position within assigned territory (use more of the territory space)
                     const angle = Math.random() * Math.PI * 2;
-                    const distance = Math.random() * territory.territoryRadius * 0.8; // Stay within 80% of territory
+                    const distance = Math.random() * territory.territoryRadius * 0.95; // Use 95% of territory for tighter packing
                     
                     x = territory.centerX + Math.cos(angle) * distance;
                     y = territory.centerY + Math.sin(angle) * distance;
@@ -4399,8 +4438,8 @@
                 return sum + Math.max(0.1, 1.0 - activeRatio);
             }, 0) / ingredients.length;
             
-            // Create plane geometry (large enough to cover the visualization area)
-            const planeGeometry = new THREE.PlaneGeometry(40, 40, 32, 32);
+            // Create plane geometry (sized for tighter packing)
+            const planeGeometry = new THREE.PlaneGeometry(25, 25, 32, 32);
             
             // Create material with combined color and lighting
             const planeMaterial = new THREE.MeshPhongMaterial({
