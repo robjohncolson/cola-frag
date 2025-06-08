@@ -1676,6 +1676,21 @@
         }
         
         function toggleInlineInventoryForm(ingredientId) {
+            // First, ensure the ingredient is expanded
+            if (!expandedIngredients.has(ingredientId)) {
+                expandedIngredients.add(ingredientId);
+                render(); // Re-render to show expanded state
+                
+                // Use setTimeout to ensure the form exists after re-render
+                setTimeout(() => {
+                    openInlineForm(ingredientId);
+                }, 10);
+            } else {
+                openInlineForm(ingredientId);
+            }
+        }
+        
+        function openInlineForm(ingredientId) {
             const form = document.getElementById(`inline-form-${ingredientId}`);
             const allForms = document.querySelectorAll('.inline-inventory-form');
             
@@ -1686,9 +1701,16 @@
                 }
             });
             
-            // Toggle this form
+            // Open this form
             if (form) {
-                form.classList.toggle('active');
+                form.classList.add('active');
+                
+                // Focus on the amount input for better UX
+                const amountInput = document.getElementById(`inline-amount-${ingredientId}`);
+                if (amountInput) {
+                    amountInput.focus();
+                    amountInput.select(); // Select existing text if any
+                }
             }
         }
         
