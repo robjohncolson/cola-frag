@@ -3497,9 +3497,9 @@
             scene.background = new THREE.Color(0x000000);
             console.log('✅ Scene created');
             
-            // Camera setup
+            // Camera setup - positioned to view the molecular plane optimally
             camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, 0, 20);
+            camera.position.set(0, 0, 25); // Moved back slightly for better plane view
             console.log('✅ Camera created at position:', camera.position);
             
             // Renderer setup
@@ -3574,26 +3574,26 @@
             // Make container focusable for keyboard events
             container.tabIndex = 0;
             
-            // Add a test cube to verify visibility (temporary)
+            // Add a test cube to verify visibility (temporary) - on the molecular plane
             const testGeometry = new THREE.BoxGeometry(2, 2, 2);
             const testMaterial = new THREE.MeshPhongMaterial({ 
                 color: 0xff0000, 
                 emissive: 0x440000 
             });
             const testCube = new THREE.Mesh(testGeometry, testMaterial);
-            testCube.position.set(0, 0, 0);
+            testCube.position.set(0, 0, 0); // On the molecular plane
             scene.add(testCube);
-            console.log('🔴 Test cube added at center');
+            console.log('🔴 Test cube added at molecular plane center');
             
             // Force immediate render
             renderer.render(scene, camera);
             console.log('🎬 First render completed');
             
-            // Remove test cube after 5 seconds
+            // Remove test cube after 3 seconds
             setTimeout(() => {
                 scene.remove(testCube);
                 console.log('🔴 Test cube removed');
-            }, 5000);
+            }, 3000);
             
             // Start animation loop
             animateMolecularScene();
@@ -3729,11 +3729,11 @@
                 // Create wireframe mesh for edges
                 const wireframeMesh = new THREE.Mesh(geometry, wireframeMaterial);
                 
-                // Position randomly in 3D space
+                // Position on a flat plane for total visibility
                 const spread = 15;
                 const x = (Math.random() - 0.5) * spread;
                 const y = (Math.random() - 0.5) * spread;
-                const z = (Math.random() - 0.5) * spread;
+                const z = 0; // All molecules on the same plane for perfect visibility
                 
                 mesh.position.set(x, y, z);
                 wireframeMesh.position.set(x, y, z);
@@ -4463,10 +4463,10 @@
         }
         
         function resetCameraView() {
-            camera.position.set(0, 0, 20);
+            camera.position.set(0, 0, 25);
             camera.lookAt(0, 0, 0);
-            cameraDistance = 20;
-            document.getElementById('cameraInfo').textContent = '0.0, 0.0, 20.0';
+            cameraDistance = 25;
+            document.getElementById('cameraInfo').textContent = '0.0, 0.0, 25.0';
         }
         
         function toggleMolecularMotion() {
