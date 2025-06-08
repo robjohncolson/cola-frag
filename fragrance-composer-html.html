@@ -1177,8 +1177,16 @@
                             <button onclick="toggleMolecularMotion()" id="motionToggle" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
                                 ⚡ Start Motion
                             </button>
+                            <button onclick="toggleFullscreen()" id="fullscreenBtn" class="btn" style="flex: 1; background: #8b5cf6; color: white; font-size: 11px;">
+                                🔳 Fullscreen
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                             <button onclick="exportVisualizationImage()" class="btn" style="flex: 1; background: #10b981; color: white; font-size: 11px;">
                                 📸 Screenshot
+                            </button>
+                            <button onclick="showKeyboardControls()" class="btn" style="flex: 1; background: #64748b; color: white; font-size: 11px;">
+                                ⌨️ Controls
                             </button>
                         </div>
                         <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
@@ -3560,6 +3568,12 @@
             container.addEventListener('mousedown', onMolecularMouseDown);
             container.addEventListener('mouseup', onMolecularMouseUp);
             
+            // Add keyboard controls
+            document.addEventListener('keydown', onMolecularKeyDown);
+            
+            // Make container focusable for keyboard events
+            container.tabIndex = 0;
+            
             // Add a test cube to verify visibility (temporary)
             const testGeometry = new THREE.BoxGeometry(2, 2, 2);
             const testMaterial = new THREE.MeshPhongMaterial({ 
@@ -4335,6 +4349,72 @@
             document.getElementById('molecularVisualization').style.cursor = 'grab';
         }
         
+        function onMolecularKeyDown(event) {
+            if (!camera) return;
+            
+            // Only handle arrow keys and WASD when visualizer is active
+            if (currentTab !== 'visualizer') return;
+            
+            const moveSpeed = 2;
+            const rotateSpeed = 0.1;
+            let moved = false;
+            
+            switch(event.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    // Move camera up
+                    camera.position.y += moveSpeed;
+                    moved = true;
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    // Move camera down
+                    camera.position.y -= moveSpeed;
+                    moved = true;
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    // Rotate left around Y axis
+                    const leftPosition = camera.position.clone();
+                    leftPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotateSpeed);
+                    camera.position.copy(leftPosition);
+                    camera.lookAt(0, 0, 0);
+                    moved = true;
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    // Rotate right around Y axis
+                    const rightPosition = camera.position.clone();
+                    rightPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), -rotateSpeed);
+                    camera.position.copy(rightPosition);
+                    camera.lookAt(0, 0, 0);
+                    moved = true;
+                    break;
+                case 'q':
+                case 'Q':
+                    // Move camera closer (zoom in)
+                    camera.position.multiplyScalar(0.9);
+                    moved = true;
+                    break;
+                case 'e':
+                case 'E':
+                    // Move camera further (zoom out)
+                    camera.position.multiplyScalar(1.1);
+                    moved = true;
+                    break;
+            }
+            
+            if (moved) {
+                event.preventDefault();
+                document.getElementById('cameraInfo').textContent = 
+                    `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+            }
+        }
+        
         function showMolecularTooltip(event, ingredient) {
             const tooltip = document.getElementById('visualizationTooltip');
             const inventoryStatus = getInventoryStatus(ingredient.name);
@@ -4356,9 +4436,40 @@
             `;
             
             tooltip.innerHTML = tooltipHTML;
-            tooltip.style.left = (event.clientX + 10) + 'px';
-            tooltip.style.top = (event.clientY - 10) + 'px';
+            
+            // Smart positioning to keep tooltip on screen
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let left = event.clientX + 10;
+            let top = event.clientY - 10;
+            
+            // Check if tooltip would go off right edge
+            if (left + 250 > viewportWidth) { // Assume max tooltip width of 250px
+                left = event.clientX - 260;
+            }
+            
+            // Check if tooltip would go off bottom edge
+            if (top + 100 > viewportHeight) { // Assume max tooltip height of 100px
+                top = event.clientY - 110;
+            }
+            
+            // Check if tooltip would go off left edge
+            if (left < 0) {
+                left = 10;
+            }
+            
+            // Check if tooltip would go off top edge
+            if (top < 0) {
+                top = 10;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
             tooltip.style.opacity = '1';
+            tooltip.style.maxWidth = '250px';
+            tooltip.style.wordWrap = 'break-word';
         }
         
         function hideMolecularTooltip() {
@@ -4391,6 +4502,112 @@
             link.download = `fragrance-molecular-view-${new Date().toISOString().split('T')[0]}.png`;
             link.href = renderer.domElement.toDataURL();
             link.click();
+        }
+        
+        function toggleFullscreen() {
+            const container = document.getElementById('molecularVisualization').parentElement;
+            const button = document.getElementById('fullscreenBtn');
+            
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => {
+                    button.innerHTML = '🔲 Exit Fullscreen';
+                    button.style.background = '#ef4444';
+                    
+                    // Resize renderer for fullscreen
+                    setTimeout(() => {
+                        if (renderer && camera) {
+                            const width = window.innerWidth;
+                            const height = window.innerHeight;
+                            camera.aspect = width / height;
+                            camera.updateProjectionMatrix();
+                            renderer.setSize(width, height);
+                        }
+                    }, 100);
+                }).catch(err => {
+                    console.error('Failed to enter fullscreen:', err);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    button.innerHTML = '🔳 Fullscreen';
+                    button.style.background = '#8b5cf6';
+                    
+                    // Resize renderer back to normal
+                    setTimeout(() => {
+                        if (renderer && camera) {
+                            const container = document.getElementById('molecularVisualization');
+                            const width = container.clientWidth || 800;
+                            const height = container.clientHeight || 500;
+                            camera.aspect = width / height;
+                            camera.updateProjectionMatrix();
+                            renderer.setSize(width, height);
+                        }
+                    }, 100);
+                });
+            }
+        }
+        
+        function showKeyboardControls() {
+            const helpModal = document.createElement('div');
+            helpModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            `;
+            
+            helpModal.innerHTML = `
+                <div style="background: #1f2937; padding: 30px; border-radius: 12px; max-width: 500px; color: white; border: 1px solid #3b82f6;">
+                    <h3 style="margin: 0 0 20px 0; color: #3b82f6; text-align: center;">🚀 Molecular Navigation Controls</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 20px; font-size: 14px;">
+                        <div style="color: #fbbf24; font-weight: 600;">Mouse Controls:</div>
+                        <div></div>
+                        
+                        <div style="color: #d1d5db;">🖱️ Drag</div>
+                        <div style="color: #9ca3af;">Rotate camera around molecules</div>
+                        
+                        <div style="color: #d1d5db;">🎯 Scroll</div>
+                        <div style="color: #9ca3af;">Zoom in/out</div>
+                        
+                        <div style="color: #d1d5db;">🖱️ Hover</div>
+                        <div style="color: #9ca3af;">Show molecule details</div>
+                        
+                        <div style="color: #fbbf24; font-weight: 600; margin-top: 15px;">Keyboard Controls:</div>
+                        <div></div>
+                        
+                        <div style="color: #d1d5db;">↑ ↓ or W S</div>
+                        <div style="color: #9ca3af;">Move camera up/down</div>
+                        
+                        <div style="color: #d1d5db;">← → or A D</div>
+                        <div style="color: #9ca3af;">Rotate left/right around center</div>
+                        
+                        <div style="color: #d1d5db;">Q / E</div>
+                        <div style="color: #9ca3af;">Zoom in / Zoom out</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            Got it! 🚀
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            helpModal.onclick = (e) => {
+                if (e.target === helpModal) {
+                    helpModal.remove();
+                }
+            };
+            
+            document.body.appendChild(helpModal);
         }
 
         // Initialize molecular visualization when page loads
