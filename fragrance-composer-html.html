@@ -1442,7 +1442,12 @@
                                 volume: parseFloat(ing.volume) || 0,
                                 group: ing.group || 'Unassigned',
                                 notes: '', // Notes now come from database
-                                substituted: false
+                                substituted: ing.substituted || false,
+                                // Preserve compound substitution metadata
+                                isCompoundSubstitute: ing.isCompoundSubstitute || false,
+                                originalIngredient: ing.originalIngredient || undefined,
+                                compoundId: ing.compoundId || undefined,
+                                compoundPercentage: ing.compoundPercentage || undefined
                             };
                         });
                     }
@@ -1459,17 +1464,31 @@
                     }
 
                     // Handle compound substitutions (for version 1.1+)
+                    let compoundSubsCount = 0;
                     if (recipeData.compoundSubstitutions && typeof recipeData.compoundSubstitutions === 'object') {
-                        // The compound substitutions are already in the ingredients array with proper metadata
-                        // We just need to make sure they're properly linked
-                        console.log('Imported compound substitutions:', Object.keys(recipeData.compoundSubstitutions).length);
+                        compoundSubsCount = Object.keys(recipeData.compoundSubstitutions).length;
+                        console.log('Imported compound substitutions:', compoundSubsCount);
+                        
+                        // Verify that compound substitution ingredients are properly linked
+                        Object.entries(recipeData.compoundSubstitutions).forEach(([compoundId, subData]) => {
+                            const relatedIngredients = ingredients.filter(ing => 
+                                ing.compoundId && (ing.compoundId.toString() === compoundId.toString())
+                            );
+                            console.log(`Compound substitution ${compoundId}: ${subData.originalIngredient} -> ${relatedIngredients.length} substitutes`);
+                            console.log('Related ingredients:', relatedIngredients.map(ing => `${ing.name} (ID: ${ing.compoundId})`));
+                        });
                     }
 
                     // Update preview
                     document.getElementById('jsonPreview').value = JSON.stringify(recipeData, null, 2);
 
                     render();
-                    alert('Recipe imported successfully! Notes have been merged into your ingredient database.');
+                    
+                    let message = 'Recipe imported successfully! Notes have been merged into your ingredient database.';
+                    if (compoundSubsCount > 0) {
+                        message += ` ${compoundSubsCount} compound substitution(s) restored.`;
+                    }
+                    alert(message);
                 } catch (error) {
                     alert('Error importing recipe: ' + error.message);
                 }
@@ -2651,14 +2670,20 @@
                             if (!ingredient) return;
                             
                             if (ingredient.isCompoundSubstitute && ingredient.compoundId) {
-                                if (!groupedIngredients[ingredient.compoundId]) {
-                                    groupedIngredients[ingredient.compoundId] = [];
+                                const compoundKey = ingredient.compoundId.toString();
+                                if (!groupedIngredients[compoundKey]) {
+                                    groupedIngredients[compoundKey] = [];
                                 }
-                                groupedIngredients[ingredient.compoundId].push(ingredient);
+                                groupedIngredients[compoundKey].push(ingredient);
                             } else {
                                 standaloneIngredients.push(ingredient);
                             }
                         });
+                        
+                        // Debug compound substitutions
+                        if (Object.keys(groupedIngredients).length > 0) {
+                            console.log(`Group ${groupName} has ${Object.keys(groupedIngredients).length} compound substitution(s):`, groupedIngredients);
+                        }
                         
                         // Render compound substitution groups first
                         Object.entries(groupedIngredients).forEach(([compoundId, compoundIngredients]) => {
