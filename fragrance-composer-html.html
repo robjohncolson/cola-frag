@@ -3954,31 +3954,41 @@
             
             const totalActives = getTotalActives();
             const totalIngredients = ingredients.length;
-            const totalGroups = visualizationData.length;
+            const uniqueGroups = new Set(ingredients.map(ing => ing.group)).size;
             const availableIngredients = ingredients.filter(ing => getInventoryStatus(ing.name).available).length;
             const coverage = totalIngredients > 0 ? (availableIngredients / totalIngredients * 100).toFixed(1) : 0;
+            
+            // Shape distribution
+            const shapeStats = {};
+            ingredients.forEach(ing => {
+                const shape = ingredientShapes.get(ing.name) || 'sphere';
+                shapeStats[shape] = (shapeStats[shape] || 0) + 1;
+            });
             
             stats.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <div style="font-weight: 600; color: #1f2937;">Total Actives</div>
+                        <div style="font-weight: 600; color: #d1d5db;">Total Actives</div>
                         <div style="font-size: 16px; color: #3b82f6;">${totalActives.toFixed(2)} μL</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: #1f2937;">Ingredients</div>
-                        <div style="font-size: 16px; color: #3b82f6;">${totalIngredients}</div>
+                        <div style="font-weight: 600; color: #d1d5db;">Molecules</div>
+                        <div style="font-size: 16px; color: #3b82f6;">${molecules.length}</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: #1f2937;">Groups</div>
-                        <div style="font-size: 16px; color: #3b82f6;">${totalGroups}</div>
+                        <div style="font-weight: 600; color: #d1d5db;">Groups</div>
+                        <div style="font-size: 16px; color: #3b82f6;">${uniqueGroups}</div>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: #1f2937;">Coverage</div>
+                        <div style="font-weight: 600; color: #d1d5db;">Inventory</div>
                         <div style="font-size: 16px; color: ${coverage >= 100 ? '#10b981' : coverage >= 50 ? '#f59e0b' : '#ef4444'};">${coverage}%</div>
                     </div>
                 </div>
-                <div style="font-size: 11px; color: #6b7280;">
-                    ${availableIngredients}/${totalIngredients} ingredients available in inventory
+                <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px;">
+                    ${availableIngredients}/${totalIngredients} molecules available in inventory
+                </div>
+                <div style="font-size: 10px; color: #64748b;">
+                    <strong>Molecular Shapes:</strong> ${Object.entries(shapeStats).map(([shape, count]) => `${shape} (${count})`).join(', ')}
                 </div>
             `;
         }
@@ -4290,8 +4300,13 @@
             });
         }
 
+        let lastClickTime = 0;
         function onMolecularClick(event) {
-            console.log('Molecular click detected');
+            const now = Date.now();
+            if (now - lastClickTime > 500) { // Throttle to once per 500ms
+                console.log('🎯 Molecular click detected');
+                lastClickTime = now;
+            }
         }
         
         function onMolecularWheel(event) {
