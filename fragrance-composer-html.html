@@ -1152,13 +1152,13 @@
                             Visualization Mode
                         </h2>
                         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <button onclick="setVisualizationMode('treemap')" id="treemapModeBtn" class="btn" style="flex: 1; background: #3b82f6; color: white; font-size: 11px;">
+                            <button onclick="setVisualizationMode('treemap')" id="treemapModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
                                 📊 Treemap
                             </button>
                             <button onclick="setVisualizationMode('bottle')" id="bottleModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
                                 🧪 Bottle
                             </button>
-                            <button onclick="setVisualizationMode('bubble')" id="bubbleModeBtn" class="btn" style="flex: 1; background: #6b7280; color: white; font-size: 11px;">
+                            <button onclick="setVisualizationMode('bubble')" id="bubbleModeBtn" class="btn" style="flex: 1; background: #3b82f6; color: white; font-size: 11px;">
                                 ⚫ Bubbles
                             </button>
                         </div>
@@ -3434,7 +3434,7 @@
         }
         
         // Visualization Functions
-        let currentVisualizationMode = 'treemap';
+        let currentVisualizationMode = 'bubble';
         let canvas, ctx, tooltip;
         let visualizationData = [];
         let hoveredElement = null;
@@ -3713,14 +3713,175 @@
         }
         
         function renderBubble() {
-            // TODO: Implement bubble visualization
-            ctx.fillStyle = '#f3f4f6';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (visualizationData.length === 0) return;
             
-            ctx.fillStyle = '#9ca3af';
-            ctx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Bubble visualization coming soon!', canvas.width / 2, canvas.height / 2);
+            // Create bubbles for all ingredients
+            const bubbles = [];
+            const padding = 10;
+            const minRadius = 15;
+            const maxRadius = 80;
+            
+            // Calculate total actives for scaling
+            const totalActives = getTotalActives();
+            
+            // Create bubble data
+            visualizationData.forEach(group => {
+                group.ingredients.forEach(ingredient => {
+                    const percentage = ingredient.percentage;
+                    const radius = Math.max(minRadius, Math.min(maxRadius, (percentage / 100) * maxRadius * 3));
+                    
+                    bubbles.push({
+                        ingredient: ingredient,
+                        group: group,
+                        radius: radius,
+                        x: Math.random() * (canvas.width - radius * 2) + radius,
+                        y: Math.random() * (canvas.height - radius * 2) + radius,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        targetX: 0,
+                        targetY: 0
+                    });
+                });
+            });
+            
+            // Position bubbles using simple force simulation
+            for (let iteration = 0; iteration < 50; iteration++) {
+                // Apply forces between bubbles
+                for (let i = 0; i < bubbles.length; i++) {
+                    for (let j = i + 1; j < bubbles.length; j++) {
+                        const bubble1 = bubbles[i];
+                        const bubble2 = bubbles[j];
+                        
+                        const dx = bubble2.x - bubble1.x;
+                        const dy = bubble2.y - bubble1.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const minDistance = bubble1.radius + bubble2.radius + padding;
+                        
+                        if (distance < minDistance && distance > 0) {
+                            const force = (minDistance - distance) / distance * 0.5;
+                            const fx = dx * force;
+                            const fy = dy * force;
+                            
+                            bubble1.vx -= fx;
+                            bubble1.vy -= fy;
+                            bubble2.vx += fx;
+                            bubble2.vy += fy;
+                        }
+                    }
+                }
+                
+                // Apply velocity and boundary constraints
+                bubbles.forEach(bubble => {
+                    bubble.vx *= 0.8; // Damping
+                    bubble.vy *= 0.8;
+                    
+                    bubble.x += bubble.vx;
+                    bubble.y += bubble.vy;
+                    
+                    // Boundary constraints
+                    if (bubble.x - bubble.radius < 0) {
+                        bubble.x = bubble.radius;
+                        bubble.vx *= -0.5;
+                    }
+                    if (bubble.x + bubble.radius > canvas.width) {
+                        bubble.x = canvas.width - bubble.radius;
+                        bubble.vx *= -0.5;
+                    }
+                    if (bubble.y - bubble.radius < 0) {
+                        bubble.y = bubble.radius;
+                        bubble.vy *= -0.5;
+                    }
+                    if (bubble.y + bubble.radius > canvas.height) {
+                        bubble.y = canvas.height - bubble.radius;
+                        bubble.vy *= -0.5;
+                    }
+                });
+            }
+            
+            // Store bubble positions for hover detection
+            visualizationData.forEach(group => {
+                group.ingredients.forEach(ingredient => {
+                    const bubble = bubbles.find(b => b.ingredient === ingredient);
+                    if (bubble) {
+                        ingredient.bubble = {
+                            x: bubble.x,
+                            y: bubble.y,
+                            radius: bubble.radius
+                        };
+                    }
+                });
+            });
+            
+            // Draw bubbles
+            bubbles.forEach(bubble => {
+                const ingredient = bubble.ingredient;
+                const group = bubble.group;
+                
+                // Draw shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                
+                // Main bubble
+                ctx.fillStyle = group.color.fill;
+                ctx.beginPath();
+                ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Border (solid for inventory, dashed for missing)
+                ctx.shadowColor = 'transparent';
+                ctx.strokeStyle = group.color.border;
+                ctx.lineWidth = ingredient.hasInventory ? 3 : 2;
+                
+                if (!ingredient.hasInventory) {
+                    ctx.setLineDash([8, 4]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.stroke();
+                
+                // Inventory status indicator
+                if (ingredient.hasInventory) {
+                    // Gold star
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = `${Math.min(bubble.radius * 0.3, 16)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⭐', bubble.x - bubble.radius * 0.6, bubble.y - bubble.radius * 0.4);
+                }
+                
+                // Ingredient name and percentage
+                ctx.fillStyle = group.color.border;
+                ctx.setLineDash([]);
+                
+                if (bubble.radius > 25) {
+                    // Ingredient name
+                    const fontSize = Math.min(bubble.radius * 0.2, 14);
+                    ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+                    ctx.textAlign = 'center';
+                    
+                    const maxWidth = bubble.radius * 1.6;
+                    let text = ingredient.name;
+                    
+                    // Truncate if too long
+                    while (ctx.measureText(text).width > maxWidth && text.length > 3) {
+                        text = text.substring(0, text.length - 1);
+                    }
+                    if (text !== ingredient.name) text += '...';
+                    
+                    ctx.fillText(text, bubble.x, bubble.y - 2);
+                    
+                    // Percentage
+                    const percentageSize = Math.min(bubble.radius * 0.15, 12);
+                    ctx.font = `${percentageSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+                    ctx.fillText(`${ingredient.percentage.toFixed(1)}%`, bubble.x, bubble.y + percentageSize);
+                }
+                
+                ctx.shadowColor = 'transparent';
+            });
+            
+            ctx.setLineDash([]);
         }
         
         function updateVisualizationLegend() {
@@ -3795,8 +3956,6 @@
         }
         
         function handleVisualizationMouseMove(event) {
-            if (currentVisualizationMode !== 'treemap') return;
-            
             const rect = canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
@@ -3804,29 +3963,51 @@
             // Find hovered element
             let found = null;
             
-            visualizationData.forEach(group => {
-                group.ingredients.forEach(ingredient => {
-                    if (ingredient.bounds &&
-                        mouseX >= ingredient.bounds.x &&
-                        mouseX <= ingredient.bounds.x + ingredient.bounds.width &&
-                        mouseY >= ingredient.bounds.y &&
-                        mouseY <= ingredient.bounds.y + ingredient.bounds.height) {
-                        found = ingredient;
-                    }
+            if (currentVisualizationMode === 'treemap') {
+                // Treemap hit detection
+                visualizationData.forEach(group => {
+                    group.ingredients.forEach(ingredient => {
+                        if (ingredient.bounds &&
+                            mouseX >= ingredient.bounds.x &&
+                            mouseX <= ingredient.bounds.x + ingredient.bounds.width &&
+                            mouseY >= ingredient.bounds.y &&
+                            mouseY <= ingredient.bounds.y + ingredient.bounds.height) {
+                            found = ingredient;
+                        }
+                    });
                 });
-            });
+            } else if (currentVisualizationMode === 'bubble') {
+                // Bubble hit detection
+                visualizationData.forEach(group => {
+                    group.ingredients.forEach(ingredient => {
+                        if (ingredient.bubble) {
+                            const dx = mouseX - ingredient.bubble.x;
+                            const dy = mouseY - ingredient.bubble.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance <= ingredient.bubble.radius) {
+                                found = ingredient;
+                            }
+                        }
+                    });
+                });
+            }
             
             if (found !== hoveredElement) {
                 hoveredElement = found;
                 
                 if (hoveredElement) {
                     // Show tooltip
+                    const groupName = currentVisualizationMode === 'treemap' ? 
+                        hoveredElement.bounds.group.name : 
+                        visualizationData.find(g => g.ingredients.includes(hoveredElement)).name;
+                    
                     const tooltipHTML = `
                         <div style="font-weight: 600;">${hoveredElement.name}</div>
                         <div style="margin: 4px 0;">
                             Volume: ${hoveredElement.volume.toFixed(1)}μL @ ${(hoveredElement.dilution * 100).toFixed(1)}%<br>
                             Actives: ${hoveredElement.actives.toFixed(2)}μL (${hoveredElement.percentage.toFixed(1)}%)<br>
-                            Group: ${hoveredElement.bounds.group.name}
+                            Group: ${groupName}
                         </div>
                         <div style="color: ${hoveredElement.hasInventory ? '#10b981' : '#ef4444'};">
                             ${hoveredElement.hasInventory ? 
