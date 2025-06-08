@@ -4194,10 +4194,11 @@
                     const pos1 = mol1.mesh.position;
                     const pos2 = mol2.mesh.position;
                     
-                    // Calculate distance vector
+                    // Calculate 3D distance vector
                     const dx = pos2.x - pos1.x;
                     const dy = pos2.y - pos1.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const dz = pos2.z - pos1.z;
+                    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     
                     // Prevent division by zero and extreme forces
                     if (distance < 0.1) continue;
@@ -4208,15 +4209,18 @@
                                          mol2.mesh.userData.mass / 
                                          (distance * distance);
                     
-                    // Normalize direction vector
+                    // Normalize 3D direction vector
                     const forceX = (dx / distance) * forceMagnitude;
                     const forceY = (dy / distance) * forceMagnitude;
+                    const forceZ = (dz / distance) * forceMagnitude;
                     
                     // Apply equal and opposite forces (Newton's 3rd law)
                     mol1.mesh.userData.force.x += forceX;
                     mol1.mesh.userData.force.y += forceY;
+                    mol1.mesh.userData.force.z += forceZ;
                     mol2.mesh.userData.force.x -= forceX;
                     mol2.mesh.userData.force.y -= forceY;
+                    mol2.mesh.userData.force.z -= forceZ;
                 }
             }
             
@@ -4228,9 +4232,10 @@
                 const userData = mol.mesh.userData;
                 const mass = userData.mass;
                 
-                // Calculate acceleration: a = F / m
+                // Calculate 3D acceleration: a = F / m
                 const accelX = userData.force.x / mass;
                 const accelY = userData.force.y / mass;
+                const accelZ = userData.force.z / mass;
                 
                 // Calculate effective time step with speed multiplier
                 const effectiveTimeStep = window.timeStep * timeSpeed;
@@ -4238,6 +4243,7 @@
                 // Update velocity: v = v + a * dt
                 userData.velocity.x += accelX * effectiveTimeStep;
                 userData.velocity.y += accelY * effectiveTimeStep;
+                userData.velocity.z += accelZ * effectiveTimeStep;
                 
                 // Apply dampening to settle the system
                 userData.velocity.multiplyScalar(window.dampening);
@@ -4245,6 +4251,7 @@
                 // Update position: p = p + v * dt
                 mol.mesh.position.x += userData.velocity.x * effectiveTimeStep;
                 mol.mesh.position.y += userData.velocity.y * effectiveTimeStep;
+                mol.mesh.position.z += userData.velocity.z * effectiveTimeStep;
                 
                 // Boundary collision detection and bouncing
                 const restitution = 0.8; // Bounce coefficient (0.8 = loses 20% velocity on bounce)
@@ -4265,6 +4272,15 @@
                 } else if (mol.mesh.position.y < -boundarySize) {
                     mol.mesh.position.y = -boundarySize;
                     userData.velocity.y *= -restitution;
+                }
+                
+                // Check Z boundaries (depth)
+                if (mol.mesh.position.z > boundarySize) {
+                    mol.mesh.position.z = boundarySize;
+                    userData.velocity.z *= -restitution; // Reverse and dampen Z velocity
+                } else if (mol.mesh.position.z < -boundarySize) {
+                    mol.mesh.position.z = -boundarySize;
+                    userData.velocity.z *= -restitution;
                 }
                 
                 // Update wireframe position
@@ -4294,16 +4310,18 @@
                     const radius2 = mol2.mesh.geometry.parameters.radius;
                     const minDistance = radius1 + radius2;
                     
-                    // Calculate distance between centers
+                    // Calculate 3D distance between centers
                     const dx = pos2.x - pos1.x;
                     const dy = pos2.y - pos1.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const dz = pos2.z - pos1.z;
+                    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     
                     // Check if spheres are colliding (overlapping)
                     if (distance < minDistance && distance > 0) {
-                        // Calculate collision normal (unit vector from mol1 to mol2)
+                        // Calculate 3D collision normal (unit vector from mol1 to mol2)
                         const normalX = dx / distance;
                         const normalY = dy / distance;
+                        const normalZ = dz / distance;
                         
                         // Calculate overlap amount
                         const overlap = minDistance - distance;
@@ -4313,20 +4331,23 @@
                         const separation1 = overlap * (mol2.mesh.userData.mass / totalMass);
                         const separation2 = overlap * (mol1.mesh.userData.mass / totalMass);
                         
-                        // Move spheres apart to eliminate overlap
+                        // Move spheres apart to eliminate overlap in 3D
                         mol1.mesh.position.x -= normalX * separation1;
                         mol1.mesh.position.y -= normalY * separation1;
+                        mol1.mesh.position.z -= normalZ * separation1;
                         mol2.mesh.position.x += normalX * separation2;
                         mol2.mesh.position.y += normalY * separation2;
+                        mol2.mesh.position.z += normalZ * separation2;
                         
-                        // Calculate relative velocity
+                        // Calculate 3D relative velocity
                         const vel1 = mol1.mesh.userData.velocity;
                         const vel2 = mol2.mesh.userData.velocity;
                         const relativeVelX = vel2.x - vel1.x;
                         const relativeVelY = vel2.y - vel1.y;
+                        const relativeVelZ = vel2.z - vel1.z;
                         
                         // Calculate relative velocity in collision normal direction
-                        const velAlongNormal = relativeVelX * normalX + relativeVelY * normalY;
+                        const velAlongNormal = relativeVelX * normalX + relativeVelY * normalY + relativeVelZ * normalZ;
                         
                         // Don't resolve if velocities are separating
                         if (velAlongNormal > 0) continue;
@@ -4339,14 +4360,17 @@
                         const totalInverseMass = (1 / mol1.mesh.userData.mass) + (1 / mol2.mesh.userData.mass);
                         const impulse = impulseScalar / totalInverseMass;
                         
-                        // Apply impulse to velocities
+                        // Apply 3D impulse to velocities
                         const impulseX = impulse * normalX;
                         const impulseY = impulse * normalY;
+                        const impulseZ = impulse * normalZ;
                         
                         vel1.x -= impulseX / mol1.mesh.userData.mass;
                         vel1.y -= impulseY / mol1.mesh.userData.mass;
+                        vel1.z -= impulseZ / mol1.mesh.userData.mass;
                         vel2.x += impulseX / mol2.mesh.userData.mass;
                         vel2.y += impulseY / mol2.mesh.userData.mass;
+                        vel2.z += impulseZ / mol2.mesh.userData.mass;
                         
                         // Add some energy dissipation to prevent perpetual bouncing
                         vel1.multiplyScalar(0.98);
@@ -4447,11 +4471,11 @@
                 // Create wireframe mesh for edges
                 const wireframeMesh = new THREE.Mesh(geometry, wireframeMaterial);
                 
-                // Gravitational positioning - start with random positions, let physics settle
-                const spread = 8; // Smaller initial spread for tighter final result
+                // 3D Gravitational positioning - start with random positions, let physics settle
+                const spread = 8; // Initial spread for particles
                 let x = (Math.random() - 0.5) * spread;
                 let y = (Math.random() - 0.5) * spread;
-                const z = 0; // All molecules on the same plane for perfect visibility
+                let z = (Math.random() - 0.5) * spread; // Allow full 3D positioning for better orbits
                 
                 mesh.position.set(x, y, z);
                 wireframeMesh.position.set(x, y, z);
@@ -4562,6 +4586,18 @@
             rightWall.position.set(boundarySize, 0, 0);
             wallsGroup.add(rightWall);
             
+            // Front wall (positive Z)
+            const frontWallGeometry = new THREE.BoxGeometry(boundarySize * 2, boundarySize * 2, wallThickness);
+            const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
+            frontWall.position.set(0, 0, boundarySize);
+            wallsGroup.add(frontWall);
+            
+            // Back wall (negative Z)
+            const backWallGeometry = new THREE.BoxGeometry(boundarySize * 2, boundarySize * 2, wallThickness);
+            const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+            backWall.position.set(0, 0, -boundarySize);
+            wallsGroup.add(backWall);
+            
             // Add corner markers for better visibility
             const cornerGeometry = new THREE.SphereGeometry(0.2, 8, 6);
             const cornerMaterial = new THREE.MeshPhongMaterial({
@@ -4570,12 +4606,18 @@
                 emissiveIntensity: 0.3
             });
             
-            // Add corner spheres
+            // Add corner spheres for 3D cube
             const corners = [
-                [boundarySize, boundarySize, 0],
-                [boundarySize, -boundarySize, 0],
-                [-boundarySize, boundarySize, 0],
-                [-boundarySize, -boundarySize, 0]
+                // Front face corners (positive Z)
+                [boundarySize, boundarySize, boundarySize],
+                [boundarySize, -boundarySize, boundarySize],
+                [-boundarySize, boundarySize, boundarySize],
+                [-boundarySize, -boundarySize, boundarySize],
+                // Back face corners (negative Z)
+                [boundarySize, boundarySize, -boundarySize],
+                [boundarySize, -boundarySize, -boundarySize],
+                [-boundarySize, boundarySize, -boundarySize],
+                [-boundarySize, -boundarySize, -boundarySize]
             ];
             
             corners.forEach(([x, y, z]) => {
