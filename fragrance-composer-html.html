@@ -3497,9 +3497,25 @@
             // Renderer setup
             try {
                 renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(container.clientWidth, container.clientHeight);
+                
+                // Fix size issue - use fallback dimensions if container not sized yet
+                let width = container.clientWidth || 800;
+                let height = container.clientHeight || 500;
+                
+                // If still 0, get from parent or use computed style
+                if (width === 0 || height === 0) {
+                    const computedStyle = window.getComputedStyle(container);
+                    width = parseInt(computedStyle.width) || 800;
+                    height = parseInt(computedStyle.height) || 500;
+                }
+                
+                renderer.setSize(width, height);
                 renderer.setPixelRatio(window.devicePixelRatio);
-                console.log('✅ Renderer created, size:', container.clientWidth, 'x', container.clientHeight);
+                console.log('✅ Renderer created, size:', width, 'x', height);
+                
+                // Update camera aspect ratio
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
                 
                 // Clear any existing content
                 container.innerHTML = '';
@@ -3874,29 +3890,55 @@
             const legend = document.getElementById('visualizationLegend');
             if (!legend) return;
             
-            if (visualizationData.length === 0) {
-                legend.innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No data to display</div>';
+            if (molecules.length === 0) {
+                legend.innerHTML = '<div style="color: #9ca3af; text-align: center; padding: 20px;">No molecules to display</div>';
                 return;
             }
             
-            const legendHTML = visualizationData.map(group => `
-                <div style="margin-bottom: 12px; padding: 8px; border-radius: 6px; background: ${group.color.fill}; border: 1px solid ${group.color.border};">
-                    <div style="font-weight: 600; font-size: 12px; color: ${group.color.border}; margin-bottom: 4px;">
-                        ${group.name}
+            // Group molecules by their ingredient groups
+            const groupedMolecules = {};
+            molecules.forEach(mol => {
+                const groupName = mol.ingredient.group || 'Unassigned';
+                if (!groupedMolecules[groupName]) {
+                    groupedMolecules[groupName] = [];
+                }
+                groupedMolecules[groupName].push(mol);
+            });
+            
+            const totalActives = getTotalActives();
+            
+            const legendHTML = Object.entries(groupedMolecules).map(([groupName, groupMolecules]) => {
+                const groupVolume = groupMolecules.reduce((sum, mol) => sum + getActives(mol.ingredient), 0);
+                const groupPercentage = totalActives > 0 ? (groupVolume / totalActives * 100).toFixed(1) : 0;
+                
+                // Get group color info
+                const groupInfo = groups[groupName] || {};
+                const groupColor = ingredientColors.get(groupMolecules[0].ingredient.name) || '#64748b';
+                
+                return `
+                    <div style="margin-bottom: 12px; padding: 8px; border-radius: 6px; background: rgba(0,0,0,0.1); border: 1px solid ${groupColor};">
+                        <div style="font-weight: 600; font-size: 12px; color: ${groupColor}; margin-bottom: 4px;">
+                            ${groupName}
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-bottom: 6px;">
+                            ${groupVolume.toFixed(1)}μL (${groupPercentage}%)
+                        </div>
+                        <div style="font-size: 10px;">
+                            ${groupMolecules.map(mol => {
+                                const inventoryStatus = getInventoryStatus(mol.ingredient.name);
+                                const percentage = totalActives > 0 ? (getActives(mol.ingredient) / totalActives * 100).toFixed(1) : 0;
+                                const shape = ingredientShapes.get(mol.ingredient.name) || 'sphere';
+                                return `
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px; color: #d1d5db;">
+                                        <span>${inventoryStatus.available ? '⭐' : '☆'} ${mol.ingredient.name} (${shape})</span>
+                                        <span>${percentage}%</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
-                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 6px;">
-                        ${group.totalVolume.toFixed(1)}μL (${group.percentage.toFixed(1)}%)
-                    </div>
-                    <div style="font-size: 10px;">
-                        ${group.ingredients.map(ing => `
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                                <span>${ing.hasInventory ? '⭐' : '☆'} ${ing.name}</span>
-                                <span>${ing.percentage.toFixed(1)}%</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             legend.innerHTML = legendHTML;
         }
@@ -4338,24 +4380,28 @@
 
         // Initialize molecular visualization when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('📄 DOM loaded, initializing visualization in 1 second...');
+            console.log('📄 DOM loaded, waiting for page to be ready...');
             setTimeout(() => {
-                console.log('⏰ Timeout reached, calling initialization...');
-                initializeMolecularVisualization();
-            }, 1000);
+                console.log('⏰ Initializing molecular visualization...');
+                if (!renderer) {
+                    initializeMolecularVisualization();
+                }
+            }, 1500);
         });
         
-        // Also try initialization when Three.js loads
-        window.addEventListener('load', () => {
-            console.log('🌐 Window loaded, checking Three.js...');
-            if (typeof THREE !== 'undefined') {
-                console.log('🎯 Three.js available, ensuring initialization...');
-                // Only initialize if not already done
-                if (!renderer) {
-                    setTimeout(initializeMolecularVisualization, 100);
+        // Add window resize handler
+        window.addEventListener('resize', () => {
+            if (renderer && camera) {
+                const container = document.getElementById('molecularVisualization');
+                if (container) {
+                    const width = container.clientWidth || 800;
+                    const height = container.clientHeight || 500;
+                    
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(width, height);
+                    console.log('📐 Visualization resized to:', width, 'x', height);
                 }
-            } else {
-                console.log('⚠️ Three.js still not available after window load');
             }
         });
     </script>
