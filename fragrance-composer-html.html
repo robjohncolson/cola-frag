@@ -4162,10 +4162,12 @@
             
             ingredients.forEach((ingredient, index) => {
                 const actives = getActives(ingredient);
+                const squaredActives = actives * actives; // Square the active amount for more dramatic visual differences
                 const percentage = totalActives > 0 ? (actives / totalActives) * 100 : 0;
+                const squaredPercentage = totalActives > 0 ? (squaredActives / (totalActives * totalActives)) * 100 : 0;
                 
-                // Size based on percentage
-                const radius = minRadius + (percentage / 100) * (maxRadius - minRadius);
+                // Size based on squared percentage for more dramatic visual differences
+                const radius = minRadius + (squaredPercentage / 100) * (maxRadius - minRadius);
                 
                 // Create sphere geometry (all ingredients are now spheres)
                 const geometry = createMolecularGeometry('sphere', radius);
