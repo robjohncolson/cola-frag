@@ -1039,6 +1039,24 @@
                             <i data-lucide="save" class="icon"></i>
                             Import/Export
                         </h2>
+                        
+                        <!-- Smart Load All Section -->
+                        <div style="background: #f0f9ff; border: 1px solid #3b82f6; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                            <div style="font-weight: 600; font-size: 12px; color: #1e40af; margin-bottom: 6px;">
+                                🚀 Smart Load All
+                            </div>
+                            <div style="font-size: 11px; color: #1d4ed8; margin-bottom: 8px;">
+                                Select multiple files (database, inventory, recipe) and they'll be loaded in the correct order automatically
+                            </div>
+                            <input type="file" id="loadAllFiles" accept=".json" multiple style="display: none;" onchange="loadAllFiles(event)">
+                            <button onclick="document.getElementById('loadAllFiles').click()" class="btn" style="background: #3b82f6; color: white; width: 100%;">
+                                <i data-lucide="folder-open" class="icon"></i>
+                                Load All Files
+                            </button>
+                            <div id="loadAllProgress" style="display: none; margin-top: 8px; font-size: 11px; color: #1d4ed8;"></div>
+                        </div>
+                        
+                        <!-- Individual Import/Export -->
                         <div class="form-grid" style="margin-bottom: 12px;">
                             <button onclick="exportRecipe()" class="btn btn-blue">
                                 <i data-lucide="download" class="icon"></i>
@@ -4037,6 +4055,311 @@
             canvas.style.cursor = 'default';
         }
         
+        // Smart Load All Functions
+        function loadAllFiles(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            
+            const progressDiv = document.getElementById('loadAllProgress');
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = 'Analyzing files...';
+            
+            // Analyze each file to determine its type
+            const filePromises = files.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            const fileType = detectFileType(data);
+                            resolve({
+                                name: file.name,
+                                data: data,
+                                type: fileType,
+                                content: e.target.result
+                            });
+                        } catch (error) {
+                            reject(new Error(`Error reading ${file.name}: ${error.message}`));
+                        }
+                    };
+                    reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+                    reader.readAsText(file);
+                });
+            });
+            
+            Promise.all(filePromises)
+                .then(fileData => {
+                    processLoadAllFiles(fileData, progressDiv);
+                })
+                .catch(error => {
+                    progressDiv.innerHTML = `❌ Error: ${error.message}`;
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                    }, 3000);
+                });
+            
+            // Reset file input
+            event.target.value = '';
+        }
+        
+        function detectFileType(data) {
+            // Check for database file
+            if (data.database && Array.isArray(data.database)) {
+                return 'database';
+            }
+            
+            // Check for inventory file
+            if (data.inventory && Array.isArray(data.inventory)) {
+                return 'inventory';
+            }
+            
+            // Check for recipe file
+            if (data.ingredients && data.groups) {
+                return 'recipe';
+            }
+            
+            return 'unknown';
+        }
+        
+        async function processLoadAllFiles(fileData, progressDiv) {
+            const databaseFiles = fileData.filter(f => f.type === 'database');
+            const inventoryFiles = fileData.filter(f => f.type === 'inventory');
+            const recipeFiles = fileData.filter(f => f.type === 'recipe');
+            const unknownFiles = fileData.filter(f => f.type === 'unknown');
+            
+            let results = [];
+            
+            try {
+                // Step 1: Load database files first
+                if (databaseFiles.length > 0) {
+                    progressDiv.innerHTML = `📚 Loading ${databaseFiles.length} database file(s)...`;
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Visual delay
+                    
+                    for (const file of databaseFiles) {
+                        await loadDatabaseFile(file.data);
+                        results.push(`✅ Database: ${file.name}`);
+                    }
+                }
+                
+                // Step 2: Load inventory files next
+                if (inventoryFiles.length > 0) {
+                    progressDiv.innerHTML = `📦 Loading ${inventoryFiles.length} inventory file(s)...`;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    for (const file of inventoryFiles) {
+                        await loadInventoryFile(file.data);
+                        results.push(`✅ Inventory: ${file.name}`);
+                    }
+                }
+                
+                // Step 3: Load recipe files last
+                if (recipeFiles.length > 0) {
+                    progressDiv.innerHTML = `🧪 Loading ${recipeFiles.length} recipe file(s)...`;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    for (const file of recipeFiles) {
+                        await loadRecipeFile(file.data);
+                        results.push(`✅ Recipe: ${file.name}`);
+                    }
+                }
+                
+                // Report unknown files
+                unknownFiles.forEach(file => {
+                    results.push(`⚠️ Unknown: ${file.name}`);
+                });
+                
+                // Show success message
+                progressDiv.innerHTML = `
+                    <div style="color: #059669; font-weight: 600;">🎉 Load Complete!</div>
+                    <div style="margin-top: 4px;">
+                        ${results.join('<br>')}
+                    </div>
+                `;
+                
+                // Update displays
+                render();
+                renderInventory();
+                if (currentTab === 'database') {
+                    renderDatabase();
+                }
+                
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 4000);
+                
+            } catch (error) {
+                progressDiv.innerHTML = `❌ Error: ${error.message}`;
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function loadDatabaseFile(data) {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (!data.database || !Array.isArray(data.database)) {
+                        throw new Error('Invalid database format');
+                    }
+
+                    // Merge with existing database
+                    data.database.forEach(importedEntry => {
+                        const existing = ingredientDatabase.find(entry => 
+                            entry.name.toLowerCase() === importedEntry.name.toLowerCase()
+                        );
+                        
+                        if (existing) {
+                            // Merge notes with separator
+                            if (importedEntry.notes && importedEntry.notes.trim()) {
+                                if (existing.notes && existing.notes.trim()) {
+                                    existing.notes += '\n---\n' + importedEntry.notes;
+                                } else {
+                                    existing.notes = importedEntry.notes;
+                                }
+                            }
+                            
+                            // Merge substitutions
+                            if (importedEntry.substitutions && Array.isArray(importedEntry.substitutions)) {
+                                importedEntry.substitutions.forEach(sub => {
+                                    if (!existing.substitutions.includes(sub)) {
+                                        existing.substitutions.push(sub);
+                                    }
+                                });
+                            }
+                            
+                            // Update other fields if they're better/newer
+                            if (importedEntry.dilution && !existing.dilution) existing.dilution = importedEntry.dilution;
+                            if (importedEntry.typicalUsage && !existing.typicalUsage) existing.typicalUsage = importedEntry.typicalUsage;
+                            if (importedEntry.olfactoryFamily && !existing.olfactoryFamily) existing.olfactoryFamily = importedEntry.olfactoryFamily;
+                        } else {
+                            // Add new entry
+                            ingredientDatabase.push({
+                                id: Date.now() + Math.random(),
+                                name: importedEntry.name || 'Unknown',
+                                notes: importedEntry.notes || '',
+                                substitutions: Array.isArray(importedEntry.substitutions) ? importedEntry.substitutions : [],
+                                dilution: parseFloat(importedEntry.dilution) || 1.0,
+                                typicalUsage: parseFloat(importedEntry.typicalUsage) || 0,
+                                olfactoryFamily: importedEntry.olfactoryFamily || ''
+                            });
+                        }
+                    });
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+        
+        function loadInventoryFile(data) {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (!data.inventory || !Array.isArray(data.inventory)) {
+                        throw new Error('Invalid inventory format');
+                    }
+
+                    data.inventory.forEach(item => {
+                        const existing = inventory.find(inv => 
+                            inv.name.toLowerCase() === item.name.toLowerCase()
+                        );
+                        
+                        if (existing) {
+                            // Update existing inventory
+                            existing.amount = parseFloat(item.amount) || 0;
+                            existing.unit = item.unit || 'ml';
+                            existing.dilution = parseFloat(item.dilution) || 1.0;
+                        } else {
+                            // Add new inventory item
+                            inventory.push({
+                                id: Date.now() + Math.random(),
+                                name: item.name || 'Unknown',
+                                amount: parseFloat(item.amount) || 0,
+                                unit: item.unit || 'ml',
+                                dilution: parseFloat(item.dilution) || 1.0
+                            });
+                        }
+                        
+                        // Update database entry with inventory information
+                        const dbEntry = getOrCreateDatabaseEntry(item.name);
+                        dbEntry.currentInventory = parseFloat(item.amount) || 0;
+                        dbEntry.inventoryUnit = item.unit || 'ml';
+                        dbEntry.lastUpdated = new Date().toISOString();
+                    });
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+        
+        function loadRecipeFile(data) {
+            return new Promise((resolve, reject) => {
+                try {
+                    if (!data.ingredients || !data.groups) {
+                        throw new Error('Invalid recipe format');
+                    }
+
+                    // Clear existing data
+                    ingredients = [];
+                    groups = { 'Unassigned': { ingredients: [], expanded: true, color: 'bg-gray-100' } };
+
+                    // Import ingredients and merge notes into database
+                    if (Array.isArray(data.ingredients)) {
+                        ingredients = data.ingredients.map(ing => {
+                            // Get or create database entry for this ingredient
+                            const dbEntry = getOrCreateDatabaseEntry(ing.name || 'Unknown');
+                            
+                            // Merge notes from recipe into database
+                            if (ing.notes && ing.notes.trim()) {
+                                if (dbEntry.notes && dbEntry.notes.trim()) {
+                                    dbEntry.notes += '\n---\n' + ing.notes;
+                                } else {
+                                    dbEntry.notes = ing.notes;
+                                }
+                            }
+                            
+                            return {
+                                id: ing.id || Date.now() + Math.random(),
+                                name: ing.name || 'Unknown',
+                                dilution: parseFloat(ing.dilution) || 1.0,
+                                volume: parseFloat(ing.volume) || 0,
+                                group: ing.group || 'Unassigned',
+                                notes: '', // Notes now come from database
+                                substituted: ing.substituted || false,
+                                // Preserve compound substitution metadata
+                                isCompoundSubstitute: ing.isCompoundSubstitute || false,
+                                originalIngredient: ing.originalIngredient || undefined,
+                                compoundId: ing.compoundId || undefined,
+                                compoundPercentage: ing.compoundPercentage || undefined
+                            };
+                        });
+                    }
+
+                    // Import groups
+                    if (typeof data.groups === 'object') {
+                        Object.entries(data.groups).forEach(([groupName, groupData]) => {
+                            groups[groupName] = {
+                                ingredients: Array.isArray(groupData.ingredients) ? groupData.ingredients : [],
+                                expanded: groupData.expanded !== false,
+                                color: groupData.color || 'bg-gray-100'
+                            };
+                        });
+                    }
+
+                    // Handle compound substitutions (for version 1.1+)
+                    if (data.compoundSubstitutions && typeof data.compoundSubstitutions === 'object') {
+                        console.log('Loaded compound substitutions:', Object.keys(data.compoundSubstitutions).length);
+                    }
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
         // Initialize visualization when page loads
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(initializeVisualization, 500);
