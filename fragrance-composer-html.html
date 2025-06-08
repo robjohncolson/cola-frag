@@ -1321,6 +1321,12 @@
                     dilution: 1.0 // Default to neat
                 });
             }
+            
+            // Update database entry with inventory information
+            const dbEntry = getOrCreateDatabaseEntry(name);
+            dbEntry.currentInventory = existing ? existing.amount : amount;
+            dbEntry.inventoryUnit = unit;
+            dbEntry.lastUpdated = new Date().toISOString();
 
             // Clear form
             document.getElementById('inventoryName').value = '';
@@ -1747,12 +1753,23 @@
                 });
             }
             
+            // Update database entry with inventory information
+            const dbEntry = getOrCreateDatabaseEntry(ingredient.name);
+            dbEntry.currentInventory = amount;
+            dbEntry.inventoryUnit = unit;
+            dbEntry.lastUpdated = new Date().toISOString();
+            
             // Clear form and close
             amountInput.value = '';
             document.getElementById(`inline-form-${ingredientId}`).classList.remove('active');
             
             renderInventory();
             render(); // Re-render to update stars and colors
+            
+            // Refresh database view if we're on the database tab
+            if (currentTab === 'database') {
+                renderDatabase();
+            }
         }
         
         function removeInventoryFromInline(ingredientId) {
@@ -2597,6 +2614,7 @@
                         <tr>
                             <th onclick="sortDatabase('name')">Name ${getSortIndicator('name')}</th>
                             <th onclick="sortDatabase('olfactoryFamily')">Family ${getSortIndicator('olfactoryFamily')}</th>
+                            <th onclick="sortDatabase('currentInventory')">Inventory ${getSortIndicator('currentInventory')}</th>
                             <th onclick="sortDatabase('dilution')">Dilution ${getSortIndicator('dilution')}</th>
                             <th onclick="sortDatabase('typicalUsage')">Usage ${getSortIndicator('typicalUsage')}</th>
                             <th onclick="sortDatabase('notes')">Notes ${getSortIndicator('notes')}</th>
@@ -2608,11 +2626,12 @@
                         ${filteredDatabase.map(entry => `
                             <tr id="db-row-${entry.id}">
                                 <td><strong>${entry.name}</strong></td>
-                                <td>${entry.olfactoryFamily}</td>
-                                <td>${entry.dilution}</td>
-                                <td>${entry.typicalUsage}μL</td>
-                                <td class="notes-cell" title="${entry.notes}">${entry.notes}</td>
-                                <td class="subs-cell" title="${entry.substitutions.join(', ')}">${entry.substitutions.join(', ')}</td>
+                                <td>${entry.olfactoryFamily || ''}</td>
+                                <td>${entry.currentInventory ? `${entry.currentInventory}${entry.inventoryUnit || 'ml'}` : 'None'}</td>
+                                <td>${entry.dilution || 1.0}</td>
+                                <td>${entry.typicalUsage || 0}μL</td>
+                                <td class="notes-cell" title="${entry.notes || ''}">${entry.notes || ''}</td>
+                                <td class="subs-cell" title="${(entry.substitutions || []).join(', ')}">${(entry.substitutions || []).join(', ')}</td>
                                 <td class="db-actions">
                                     <button onclick="editDatabaseEntry(${entry.id})" class="db-btn" title="Edit">
                                         <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
@@ -2652,11 +2671,12 @@
             
             row.innerHTML = `
                 <td><input type="text" class="db-edit-input" value="${entry.name}" id="edit-db-name-${entryId}"></td>
-                <td><input type="text" class="db-edit-input" value="${entry.olfactoryFamily}" id="edit-db-family-${entryId}" placeholder="e.g., Citrus, Woody, Floral"></td>
-                <td><input type="number" class="db-edit-input" value="${entry.dilution}" id="edit-db-dilution-${entryId}" step="0.001" min="0" max="1"></td>
-                <td><input type="number" class="db-edit-input" value="${entry.typicalUsage}" id="edit-db-usage-${entryId}" step="0.1" min="0"></td>
-                <td><textarea class="db-edit-textarea" id="edit-db-notes-${entryId}" placeholder="Notes about this ingredient...">${entry.notes}</textarea></td>
-                <td><textarea class="db-edit-textarea" id="edit-db-subs-${entryId}" placeholder="Comma-separated substitutions">${entry.substitutions.join(', ')}</textarea></td>
+                <td><input type="text" class="db-edit-input" value="${entry.olfactoryFamily || ''}" id="edit-db-family-${entryId}" placeholder="e.g., Citrus, Woody, Floral"></td>
+                <td><input type="number" class="db-edit-input" value="${entry.currentInventory || ''}" id="edit-db-inventory-${entryId}" step="0.1" min="0" placeholder="Amount"></td>
+                <td><input type="number" class="db-edit-input" value="${entry.dilution || 1.0}" id="edit-db-dilution-${entryId}" step="0.001" min="0" max="1"></td>
+                <td><input type="number" class="db-edit-input" value="${entry.typicalUsage || 0}" id="edit-db-usage-${entryId}" step="0.1" min="0"></td>
+                <td><textarea class="db-edit-textarea" id="edit-db-notes-${entryId}" placeholder="Notes about this ingredient...">${entry.notes || ''}</textarea></td>
+                <td><textarea class="db-edit-textarea" id="edit-db-subs-${entryId}" placeholder="Comma-separated substitutions">${(entry.substitutions || []).join(', ')}</textarea></td>
                 <td class="db-actions">
                     <button onclick="saveDatabaseEntry(${entryId})" class="db-btn" title="Save" style="color: #10b981;">
                         <i data-lucide="check" style="width: 12px; height: 12px;"></i>
@@ -2674,6 +2694,7 @@
             
             const name = document.getElementById(`edit-db-name-${entryId}`).value.trim();
             const family = document.getElementById(`edit-db-family-${entryId}`).value.trim();
+            const inventoryAmount = parseFloat(document.getElementById(`edit-db-inventory-${entryId}`).value);
             const dilution = parseFloat(document.getElementById(`edit-db-dilution-${entryId}`).value);
             const usage = parseFloat(document.getElementById(`edit-db-usage-${entryId}`).value);
             const notes = document.getElementById(`edit-db-notes-${entryId}`).value.trim();
@@ -2687,10 +2708,35 @@
             // Update entry
             entry.name = name;
             entry.olfactoryFamily = family;
+            entry.currentInventory = isNaN(inventoryAmount) ? 0 : inventoryAmount;
+            entry.inventoryUnit = entry.inventoryUnit || 'ml';
             entry.dilution = isNaN(dilution) ? 1.0 : dilution;
             entry.typicalUsage = isNaN(usage) ? 0 : usage;
             entry.notes = notes;
             entry.substitutions = subsText ? subsText.split(',').map(s => s.trim()).filter(s => s) : [];
+            entry.lastUpdated = new Date().toISOString();
+            
+            // Also update the main inventory if this ingredient exists there
+            const inventoryItem = inventory.find(item => 
+                item.name.toLowerCase() === name.toLowerCase()
+            );
+            if (inventoryItem && entry.currentInventory > 0) {
+                inventoryItem.amount = entry.currentInventory;
+                inventoryItem.unit = entry.inventoryUnit;
+                renderInventory();
+                render(); // Update stars and colors
+            } else if (!inventoryItem && entry.currentInventory > 0) {
+                // Add to inventory if it doesn't exist but has inventory amount
+                inventory.push({
+                    id: Date.now(),
+                    name: name,
+                    amount: entry.currentInventory,
+                    unit: entry.inventoryUnit,
+                    dilution: entry.dilution
+                });
+                renderInventory();
+                render(); // Update stars and colors
+            }
             
             editingDatabaseEntry = null;
             renderDatabase();
