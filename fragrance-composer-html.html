@@ -4220,6 +4220,9 @@
                 }
             }
             
+            // Sphere-to-sphere collision detection and response
+            handleSphereCollisions();
+            
             // Update velocities and positions
             molecules.forEach(mol => {
                 const userData = mol.mesh.userData;
@@ -4274,6 +4277,83 @@
                     mol.group.position.copy(mol.mesh.position);
                 }
             });
+        }
+        
+        function handleSphereCollisions() {
+            // Check for collisions between all pairs of spheres
+            for (let i = 0; i < molecules.length; i++) {
+                for (let j = i + 1; j < molecules.length; j++) {
+                    const mol1 = molecules[i];
+                    const mol2 = molecules[j];
+                    
+                    const pos1 = mol1.mesh.position;
+                    const pos2 = mol2.mesh.position;
+                    
+                    // Get sphere radii from geometry
+                    const radius1 = mol1.mesh.geometry.parameters.radius;
+                    const radius2 = mol2.mesh.geometry.parameters.radius;
+                    const minDistance = radius1 + radius2;
+                    
+                    // Calculate distance between centers
+                    const dx = pos2.x - pos1.x;
+                    const dy = pos2.y - pos1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Check if spheres are colliding (overlapping)
+                    if (distance < minDistance && distance > 0) {
+                        // Calculate collision normal (unit vector from mol1 to mol2)
+                        const normalX = dx / distance;
+                        const normalY = dy / distance;
+                        
+                        // Calculate overlap amount
+                        const overlap = minDistance - distance;
+                        
+                        // Separate the spheres proportionally based on their masses
+                        const totalMass = mol1.mesh.userData.mass + mol2.mesh.userData.mass;
+                        const separation1 = overlap * (mol2.mesh.userData.mass / totalMass);
+                        const separation2 = overlap * (mol1.mesh.userData.mass / totalMass);
+                        
+                        // Move spheres apart to eliminate overlap
+                        mol1.mesh.position.x -= normalX * separation1;
+                        mol1.mesh.position.y -= normalY * separation1;
+                        mol2.mesh.position.x += normalX * separation2;
+                        mol2.mesh.position.y += normalY * separation2;
+                        
+                        // Calculate relative velocity
+                        const vel1 = mol1.mesh.userData.velocity;
+                        const vel2 = mol2.mesh.userData.velocity;
+                        const relativeVelX = vel2.x - vel1.x;
+                        const relativeVelY = vel2.y - vel1.y;
+                        
+                        // Calculate relative velocity in collision normal direction
+                        const velAlongNormal = relativeVelX * normalX + relativeVelY * normalY;
+                        
+                        // Don't resolve if velocities are separating
+                        if (velAlongNormal > 0) continue;
+                        
+                        // Calculate restitution (bounciness) - make it depend on collision energy
+                        const collisionRestitution = 0.6; // Somewhat bouncy collisions
+                        
+                        // Calculate impulse scalar
+                        const impulseScalar = -(1 + collisionRestitution) * velAlongNormal;
+                        const totalInverseMass = (1 / mol1.mesh.userData.mass) + (1 / mol2.mesh.userData.mass);
+                        const impulse = impulseScalar / totalInverseMass;
+                        
+                        // Apply impulse to velocities
+                        const impulseX = impulse * normalX;
+                        const impulseY = impulse * normalY;
+                        
+                        vel1.x -= impulseX / mol1.mesh.userData.mass;
+                        vel1.y -= impulseY / mol1.mesh.userData.mass;
+                        vel2.x += impulseX / mol2.mesh.userData.mass;
+                        vel2.y += impulseY / mol2.mesh.userData.mass;
+                        
+                        // Add some energy dissipation to prevent perpetual bouncing
+                        vel1.multiplyScalar(0.98);
+                        vel2.multiplyScalar(0.98);
+                    }
+                }
+            }
         }
         
         function renderVisualization() {
