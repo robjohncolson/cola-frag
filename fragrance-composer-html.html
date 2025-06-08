@@ -3465,27 +3465,51 @@
         let ingredientShapes = new Map();
         
         function initializeMolecularVisualization() {
+            console.log('🚀 Starting molecular visualization initialization...');
+            
             if (typeof THREE === 'undefined') {
-                console.error('Three.js not loaded');
+                console.error('❌ Three.js not loaded');
+                document.getElementById('molecularVisualization').innerHTML = 
+                    '<div style="color: red; padding: 20px; text-align: center;">Three.js failed to load. Please refresh the page.</div>';
                 return;
             }
             
+            console.log('✅ Three.js loaded successfully');
+            
             const container = document.getElementById('molecularVisualization');
-            if (!container) return;
+            if (!container) {
+                console.error('❌ Container not found');
+                return;
+            }
+            
+            console.log('✅ Container found:', container);
             
             // Scene setup
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x000000);
+            console.log('✅ Scene created');
             
             // Camera setup
             camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
             camera.position.set(0, 0, 20);
+            console.log('✅ Camera created at position:', camera.position);
             
             // Renderer setup
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
+            try {
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                console.log('✅ Renderer created, size:', container.clientWidth, 'x', container.clientHeight);
+                
+                // Clear any existing content
+                container.innerHTML = '';
+                container.appendChild(renderer.domElement);
+                console.log('✅ Renderer canvas added to container');
+            } catch (error) {
+                console.error('❌ WebGL renderer failed:', error);
+                container.innerHTML = '<div style="color: red; padding: 20px; text-align: center;">WebGL not supported on this device.</div>';
+                return;
+            }
             
             // Mouse interaction setup
             raycaster = new THREE.Raycaster();
@@ -3529,12 +3553,17 @@
             const testCube = new THREE.Mesh(testGeometry, testMaterial);
             testCube.position.set(0, 0, 0);
             scene.add(testCube);
+            console.log('🔴 Test cube added at center');
             
-            // Remove test cube after 3 seconds
+            // Force immediate render
+            renderer.render(scene, camera);
+            console.log('🎬 First render completed');
+            
+            // Remove test cube after 5 seconds
             setTimeout(() => {
                 scene.remove(testCube);
-                console.log('Test cube removed');
-            }, 3000);
+                console.log('🔴 Test cube removed');
+            }, 5000);
             
             // Start animation loop
             animateMolecularScene();
@@ -3772,7 +3801,9 @@
                 });
             }
             
-            renderer.render(scene, camera);
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
         }
         
         // Mouse interaction variables
@@ -4307,7 +4338,25 @@
 
         // Initialize molecular visualization when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(initializeMolecularVisualization, 500);
+            console.log('📄 DOM loaded, initializing visualization in 1 second...');
+            setTimeout(() => {
+                console.log('⏰ Timeout reached, calling initialization...');
+                initializeMolecularVisualization();
+            }, 1000);
+        });
+        
+        // Also try initialization when Three.js loads
+        window.addEventListener('load', () => {
+            console.log('🌐 Window loaded, checking Three.js...');
+            if (typeof THREE !== 'undefined') {
+                console.log('🎯 Three.js available, ensuring initialization...');
+                // Only initialize if not already done
+                if (!renderer) {
+                    setTimeout(initializeMolecularVisualization, 100);
+                }
+            } else {
+                console.log('⚠️ Three.js still not available after window load');
+            }
         });
     </script>
 </body>
