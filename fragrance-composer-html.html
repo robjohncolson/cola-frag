@@ -4258,9 +4258,9 @@
                 
                 // Calculate inverse luminosity: smaller actives = higher impact = brighter glow
                 const activeRatio = totalActives > 0 ? actives / totalActives : 0;
-                const inverseLuminosity = Math.max(0.1, 1.0 - activeRatio); // Invert ratio, minimum 0.1 brightness
-                const emissiveIntensity = 0.2 + (inverseLuminosity * 0.6); // Range from 0.2 to 0.8
-                const opacity = 0.6 + (inverseLuminosity * 0.3); // Range from 0.6 to 0.9
+                const inverseLuminosity = Math.max(0.05, 1.0 - activeRatio); // Invert ratio, minimum 0.05 brightness
+                const emissiveIntensity = 0.1 + (inverseLuminosity * 1.2); // Range from 0.1 to 1.3 (much more dramatic)
+                const opacity = 0.4 + (inverseLuminosity * 0.6); // Range from 0.4 to 1.0 (more dramatic)
                 
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
@@ -4272,12 +4272,12 @@
                 });
                 
                 // Create wireframe overlay for better definition
-                const wireframeIntensity = 1.0 + inverseLuminosity; // Brighter wireframes for high-impact ingredients
+                const wireframeIntensity = 0.5 + (inverseLuminosity * 2.0); // Range from 0.5 to 2.5 (much more dramatic)
                 const wireframeMaterial = new THREE.MeshBasicMaterial({
                     color: color.clone().multiplyScalar(wireframeIntensity),
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.2 + (inverseLuminosity * 0.3) // Range from 0.2 to 0.5
+                    opacity: 0.1 + (inverseLuminosity * 0.7) // Range from 0.1 to 0.8 (more dramatic)
                 });
                 
                 // Create main mesh with solid material
