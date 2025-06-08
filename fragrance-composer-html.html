@@ -4228,8 +4228,12 @@
                 const actives = getActives(ing);
                 return sum + Math.pow(actives, spherePower);
             }, 0);
-            const maxRadius = 2.0;
-            const minRadius = 0.3;
+            // Dynamic radius range based on power - higher power = more extreme size differences
+            const baseMaxRadius = 2.0;
+            const baseMinRadius = 0.3;
+            const powerMultiplier = Math.pow(spherePower, 0.5); // Scale radius range with power
+            const maxRadius = baseMaxRadius * powerMultiplier;
+            const minRadius = baseMinRadius / powerMultiplier;
             
             ingredients.forEach((ingredient, index) => {
                 const actives = getActives(ingredient);
@@ -5201,8 +5205,12 @@
             }, 0);
             const poweredActives = Math.pow(actives, spherePower);
             const poweredPercentage = totalPoweredActives > 0 ? (poweredActives / totalPoweredActives) * 100 : 0;
-            const minRadius = 0.3;
-            const maxRadius = 2.0;
+            // Dynamic radius range based on power - same calculation as in renderVisualization
+            const baseMaxRadius = 2.0;
+            const baseMinRadius = 0.3;
+            const powerMultiplier = Math.pow(spherePower, 0.5);
+            const maxRadius = baseMaxRadius * powerMultiplier;
+            const minRadius = baseMinRadius / powerMultiplier;
             const sphereRadius = minRadius + (poweredPercentage / 100) * (maxRadius - minRadius);
             
             const tooltipHTML = `
