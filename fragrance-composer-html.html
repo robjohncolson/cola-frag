@@ -3829,9 +3829,15 @@
                 if (mol.ingredient.name === ingredientName) {
                     const color = new THREE.Color(newColor);
                     
-                    // Update main material
+                    // Update main material - preserve luminosity-based emissive
+                    const totalActives = getTotalActives();
+                    const actives = getActives(mol.ingredient);
+                    const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                    const inverseLuminosity = Math.max(0.02, 1.0 - activeRatio);
+                    const emissiveIntensity = 0.05 + (inverseLuminosity * 2.0);
+                    
                     mol.mesh.material.color = color;
-                    mol.mesh.material.emissive = color.clone().multiplyScalar(0.4);
+                    mol.mesh.material.emissive = color.clone().multiplyScalar(emissiveIntensity);
                     
                     // Update wireframe material
                     if (mol.mesh.userData.wireframeMesh) {
@@ -4317,6 +4323,7 @@
                 const userData = {
                     ingredient: ingredient,
                     originalPosition: mesh.position.clone(),
+                    originalEmissive: material.emissive.clone(), // Store original emissive for hover effects
                     rotationSpeed: {
                         x: (Math.random() - 0.5) * 0.02,
                         y: (Math.random() - 0.5) * 0.02,
@@ -4492,20 +4499,27 @@
                 
                 if (hoveredMolecule !== intersected) {
                     // Reset previous hover
-                    if (hoveredMolecule) {
-                        hoveredMolecule.material.emissive.multiplyScalar(0.5);
+                    if (hoveredMolecule && hoveredMolecule.userData.originalEmissive) {
+                        hoveredMolecule.material.emissive.copy(hoveredMolecule.userData.originalEmissive);
                     }
                     
                     // Set new hover
                     hoveredMolecule = intersected;
-                    intersected.material.emissive.multiplyScalar(2);
+                    // Save original emissive before modifying
+                    if (!intersected.userData.originalEmissive) {
+                        intersected.userData.originalEmissive = intersected.material.emissive.clone();
+                    }
+                    intersected.material.emissive = intersected.userData.originalEmissive.clone().multiplyScalar(2);
                     
                     // Show tooltip
                     showMolecularTooltip(event, ingredient);
                 }
             } else {
                 if (hoveredMolecule) {
-                    hoveredMolecule.material.emissive.multiplyScalar(0.5);
+                    // Restore original emissive
+                    if (hoveredMolecule.userData.originalEmissive) {
+                        hoveredMolecule.material.emissive.copy(hoveredMolecule.userData.originalEmissive);
+                    }
                     hoveredMolecule = null;
                     hideMolecularTooltip();
                 }
