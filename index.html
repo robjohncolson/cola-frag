@@ -7,7 +7,19 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" onerror="console.warn('Failed to load Lucide icons')"></script>
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js" onerror="console.warn('Failed to load Three.js')"></script>
     <!-- QR Code Generation Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('Failed to load QR Code library')"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" onerror="loadQRFallback()"></script>
+    <script>
+        // Fallback QR Code loading function
+        function loadQRFallback() {
+            console.warn('Primary QR Code library failed, trying alternative...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+            script.onerror = function() {
+                console.error('All QR Code libraries failed to load');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <style>
         * {
             margin: 0;
