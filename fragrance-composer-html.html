@@ -3470,7 +3470,6 @@
         let molecularMotion = false;
         let hoveredMolecule = null;
         let ingredientColors = new Map();
-        let ingredientShapes = new Map();
         
         function initializeMolecularVisualization() {
             console.log('🚀 Starting molecular visualization initialization...');
@@ -3602,59 +3601,8 @@
         }
         
         function assignIngredientVisuals() {
-            // Shape categories based on ingredient type/family
-            const shapeCategories = {
-                // Citrus family
-                citrus: 'sphere',
-                bergamot: 'sphere',
-                lemon: 'sphere',
-                orange: 'sphere',
-                lime: 'sphere',
-                grapefruit: 'sphere',
-                
-                // Woody family
-                woody: 'cube',
-                wood: 'cube',
-                cedar: 'cube',
-                sandalwood: 'cube',
-                vetiver: 'cube',
-                patchouli: 'cube',
-                
-                // Floral family
-                floral: 'octahedron',
-                rose: 'octahedron',
-                jasmine: 'octahedron',
-                lavender: 'octahedron',
-                geranium: 'octahedron',
-                
-                // Musk/animalic
-                musk: 'tetrahedron',
-                animalic: 'tetrahedron',
-                ambergris: 'tetrahedron',
-                civet: 'tetrahedron',
-                
-                // Spice
-                spice: 'dodecahedron',
-                pepper: 'dodecahedron',
-                cinnamon: 'dodecahedron',
-                clove: 'dodecahedron'
-            };
-            
             ingredients.forEach(ingredient => {
-                // Assign shape based on ingredient name
-                let shape = 'sphere'; // default
-                const name = ingredient.name.toLowerCase();
-                
-                for (const [category, categoryShape] of Object.entries(shapeCategories)) {
-                    if (name.includes(category)) {
-                        shape = categoryShape;
-                        break;
-                    }
-                }
-                
-                ingredientShapes.set(ingredient.name, shape);
-                
-                // Assign unique color
+                // Assign unique color (all shapes are now spheres)
                 if (!ingredientColors.has(ingredient.name)) {
                     const hue = (ingredient.name.charCodeAt(0) * 137.5) % 360;
                     const saturation = 70 + (ingredient.name.length * 5) % 30;
@@ -3700,9 +3648,8 @@
                 // Size based on percentage
                 const radius = minRadius + (percentage / 100) * (maxRadius - minRadius);
                 
-                // Create geometry based on shape
-                const shape = ingredientShapes.get(ingredient.name) || 'sphere';
-                const geometry = createMolecularGeometry(shape, radius);
+                // Create sphere geometry (all ingredients are now spheres)
+                const geometry = createMolecularGeometry('sphere', radius);
                 
                 // Create glowing material with enhanced visibility
                 const color = new THREE.Color(ingredientColors.get(ingredient.name) || '#ffffff');
@@ -3781,19 +3728,8 @@
         }
         
         function createMolecularGeometry(shape, radius) {
-            switch (shape) {
-                case 'cube':
-                    return new THREE.BoxGeometry(radius * 2, radius * 2, radius * 2);
-                case 'octahedron':
-                    return new THREE.OctahedronGeometry(radius);
-                case 'tetrahedron':
-                    return new THREE.TetrahedronGeometry(radius);
-                case 'dodecahedron':
-                    return new THREE.DodecahedronGeometry(radius);
-                case 'sphere':
-                default:
-                    return new THREE.SphereGeometry(radius, 16, 12);
-            }
+            // All geometries are now spheres
+            return new THREE.SphereGeometry(radius, 16, 12);
         }
         
         function renderEmptyMolecularScene() {
@@ -3941,10 +3877,9 @@
                             ${groupMolecules.map(mol => {
                                 const inventoryStatus = getInventoryStatus(mol.ingredient.name);
                                 const percentage = totalActives > 0 ? (getActives(mol.ingredient) / totalActives * 100).toFixed(1) : 0;
-                                const shape = ingredientShapes.get(mol.ingredient.name) || 'sphere';
                                 return `
                                     <div style="display: flex; justify-content: space-between; margin-bottom: 2px; color: #d1d5db;">
-                                        <span>${inventoryStatus.available ? '⭐' : '☆'} ${mol.ingredient.name} (${shape})</span>
+                                        <span>${inventoryStatus.available ? '⭐' : '☆'} ${mol.ingredient.name}</span>
                                         <span>${percentage}%</span>
                                     </div>
                                 `;
@@ -3972,13 +3907,6 @@
             const availableIngredients = ingredients.filter(ing => getInventoryStatus(ing.name).available).length;
             const coverage = totalIngredients > 0 ? (availableIngredients / totalIngredients * 100).toFixed(1) : 0;
             
-            // Shape distribution
-            const shapeStats = {};
-            ingredients.forEach(ing => {
-                const shape = ingredientShapes.get(ing.name) || 'sphere';
-                shapeStats[shape] = (shapeStats[shape] || 0) + 1;
-            });
-            
             stats.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                     <div>
@@ -3999,10 +3927,10 @@
                     </div>
                 </div>
                 <div style="font-size: 11px; color: #9ca3af; margin-bottom: 8px;">
-                    ${availableIngredients}/${totalIngredients} molecules available in inventory
+                    ${availableIngredients}/${totalIngredients} spherical molecules available in inventory
                 </div>
                 <div style="font-size: 10px; color: #64748b;">
-                    <strong>Molecular Shapes:</strong> ${Object.entries(shapeStats).map(([shape, count]) => `${shape} (${count})`).join(', ')}
+                    <strong>All molecules are now spheres</strong> - size represents active ingredient concentration
                 </div>
             `;
         }
@@ -4324,9 +4252,18 @@
         }
         
         function onMolecularWheel(event) {
-            // Zoom disabled to preserve size-based concentration comparison
             event.preventDefault();
-            console.log('🚫 Zoom disabled - preserving molecular size relationships for concentration analysis');
+            const delta = event.deltaY > 0 ? 2 : -2;
+            camera.position.z += delta;
+            
+            // Limit zoom to reasonable bounds
+            if (camera.position.z < 5) {
+                camera.position.z = 5;
+            } else if (camera.position.z > 100) {
+                camera.position.z = 100;
+            }
+            
+            document.getElementById('cameraInfo').textContent = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
         }
         
         function onMolecularMouseDown(event) {
@@ -4367,31 +4304,29 @@
                 case 'ArrowLeft':
                 case 'a':
                 case 'A':
-                    // Rotate left around Y axis
-                    const leftPosition = camera.position.clone();
-                    leftPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotateSpeed);
-                    camera.position.copy(leftPosition);
-                    camera.lookAt(0, 0, 0);
+                    // Pan camera left
+                    camera.position.x -= moveSpeed;
                     moved = true;
                     break;
                 case 'ArrowRight':
                 case 'd':
                 case 'D':
-                    // Rotate right around Y axis
-                    const rightPosition = camera.position.clone();
-                    rightPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), -rotateSpeed);
-                    camera.position.copy(rightPosition);
-                    camera.lookAt(0, 0, 0);
+                    // Pan camera right
+                    camera.position.x += moveSpeed;
                     moved = true;
                     break;
                 case 'q':
                 case 'Q':
+                    // Move camera closer (zoom in)
+                    camera.position.z -= moveSpeed;
+                    moved = true;
+                    break;
                 case 'e':
                 case 'E':
-                    // Zoom disabled to preserve size-based concentration comparison
-                    console.log('🚫 Zoom disabled - use rotation and vertical movement instead');
-                    event.preventDefault();
-                    return;
+                    // Move camera further (zoom out)
+                    camera.position.z += moveSpeed;
+                    moved = true;
+                    break;
             }
             
             if (moved) {
@@ -4408,7 +4343,6 @@
             const tooltipHTML = `
                 <div style="font-weight: 600; color: ${ingredientColors.get(ingredient.name)};">${ingredient.name}</div>
                 <div style="margin: 4px 0; font-size: 11px;">
-                    Shape: ${ingredientShapes.get(ingredient.name) || 'sphere'}<br>
                     Volume: ${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%<br>
                     Actives: ${getActives(ingredient).toFixed(2)}μL (${getIngredientPercentage(ingredient)}%)<br>
                     Group: ${ingredient.group}
@@ -4552,7 +4486,7 @@
                 <div style="background: #1f2937; padding: 30px; border-radius: 12px; max-width: 500px; color: white; border: 1px solid #3b82f6;">
                     <h3 style="margin: 0 0 20px 0; color: #3b82f6; text-align: center;">🚀 Molecular Navigation Controls</h3>
                     <div style="background: #1e3a8a; padding: 10px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
-                        <div style="font-size: 12px; color: #bfdbfe;">💡 <strong>Note:</strong> Zoom is disabled to preserve molecular size relationships - bigger molecules = higher concentration!</div>
+                        <div style="font-size: 12px; color: #bfdbfe;">💡 <strong>Note:</strong> All molecules are on a flat plane - bigger molecules = higher concentration! Pan and zoom to explore different areas.</div>
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 20px; font-size: 14px;">
@@ -4562,8 +4496,8 @@
                         <div style="color: #d1d5db;">🖱️ Drag</div>
                         <div style="color: #9ca3af;">Rotate camera around molecules</div>
                         
-                        <div style="color: #6b7280;">🎯 Scroll</div>
-                        <div style="color: #6b7280;">Disabled (preserves size relationships)</div>
+                        <div style="color: #d1d5db;">🎯 Scroll</div>
+                        <div style="color: #9ca3af;">Zoom in/out on molecular plane</div>
                         
                         <div style="color: #d1d5db;">🖱️ Hover</div>
                         <div style="color: #9ca3af;">Show molecule details</div>
@@ -4575,10 +4509,10 @@
                         <div style="color: #9ca3af;">Move camera up/down</div>
                         
                         <div style="color: #d1d5db;">← → or A D</div>
-                        <div style="color: #9ca3af;">Rotate left/right around center</div>
+                        <div style="color: #9ca3af;">Pan camera left/right across plane</div>
                         
-                        <div style="color: #6b7280;">Q / E</div>
-                        <div style="color: #6b7280;">Disabled (preserves size relationships)</div>
+                        <div style="color: #d1d5db;">Q / E</div>
+                        <div style="color: #9ca3af;">Zoom in / Zoom out on plane</div>
                     </div>
                     
                     <div style="text-align: center;">
