@@ -1215,6 +1215,48 @@
                             <!-- Will be populated by JavaScript -->
                         </div>
                     </div>
+                
+                    <!-- Power Controls -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="sliders" class="icon"></i>
+                            Scaling Power Controls
+                        </h2>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 12px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            💡 <strong>Adjust how dramatically size and territory vary</strong> - Higher values create more extreme differences between high and low concentration ingredients
+                        </div>
+                        
+                        <!-- Sphere Size Power -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                🔴 Sphere Size Power: <span id="spherePowerValue">2.0</span>
+                            </label>
+                            <input type="range" id="spherePowerSlider" min="1" max="4" step="0.1" value="2.0" 
+                                   style="width: 100%; margin-bottom: 4px;" 
+                                   oninput="updateSpherePower(this.value)">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #6b7280;">
+                                <span>1.0 (Linear)</span>
+                                <span>2.0 (Squared)</span>
+                                <span>3.0 (Cubed)</span>
+                                <span>4.0 (⁴th Power)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Territory Size Power -->
+                        <div style="margin-bottom: 8px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                🟣 Territory Size Power: <span id="territoryPowerValue">1.0</span>
+                            </label>
+                            <input type="range" id="territoryPowerSlider" min="1" max="3" step="0.1" value="1.0" 
+                                   style="width: 100%; margin-bottom: 4px;" 
+                                   oninput="updateTerritoryPower(this.value)">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #6b7280;">
+                                <span>1.0 (Linear)</span>
+                                <span>2.0 (Squared)</span>
+                                <span>3.0 (Cubed)</span>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Statistics Summary -->
                     <div class="form-section">
@@ -1311,6 +1353,10 @@
         // Ingredient Database
         let ingredientDatabase = [];
         let currentTab = 'composer'; // 'composer' or 'database'
+        
+        // Power Controls for Scaling
+        let spherePower = 2.0; // Default to squared for sphere sizing
+        let territoryPower = 1.0; // Default to linear for territory sizing
         
         // Notes and Substitutions
         let expandedIngredients = new Set(); // Track which ingredient cards are expanded
@@ -4028,6 +4074,26 @@
             alert(`Applied ${family} color to ${appliedCount} ingredient(s)`);
         }
         
+        function updateSpherePower(value) {
+            spherePower = parseFloat(value);
+            document.getElementById('spherePowerValue').textContent = spherePower.toFixed(1);
+            
+            // Update visualization in real-time
+            if (currentTab === 'visualizer') {
+                renderVisualization();
+            }
+        }
+        
+        function updateTerritoryPower(value) {
+            territoryPower = parseFloat(value);
+            document.getElementById('territoryPowerValue').textContent = territoryPower.toFixed(1);
+            
+            // Update visualization in real-time
+            if (currentTab === 'visualizer') {
+                renderVisualization();
+            }
+        }
+        
         function calculateTerritoryAllocations() {
             if (ingredients.length === 0) return [];
             
@@ -4038,14 +4104,15 @@
             ingredients.forEach((ingredient, index) => {
                 const actives = getActives(ingredient);
                 const activeRatio = totalActives > 0 ? actives / totalActives : 0;
+                const poweredActiveRatio = Math.pow(activeRatio, territoryPower); // Apply variable power to territory ratio
                 
                 // Inverse territory calculation: higher ratio = smaller territory
-                // Scale territory radius inversely to active ratio
+                // Scale territory radius inversely to powered active ratio
                 const minTerritoryRadius = 1.5; // Minimum territory for high-concentration ingredients
                 const maxTerritoryRadius = 6.0; // Maximum territory for low-concentration ingredients
                 
                 // Inverse mapping: 100% ratio gets minRadius, 0% ratio gets maxRadius
-                const territoryRadius = maxTerritoryRadius - (activeRatio * (maxTerritoryRadius - minTerritoryRadius));
+                const territoryRadius = maxTerritoryRadius - (poweredActiveRatio * (maxTerritoryRadius - minTerritoryRadius));
                 
                 territories.push({
                     ingredient: ingredient,
@@ -4157,21 +4224,21 @@
             
             // Create molecules for each ingredient
             const totalActives = getTotalActives();
-            const totalSquaredActives = ingredients.reduce((sum, ing) => {
+            const totalPoweredActives = ingredients.reduce((sum, ing) => {
                 const actives = getActives(ing);
-                return sum + (actives * actives);
+                return sum + Math.pow(actives, spherePower);
             }, 0);
             const maxRadius = 2.0;
             const minRadius = 0.3;
             
             ingredients.forEach((ingredient, index) => {
                 const actives = getActives(ingredient);
-                const squaredActives = actives * actives; // Square the active amount for more dramatic visual differences
+                const poweredActives = Math.pow(actives, spherePower); // Apply variable power for dramatic visual differences
                 const percentage = totalActives > 0 ? (actives / totalActives) * 100 : 0;
-                const squaredPercentage = totalSquaredActives > 0 ? (squaredActives / totalSquaredActives) * 100 : 0;
+                const poweredPercentage = totalPoweredActives > 0 ? (poweredActives / totalPoweredActives) * 100 : 0;
                 
-                // Size based on squared percentage for more dramatic visual differences
-                const radius = minRadius + (squaredPercentage / 100) * (maxRadius - minRadius);
+                // Size based on powered percentage for more dramatic visual differences
+                const radius = minRadius + (poweredPercentage / 100) * (maxRadius - minRadius);
                 
                 // Create sphere geometry (all ingredients are now spheres)
                 const geometry = createMolecularGeometry('sphere', radius);
@@ -5124,7 +5191,19 @@
             const totalActives = getTotalActives();
             const actives = getActives(ingredient);
             const activeRatio = totalActives > 0 ? actives / totalActives : 0;
-            const territoryRadius = 6.0 - (activeRatio * 4.5); // Same calculation as in calculateTerritoryAllocations
+            const poweredActiveRatio = Math.pow(activeRatio, territoryPower);
+            const territoryRadius = 6.0 - (poweredActiveRatio * 4.5); // Same calculation as in calculateTerritoryAllocations
+            
+            // Calculate sphere radius (same calculation as in renderVisualization)
+            const totalPoweredActives = ingredients.reduce((sum, ing) => {
+                const ingActives = getActives(ing);
+                return sum + Math.pow(ingActives, spherePower);
+            }, 0);
+            const poweredActives = Math.pow(actives, spherePower);
+            const poweredPercentage = totalPoweredActives > 0 ? (poweredActives / totalPoweredActives) * 100 : 0;
+            const minRadius = 0.3;
+            const maxRadius = 2.0;
+            const sphereRadius = minRadius + (poweredPercentage / 100) * (maxRadius - minRadius);
             
             const tooltipHTML = `
                 <div style="font-weight: 600; color: ${ingredientColors.get(ingredient.name)};">${ingredient.name}</div>
@@ -5132,7 +5211,8 @@
                     Volume: ${ingredient.volume.toFixed(1)}μL @ ${(ingredient.dilution * 100).toFixed(1)}%<br>
                     Actives: ${getActives(ingredient).toFixed(2)}μL (${getIngredientPercentage(ingredient)}%)<br>
                     Group: ${ingredient.group}<br>
-                    Territory: ${territoryRadius.toFixed(1)} radius (${activeRatio > 0.1 ? 'constrained' : 'roaming'})
+                    Sphere: ${sphereRadius.toFixed(2)} radius (^${spherePower} scaling)<br>
+                    Territory: ${territoryRadius.toFixed(1)} radius (^${territoryPower} scaling, ${poweredActiveRatio > 0.1 ? 'constrained' : 'roaming'})
                 </div>
                 <div style="color: ${inventoryStatus.available ? '#10b981' : '#ef4444'}; font-size: 11px;">
                     ${inventoryStatus.available ? 
