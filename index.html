@@ -8,27 +8,8 @@
     <!-- Updated Three.js to use the recommended non-deprecated path -->
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js" onerror="console.warn('Failed to load Three.js')"></script>
     
-    <!-- QR Code Generation Library with proper fallback -->
-    <script>
-        // Define fallback function before using it
-        window.loadQRFallback = function() {
-            console.warn('Primary QR Code library failed, trying alternative...');
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
-            script.onerror = function() {
-                console.error('All QR Code libraries failed to load');
-                // Try one more alternative
-                const finalScript = document.createElement('script');
-                finalScript.src = 'https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js';
-                finalScript.onerror = function() {
-                    console.error('Final QR Code library fallback also failed');
-                };
-                document.head.appendChild(finalScript);
-            };
-            document.head.appendChild(script);
-        };
-    </script>
-    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" onerror="window.loadQRFallback()"></script>
+    <!-- QR Code Generation Library - Using reliable CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -6063,6 +6044,10 @@
                 container.innerHTML = `
                     <div style="color: #ef4444; font-size: 14px; padding: 20px;">
                         ❌ QR Code library failed to load. Please check your internet connection and refresh the page.
+                        <br><br>
+                        <button onclick="tryAlternativeQR()" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                            Try Alternative Method
+                        </button>
                     </div>
                 `;
                 return;
@@ -6072,58 +6057,87 @@
             container.innerHTML = '';
             
             try {
-                // Create canvas element
-                const canvas = document.createElement('canvas');
-                container.appendChild(canvas);
+                // Create a div to hold the QR code
+                const qrDiv = document.createElement('div');
+                qrDiv.style.cssText = 'display: flex; justify-content: center; align-items: center; margin: 20px 0;';
+                container.appendChild(qrDiv);
                 
-                // Generate QR code
-                QRCode.toCanvas(canvas, currentQRData, {
+                // Generate QR code using davidshimjs-qrcodejs library
+                const qr = new QRCode(qrDiv, {
+                    text: currentQRData,
                     width: 200,
                     height: 200,
-                    color: {
-                        dark: '#1f2937',
-                        light: '#ffffff'
-                    },
-                    margin: 2,
-                    errorCorrectionLevel: 'M'
-                }, function (error) {
-                    if (error) {
-                        console.error('QR Code generation error:', error);
-                        container.innerHTML = `
-                            <div style="color: #ef4444; font-size: 14px; padding: 20px;">
-                                ❌ Failed to generate QR code: ${error.message}
-                            </div>
-                        `;
-                    } else {
-                        // Add some styling and info
-                        const info = document.createElement('div');
-                        info.style.cssText = 'margin-top: 12px; font-size: 12px; color: #6b7280;';
-                        info.innerHTML = '✅ QR Code generated successfully!<br>Scan with your mobile device';
-                        container.appendChild(info);
-                    }
+                    colorDark: "#1f2937",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
                 });
+                
+                // Add success message
+                setTimeout(() => {
+                    const info = document.createElement('div');
+                    info.style.cssText = 'margin-top: 12px; font-size: 12px; color: #6b7280; text-align: center;';
+                    info.innerHTML = '✅ QR Code generated successfully!<br>Scan with your mobile device';
+                    container.appendChild(info);
+                }, 100);
+                
             } catch (error) {
                 console.error('QR Code generation error:', error);
-                container.innerHTML = `
-                    <div style="color: #ef4444; font-size: 14px; padding: 20px;">
-                        ❌ Failed to generate QR code: ${error.message}
-                    </div>
-                `;
+                // Try alternative API method
+                tryAlternativeQR();
             }
         }
         
+        function tryAlternativeQR() {
+            const container = document.getElementById('qrCodeContainer');
+            const currentData = currentQRData || 'https://github.com/robjohncolson/cola-frag';
+            
+            // Use online QR service as fallback
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentData)}" 
+                         alt="QR Code" 
+                         style="border: 1px solid #e5e7eb; border-radius: 8px; max-width: 200px; height: auto;">
+                    <div style="margin-top: 12px; font-size: 12px; color: #6b7280;">
+                        ✅ QR Code generated via online service<br>Scan with your mobile device
+                    </div>
+                    <div style="margin-top: 8px; font-size: 10px; color: #9ca3af;">
+                        Using qrserver.com API as fallback
+                    </div>
+                </div>
+            `;
+        }
+        
         function downloadQRCode() {
-            const canvas = document.querySelector('#qrCodeContainer canvas');
-            if (!canvas) {
+            const container = document.getElementById('qrCodeContainer');
+            
+            // Try to find canvas (from QRCode.js library)
+            let canvas = container.querySelector('canvas');
+            
+            // Try to find image (from fallback method)
+            let img = container.querySelector('img');
+            
+            if (!canvas && !img) {
                 alert('Please generate a QR code first!');
                 return;
             }
             
             const shareType = document.getElementById('shareType').value;
-            const link = document.createElement('a');
-            link.download = `fragrance-qr-${shareType}-${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            const filename = `fragrance-qr-${shareType}-${new Date().toISOString().split('T')[0]}.png`;
+            
+            if (canvas) {
+                // Download from canvas
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL();
+                link.click();
+            } else if (img) {
+                // Download from image (fallback method)
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = img.src;
+                link.target = '_blank';
+                link.click();
+            }
         }
         
         function generateGitHubQR() {
