@@ -996,7 +996,15 @@
                             Add Ingredient
                         </h2>
                         <div class="form-grid">
-                            <input type="text" id="ingredientName" class="input" placeholder="Ingredient name" onchange="onIngredientNameChange()">
+                            <input type="text" 
+                                   id="ingredientName" 
+                                   class="input" 
+                                   placeholder="Ingredient name" 
+                                   list="add-ingredient-datalist"
+                                   onchange="onIngredientNameChange()">
+                            <datalist id="add-ingredient-datalist">
+                                <!-- Will be populated by JavaScript -->
+                            </datalist>
                             <input type="number" id="ingredientDilution" class="input" step="0.001" placeholder="Dilution (0.1 = 10%)" value="1.0">
                             <input type="number" id="ingredientVolume" class="input" step="0.1" placeholder="Volume (μL)" value="0">
                             <button onclick="addIngredient()" class="btn btn-blue">
@@ -1544,6 +1552,7 @@
             
             if (inventory.length === 0) {
                 container.innerHTML = '<div style="text-align: center; color: #6b7280; padding: 20px;">No ingredients in inventory</div>';
+                updateAddIngredientDatalist();
                 return;
             }
 
@@ -1568,6 +1577,18 @@
                 
                 container.appendChild(itemDiv);
             });
+            
+            // Update the add ingredient datalist
+            updateAddIngredientDatalist();
+        }
+        
+        function updateAddIngredientDatalist() {
+            const datalist = document.getElementById('add-ingredient-datalist');
+            if (datalist) {
+                datalist.innerHTML = inventory.map(item => 
+                    `<option value="${item.name}" label="${item.amount}${item.unit} available">`
+                ).join('');
+            }
         }
 
         function updateRecipeCoverage() {
@@ -2625,7 +2646,18 @@
                                 cardDiv.innerHTML = `
                                     <div class="ingredient-header">
                                         <div class="ingredient-info">
-                                            <input type="text" id="edit-name-${ingredient.id}" class="edit-input" value="${ingredient.name}" placeholder="Ingredient name">
+                                            <div style="position: relative;">
+                                                <input type="text" 
+                                                       id="edit-name-${ingredient.id}" 
+                                                       class="edit-input" 
+                                                       value="${ingredient.name}" 
+                                                       placeholder="Ingredient name"
+                                                       list="edit-inventory-datalist-${ingredient.id}">
+                                                <datalist id="edit-inventory-datalist-${ingredient.id}">
+                                                    ${inventory.map(item => `<option value="${item.name}" label="${item.amount}${item.unit} available">`).join('')}
+                                                </datalist>
+                                            </div>
+                                            <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">💡 Type or click dropdown to align with inventory names</div>
                                             <div style="display: flex; gap: 4px;">
                                                 <input type="number" id="edit-volume-${ingredient.id}" class="edit-input" value="${ingredient.volume}" step="0.1" placeholder="Volume (μL)" style="flex: 1;">
                                                 <input type="number" id="edit-dilution-${ingredient.id}" class="edit-input" value="${ingredient.dilution}" step="0.001" min="0" max="1" placeholder="Dilution" style="flex: 1;">
