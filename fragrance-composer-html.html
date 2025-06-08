@@ -6,6 +6,8 @@
     <title>Fragrance Composition Tracker</title>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" onerror="console.warn('Failed to load Lucide icons')"></script>
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js" onerror="console.warn('Failed to load Three.js')"></script>
+    <!-- QR Code Generation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('Failed to load QR Code library')"></script>
     <style>
         * {
             margin: 0;
@@ -988,6 +990,10 @@
                         <i data-lucide="bar-chart-3" class="icon"></i>
                         Visualizer
                     </button>
+                    <button onclick="switchTab('share')" id="shareTab" class="btn" style="flex: 1; font-size: 11px; background: #6b7280; color: white;">
+                        <i data-lucide="qr-code" class="icon"></i>
+                        Share
+                    </button>
                 </div>
             </div>
             
@@ -1296,6 +1302,143 @@
                         </h2>
                         <div id="visualizerStats" style="font-size: 12px; color: #4b5563;">
                             <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Share Tab Content -->
+                <div id="shareContent" style="display: none;">
+                    <!-- QR Code Generation -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="qr-code" class="icon"></i>
+                            Generate QR Code
+                        </h2>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                Share Type:
+                            </label>
+                            <select id="shareType" class="input" onchange="updateSharePreview()">
+                                <option value="recipe">Current Recipe</option>
+                                <option value="database">Ingredient Database</option>
+                                <option value="inventory">Current Inventory</option>
+                                <option value="github">GitHub Repository</option>
+                                <option value="app">This Application</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 4px;">
+                                Custom URL (optional):
+                            </label>
+                            <input type="url" id="customUrl" class="input" placeholder="Enter custom URL to share..." onchange="updateSharePreview()">
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button onclick="generateQRCode()" class="btn btn-blue" style="flex: 1;">
+                                <i data-lucide="qr-code" class="icon"></i>
+                                Generate QR Code
+                            </button>
+                            <button onclick="downloadQRCode()" class="btn btn-green">
+                                <i data-lucide="download" class="icon"></i>
+                                Download
+                            </button>
+                        </div>
+                        
+                        <!-- QR Code Display -->
+                        <div id="qrCodeContainer" style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <div style="color: #6b7280; font-size: 14px;">
+                                QR Code will appear here
+                            </div>
+                        </div>
+                        
+                        <!-- Share Preview -->
+                        <div id="sharePreview" style="margin-top: 12px; padding: 12px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #3b82f6; font-size: 12px; color: #1d4ed8;">
+                            Select a share type to see preview
+                        </div>
+                    </div>
+                    
+                    <!-- GitHub Repository Links -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="github" class="icon"></i>
+                            GitHub Repository
+                        </h2>
+                        <div style="margin-bottom: 12px;">
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                                Visit the main repository for updates, documentation, and to contribute:
+                            </p>
+                            <a href="https://github.com/robjohncolson/cola-frag" target="_blank" rel="noopener noreferrer" 
+                               style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #1f2937; color: white; text-decoration: none; border-radius: 6px; font-size: 13px; transition: background-color 0.2s;"
+                               onmouseover="this.style.backgroundColor='#374151'" 
+                               onmouseout="this.style.backgroundColor='#1f2937'">
+                                <i data-lucide="external-link" class="icon"></i>
+                                https://github.com/robjohncolson/cola-frag
+                            </a>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button onclick="generateGitHubQR()" class="btn" style="flex: 1; background: #1f2937; color: white;">
+                                <i data-lucide="qr-code" class="icon"></i>
+                                GitHub QR Code
+                            </button>
+                            <button onclick="copyGitHubUrl()" class="btn" style="flex: 1; background: #10b981; color: white;">
+                                <i data-lucide="copy" class="icon"></i>
+                                Copy URL
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Sharing Options -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="share-2" class="icon"></i>
+                            Share Options
+                        </h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button onclick="shareToClipboard()" class="btn" style="background: #8b5cf6; color: white; font-size: 11px;">
+                                <i data-lucide="clipboard" class="icon"></i>
+                                Copy to Clipboard
+                            </button>
+                            <button onclick="shareViaEmail()" class="btn" style="background: #f59e0b; color: white; font-size: 11px;">
+                                <i data-lucide="mail" class="icon"></i>
+                                Share via Email
+                            </button>
+                            <button onclick="shareToSocial('twitter')" class="btn" style="background: #1da1f2; color: white; font-size: 11px;">
+                                <i data-lucide="twitter" class="icon"></i>
+                                Share on Twitter
+                            </button>
+                            <button onclick="shareToSocial('facebook')" class="btn" style="background: #1877f2; color: white; font-size: 11px;">
+                                <i data-lucide="facebook" class="icon"></i>
+                                Share on Facebook
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- App Information -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="info" class="icon"></i>
+                            About This App
+                        </h2>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.5;">
+                            <p style="margin-bottom: 8px;">
+                                <strong>Fragrance Composition Tracker</strong> is an open-source tool for perfumers and fragrance enthusiasts to create, manage, and share fragrance formulations.
+                            </p>
+                            <p style="margin-bottom: 8px;">
+                                Features include:
+                            </p>
+                            <ul style="margin-left: 16px; margin-bottom: 8px;">
+                                <li>• Recipe composition and management</li>
+                                <li>• Ingredient database with substitutions</li>
+                                <li>• Inventory tracking and coverage analysis</li>
+                                <li>• 3D molecular visualization</li>
+                                <li>• Import/export functionality</li>
+                                <li>• QR code sharing</li>
+                            </ul>
+                            <p style="font-size: 11px; color: #6b7280;">
+                                Developed by the fragrance community • Open source • MIT License
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -3262,11 +3405,13 @@
             document.getElementById('composerTab').className = tabName === 'composer' ? 'btn tab-active' : 'btn tab-inactive';
             document.getElementById('databaseTab').className = tabName === 'database' ? 'btn tab-active' : 'btn tab-inactive';
             document.getElementById('visualizerTab').className = tabName === 'visualizer' ? 'btn tab-active' : 'btn tab-inactive';
+            document.getElementById('shareTab').className = tabName === 'share' ? 'btn tab-active' : 'btn tab-inactive';
             
             // Show/hide sidebar content
             document.getElementById('composerContent').style.display = tabName === 'composer' ? 'block' : 'none';
             document.getElementById('databaseContent').style.display = tabName === 'database' ? 'block' : 'none';
             document.getElementById('visualizerContent').style.display = tabName === 'visualizer' ? 'block' : 'none';
+            document.getElementById('shareContent').style.display = tabName === 'share' ? 'block' : 'none';
             
             // Show/hide main content areas
             document.getElementById('groupsContainer').style.display = tabName === 'composer' ? 'block' : 'none';
@@ -3276,6 +3421,8 @@
                 renderDatabase();
             } else if (tabName === 'visualizer') {
                 renderVisualization();
+            } else if (tabName === 'share') {
+                updateSharePreview();
             }
         }
         
@@ -5819,6 +5966,242 @@
                     console.log('📐 Visualization resized to:', width, 'x', height);
                 }
             }
+        });
+        
+        // QR Code and Sharing Functions
+        let currentQRData = null;
+        
+        function updateSharePreview() {
+            const shareType = document.getElementById('shareType').value;
+            const customUrl = document.getElementById('customUrl').value.trim();
+            const preview = document.getElementById('sharePreview');
+            
+            let shareData = null;
+            let previewText = '';
+            
+            if (customUrl) {
+                shareData = customUrl;
+                previewText = `🔗 Custom URL: ${customUrl}`;
+            } else {
+                switch (shareType) {
+                    case 'recipe':
+                        shareData = JSON.stringify({
+                            type: 'fragrance-recipe',
+                            timestamp: new Date().toISOString(),
+                            ingredients: ingredients,
+                            groups: groups,
+                            totalActives: getTotalActives().toFixed(2)
+                        }, null, 2);
+                        previewText = `📋 Current Recipe (${ingredients.length} ingredients, ${getTotalActives().toFixed(2)}μL total)`;
+                        break;
+                    case 'database':
+                        shareData = JSON.stringify({
+                            type: 'ingredient-database',
+                            timestamp: new Date().toISOString(),
+                            database: ingredientDatabase,
+                            totalEntries: ingredientDatabase.length
+                        }, null, 2);
+                        previewText = `🗄️ Ingredient Database (${ingredientDatabase.length} entries)`;
+                        break;
+                    case 'inventory':
+                        shareData = JSON.stringify({
+                            type: 'fragrance-inventory',
+                            timestamp: new Date().toISOString(),
+                            inventory: inventory,
+                            totalItems: inventory.length
+                        }, null, 2);
+                        previewText = `📦 Current Inventory (${inventory.length} items)`;
+                        break;
+                    case 'github':
+                        shareData = 'https://github.com/robjohncolson/cola-frag';
+                        previewText = '🐱 GitHub Repository: https://github.com/robjohncolson/cola-frag';
+                        break;
+                    case 'app':
+                        shareData = window.location.href;
+                        previewText = `🧪 Fragrance Composition Tracker App: ${window.location.href}`;
+                        break;
+                    default:
+                        previewText = 'Select a share type to see preview';
+                }
+            }
+            
+            preview.innerHTML = previewText;
+            currentQRData = shareData;
+        }
+        
+        function generateQRCode() {
+            if (!currentQRData) {
+                alert('Please select a share type first!');
+                return;
+            }
+            
+            const container = document.getElementById('qrCodeContainer');
+            
+            // Check if QRCode library is available
+            if (typeof QRCode === 'undefined') {
+                container.innerHTML = `
+                    <div style="color: #ef4444; font-size: 14px; padding: 20px;">
+                        ❌ QR Code library failed to load. Please check your internet connection and refresh the page.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Clear previous QR code
+            container.innerHTML = '';
+            
+            try {
+                // Create canvas element
+                const canvas = document.createElement('canvas');
+                container.appendChild(canvas);
+                
+                // Generate QR code
+                QRCode.toCanvas(canvas, currentQRData, {
+                    width: 200,
+                    height: 200,
+                    color: {
+                        dark: '#1f2937',
+                        light: '#ffffff'
+                    },
+                    margin: 2,
+                    errorCorrectionLevel: 'M'
+                }, function (error) {
+                    if (error) {
+                        console.error('QR Code generation error:', error);
+                        container.innerHTML = `
+                            <div style="color: #ef4444; font-size: 14px; padding: 20px;">
+                                ❌ Failed to generate QR code: ${error.message}
+                            </div>
+                        `;
+                    } else {
+                        // Add some styling and info
+                        const info = document.createElement('div');
+                        info.style.cssText = 'margin-top: 12px; font-size: 12px; color: #6b7280;';
+                        info.innerHTML = '✅ QR Code generated successfully!<br>Scan with your mobile device';
+                        container.appendChild(info);
+                    }
+                });
+            } catch (error) {
+                console.error('QR Code generation error:', error);
+                container.innerHTML = `
+                    <div style="color: #ef4444; font-size: 14px; padding: 20px;">
+                        ❌ Failed to generate QR code: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function downloadQRCode() {
+            const canvas = document.querySelector('#qrCodeContainer canvas');
+            if (!canvas) {
+                alert('Please generate a QR code first!');
+                return;
+            }
+            
+            const shareType = document.getElementById('shareType').value;
+            const link = document.createElement('a');
+            link.download = `fragrance-qr-${shareType}-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function generateGitHubQR() {
+            document.getElementById('shareType').value = 'github';
+            updateSharePreview();
+            generateQRCode();
+        }
+        
+        function copyGitHubUrl() {
+            const url = 'https://github.com/robjohncolson/cola-frag';
+            navigator.clipboard.writeText(url).then(() => {
+                alert('GitHub URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('GitHub URL copied to clipboard!');
+            });
+        }
+        
+        function shareToClipboard() {
+            if (!currentQRData) {
+                alert('Please select a share type first!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(currentQRData).then(() => {
+                alert('Data copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = currentQRData;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Data copied to clipboard!');
+            });
+        }
+        
+        function shareViaEmail() {
+            if (!currentQRData) {
+                alert('Please select a share type first!');
+                return;
+            }
+            
+            const shareType = document.getElementById('shareType').value;
+            const subject = `Fragrance ${shareType.charAt(0).toUpperCase() + shareType.slice(1)} - Shared from Fragrance Composer`;
+            let body = `Hi!\n\nI'm sharing my fragrance ${shareType} with you:\n\n`;
+            
+            if (shareType === 'github' || shareType === 'app' || currentQRData.startsWith('http')) {
+                body += `${currentQRData}\n\n`;
+            } else {
+                body += `${currentQRData}\n\n`;
+            }
+            
+            body += `This was shared from the Fragrance Composition Tracker app.\nGet it here: https://github.com/robjohncolson/cola-frag\n\nHappy perfuming!`;
+            
+            const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+        
+        function shareToSocial(platform) {
+            const shareType = document.getElementById('shareType').value;
+            const githubUrl = 'https://github.com/robjohncolson/cola-frag';
+            
+            let text = `Check out this amazing fragrance ${shareType}! 🧪✨`;
+            let url = githubUrl;
+            
+            if (shareType === 'github' || shareType === 'app') {
+                text = `🧪 Check out this open-source Fragrance Composition Tracker! Perfect for perfumers and fragrance enthusiasts ✨`;
+                url = currentQRData || githubUrl;
+            }
+            
+            let shareUrl = '';
+            
+            switch (platform) {
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}&hashtags=fragrance,perfume,opensource`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+                    break;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+        
+        // Initialize share preview when tab is first opened
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                updateSharePreview();
+            }, 1000);
         });
     </script>
 </body>
