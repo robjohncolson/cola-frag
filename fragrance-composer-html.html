@@ -1850,6 +1850,18 @@
                 ingredient.substituted = true;
                 ingredient.notes = (ingredient.notes || '') + 
                     `\n[Substituted: ${ingredient.originalName} → ${substituteName}]`;
+                
+                // Record this substitution in the database for future reference
+                const originalDbEntry = getOrCreateDatabaseEntry(ingredient.originalName);
+                const substituteDbEntry = getOrCreateDatabaseEntry(substituteName);
+                
+                // Add bidirectional substitution knowledge
+                if (!originalDbEntry.substitutions.includes(substituteName)) {
+                    originalDbEntry.substitutions.push(substituteName);
+                }
+                if (!substituteDbEntry.substitutions.includes(ingredient.originalName)) {
+                    substituteDbEntry.substitutions.push(ingredient.originalName);
+                }
             } else {
                 // Get substitution name from input
                 const substitutionInput = document.querySelector(`#substitution-${ingredientId}`);
