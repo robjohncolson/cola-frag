@@ -1194,6 +1194,28 @@
                         </div>
                     </div>
                     
+                    <!-- Color Management -->
+                    <div class="form-section">
+                        <h2 class="form-title">
+                            <i data-lucide="palette" class="icon"></i>
+                            Color Management
+                        </h2>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px; padding: 4px 8px; background: #f0f9ff; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            💡 <strong>Click ingredient names in the legend</strong> to assign smell-based colors. Custom colors are saved to your database!
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <button onclick="resetAllColorsToAuto()" class="btn" style="flex: 1; background: #f59e0b; color: white; font-size: 11px;">
+                                🔄 Reset All Colors
+                            </button>
+                            <button onclick="showColorPresets()" class="btn" style="flex: 1; background: #8b5cf6; color: white; font-size: 11px;">
+                                🎨 Color Presets
+                            </button>
+                        </div>
+                        <div id="colorStats" style="font-size: 10px; color: #64748b;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
                     <!-- Statistics Summary -->
                     <div class="form-section">
                         <h2 class="form-title">
@@ -3147,7 +3169,8 @@
                     substitutions: [],
                     dilution: 1.0,
                     typicalUsage: 0,
-                    olfactoryFamily: ''
+                    olfactoryFamily: '',
+                    customColor: null // New field for smell-based color
                 };
                 ingredientDatabase.push(dbEntry);
             }
@@ -3602,14 +3625,407 @@
         
         function assignIngredientVisuals() {
             ingredients.forEach(ingredient => {
-                // Assign unique color (all shapes are now spheres)
-                if (!ingredientColors.has(ingredient.name)) {
+                // Check if ingredient has custom color in database
+                const dbEntry = ingredientDatabase.find(entry => 
+                    entry.name.toLowerCase() === ingredient.name.toLowerCase()
+                );
+                
+                if (dbEntry && dbEntry.customColor) {
+                    // Use custom color from database
+                    ingredientColors.set(ingredient.name, dbEntry.customColor);
+                } else if (!ingredientColors.has(ingredient.name)) {
+                    // Generate automatic color as fallback
                     const hue = (ingredient.name.charCodeAt(0) * 137.5) % 360;
                     const saturation = 70 + (ingredient.name.length * 5) % 30;
                     const lightness = 50 + (ingredient.name.charCodeAt(1) * 3) % 20;
                     ingredientColors.set(ingredient.name, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
                 }
             });
+        }
+        
+        function showIngredientColorPicker(ingredientName) {
+            // Remove any existing color picker
+            const existingPicker = document.getElementById('ingredient-color-picker');
+            if (existingPicker) {
+                existingPicker.remove();
+            }
+            
+            // Get current color
+            const currentColor = ingredientColors.get(ingredientName) || '#ffffff';
+            const hexColor = convertToHex(currentColor);
+            
+            // Create color picker modal
+            const modal = document.createElement('div');
+            modal.id = 'ingredient-color-picker';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: #1f2937; padding: 30px; border-radius: 12px; max-width: 400px; color: white; border: 1px solid #3b82f6;">
+                    <h3 style="margin: 0 0 20px 0; color: #3b82f6; text-align: center;">🎨 Choose Color for "${ingredientName}"</h3>
+                    
+                    <div style="background: #1e3a8a; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                        <div style="font-size: 12px; color: #bfdbfe;">💡 <strong>Choose a color that represents the smell of this ingredient</strong></div>
+                        <div style="font-size: 11px; color: #93c5fd; margin-top: 4px;">Examples: Citrus = Yellow/Orange, Woody = Brown, Floral = Pink/Purple, Fresh = Green/Blue</div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <input type="color" 
+                               id="color-picker-input" 
+                               value="${hexColor}" 
+                               style="width: 80px; height: 80px; border: none; border-radius: 8px; cursor: pointer; background: none;">
+                        <div style="margin-top: 8px; font-size: 12px; color: #d1d5db;">Current: ${hexColor}</div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button onclick="applyIngredientColor('${ingredientName}')" 
+                                style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            ✅ Apply Color
+                        </button>
+                        <button onclick="resetIngredientColor('${ingredientName}')" 
+                                style="background: #f59e0b; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            🔄 Reset to Auto
+                        </button>
+                        <button onclick="closeIngredientColorPicker()" 
+                                style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            ❌ Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Close on background click
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    closeIngredientColorPicker();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        function applyIngredientColor(ingredientName) {
+            const colorInput = document.getElementById('color-picker-input');
+            if (!colorInput) return;
+            
+            const newColor = colorInput.value;
+            
+            // Update ingredient color
+            ingredientColors.set(ingredientName, newColor);
+            
+            // Save to database
+            const dbEntry = getOrCreateDatabaseEntry(ingredientName);
+            dbEntry.customColor = newColor;
+            
+            // Update 3D visualization if we're on that tab
+            if (currentTab === 'visualizer') {
+                updateMoleculeColor(ingredientName, newColor);
+            }
+            
+            // Update legend
+            updateVisualizationLegend();
+            
+            // Close picker
+            closeIngredientColorPicker();
+            
+            console.log(`Applied custom color ${newColor} to ${ingredientName}`);
+        }
+        
+        function resetIngredientColor(ingredientName) {
+            // Remove custom color from database
+            const dbEntry = ingredientDatabase.find(entry => 
+                entry.name.toLowerCase() === ingredientName.toLowerCase()
+            );
+            if (dbEntry) {
+                dbEntry.customColor = null;
+            }
+            
+            // Generate new automatic color
+            const hue = (ingredientName.charCodeAt(0) * 137.5) % 360;
+            const saturation = 70 + (ingredientName.length * 5) % 30;
+            const lightness = 50 + (ingredientName.charCodeAt(1) * 3) % 20;
+            const autoColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            
+            // Update ingredient color
+            ingredientColors.set(ingredientName, autoColor);
+            
+            // Update 3D visualization if we're on that tab
+            if (currentTab === 'visualizer') {
+                updateMoleculeColor(ingredientName, autoColor);
+            }
+            
+            // Update legend
+            updateVisualizationLegend();
+            
+            // Close picker
+            closeIngredientColorPicker();
+            
+            console.log(`Reset ${ingredientName} to automatic color: ${autoColor}`);
+        }
+        
+        function closeIngredientColorPicker() {
+            const picker = document.getElementById('ingredient-color-picker');
+            if (picker) {
+                picker.remove();
+            }
+        }
+        
+        function updateMoleculeColor(ingredientName, newColor) {
+            // Find the molecule in the 3D scene and update its color
+            molecules.forEach(mol => {
+                if (mol.ingredient.name === ingredientName) {
+                    const color = new THREE.Color(newColor);
+                    
+                    // Update main material
+                    mol.mesh.material.color = color;
+                    mol.mesh.material.emissive = color.clone().multiplyScalar(0.4);
+                    
+                    // Update wireframe material
+                    if (mol.mesh.userData.wireframeMesh) {
+                        mol.mesh.userData.wireframeMesh.material.color = color.clone().multiplyScalar(1.5);
+                    }
+                }
+            });
+        }
+        
+        function convertToHex(color) {
+            // Convert various color formats to hex
+            if (color.startsWith('#')) {
+                return color;
+            }
+            
+            if (color.startsWith('hsl')) {
+                // Create a temporary element to convert HSL to hex
+                const temp = document.createElement('div');
+                temp.style.color = color;
+                document.body.appendChild(temp);
+                const rgbColor = window.getComputedStyle(temp).color;
+                document.body.removeChild(temp);
+                
+                // Parse RGB values
+                const rgbMatch = rgbColor.match(/\d+/g);
+                if (rgbMatch) {
+                    const r = parseInt(rgbMatch[0]);
+                    const g = parseInt(rgbMatch[1]);
+                    const b = parseInt(rgbMatch[2]);
+                    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                }
+            }
+            
+            // Fallback
+            return '#ffffff';
+        }
+        
+        function resetAllColorsToAuto() {
+            if (confirm('Reset all ingredient colors to automatic? This will remove all custom smell-based colors.')) {
+                // Remove custom colors from all database entries
+                ingredientDatabase.forEach(entry => {
+                    entry.customColor = null;
+                });
+                
+                // Regenerate all colors
+                ingredients.forEach(ingredient => {
+                    const hue = (ingredient.name.charCodeAt(0) * 137.5) % 360;
+                    const saturation = 70 + (ingredient.name.length * 5) % 30;
+                    const lightness = 50 + (ingredient.name.charCodeAt(1) * 3) % 20;
+                    const autoColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    ingredientColors.set(ingredient.name, autoColor);
+                    
+                    // Update 3D visualization
+                    if (currentTab === 'visualizer') {
+                        updateMoleculeColor(ingredient.name, autoColor);
+                    }
+                });
+                
+                // Update displays
+                updateVisualizationLegend();
+                updateVisualizationStats();
+                
+                console.log('Reset all colors to automatic');
+            }
+        }
+        
+        function showColorPresets() {
+            // Remove any existing color picker
+            const existingPicker = document.getElementById('ingredient-color-picker');
+            if (existingPicker) {
+                existingPicker.remove();
+            }
+            
+            // Create color presets modal
+            const modal = document.createElement('div');
+            modal.id = 'ingredient-color-picker';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            `;
+            
+            const colorPresets = {
+                'Citrus': '#FFA500',  // Orange
+                'Woody': '#8B4513',   // Saddle Brown
+                'Floral': '#FFB6C1',  // Light Pink
+                'Fresh/Green': '#32CD32', // Lime Green
+                'Spicy': '#DC143C',   // Crimson
+                'Sweet': '#FFD700',   // Gold
+                'Musky': '#8A2BE2',   // Blue Violet
+                'Marine': '#00CED1',  // Dark Turquoise
+                'Fruity': '#FF69B4',  // Hot Pink
+                'Herbal': '#228B22'   // Forest Green
+            };
+            
+            modal.innerHTML = `
+                <div style="background: #1f2937; padding: 30px; border-radius: 12px; max-width: 500px; color: white; border: 1px solid #3b82f6;">
+                    <h3 style="margin: 0 0 20px 0; color: #3b82f6; text-align: center;">🎨 Color Presets for Fragrance Families</h3>
+                    
+                    <div style="background: #1e3a8a; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                        <div style="font-size: 12px; color: #bfdbfe;">💡 <strong>Quick color assignment based on common fragrance families</strong></div>
+                        <div style="font-size: 11px; color: #93c5fd; margin-top: 4px;">Click a preset color to apply to ingredients that match the family name</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        ${Object.entries(colorPresets).map(([family, color]) => `
+                            <button onclick="applyFamilyColorPreset('${family}', '${color}')" 
+                                    style="background: ${color}; color: ${getBestTextColor(color)}; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                ${family}
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="closeIngredientColorPicker()" 
+                                style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            ❌ Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Close on background click
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    closeIngredientColorPicker();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        function getBestTextColor(hexColor) {
+            // Convert hex to RGB
+            const r = parseInt(hexColor.slice(1, 3), 16);
+            const g = parseInt(hexColor.slice(3, 5), 16);
+            const b = parseInt(hexColor.slice(5, 7), 16);
+            
+            // Calculate relative luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+        
+        function applyFamilyColorPreset(family, color) {
+            const familyLower = family.toLowerCase();
+            let appliedCount = 0;
+            
+            ingredients.forEach(ingredient => {
+                const ingredientName = ingredient.name.toLowerCase();
+                
+                // Check if ingredient name contains family keywords
+                let matches = false;
+                switch (familyLower) {
+                    case 'citrus':
+                        matches = ingredientName.includes('lemon') || ingredientName.includes('orange') || 
+                                 ingredientName.includes('bergamot') || ingredientName.includes('lime') ||
+                                 ingredientName.includes('grapefruit') || ingredientName.includes('citrus');
+                        break;
+                    case 'woody':
+                        matches = ingredientName.includes('cedar') || ingredientName.includes('sandalwood') ||
+                                 ingredientName.includes('vetiver') || ingredientName.includes('wood') ||
+                                 ingredientName.includes('timber') || ingredientName.includes('oak');
+                        break;
+                    case 'floral':
+                        matches = ingredientName.includes('rose') || ingredientName.includes('jasmine') ||
+                                 ingredientName.includes('lavender') || ingredientName.includes('geranium') ||
+                                 ingredientName.includes('floral') || ingredientName.includes('flower');
+                        break;
+                    case 'fresh/green':
+                        matches = ingredientName.includes('mint') || ingredientName.includes('eucalyptus') ||
+                                 ingredientName.includes('grass') || ingredientName.includes('green') ||
+                                 ingredientName.includes('fresh') || ingredientName.includes('leaf');
+                        break;
+                    case 'spicy':
+                        matches = ingredientName.includes('pepper') || ingredientName.includes('cinnamon') ||
+                                 ingredientName.includes('clove') || ingredientName.includes('spice') ||
+                                 ingredientName.includes('ginger') || ingredientName.includes('cardamom');
+                        break;
+                    case 'sweet':
+                        matches = ingredientName.includes('vanilla') || ingredientName.includes('caramel') ||
+                                 ingredientName.includes('honey') || ingredientName.includes('sugar') ||
+                                 ingredientName.includes('sweet') || ingredientName.includes('candy');
+                        break;
+                    case 'musky':
+                        matches = ingredientName.includes('musk') || ingredientName.includes('ambergris') ||
+                                 ingredientName.includes('civet') || ingredientName.includes('animalic');
+                        break;
+                    case 'marine':
+                        matches = ingredientName.includes('marine') || ingredientName.includes('ocean') ||
+                                 ingredientName.includes('sea') || ingredientName.includes('aquatic') ||
+                                 ingredientName.includes('water') || ingredientName.includes('algae');
+                        break;
+                    case 'fruity':
+                        matches = ingredientName.includes('apple') || ingredientName.includes('peach') ||
+                                 ingredientName.includes('strawberry') || ingredientName.includes('pear') ||
+                                 ingredientName.includes('fruit') || ingredientName.includes('berry');
+                        break;
+                    case 'herbal':
+                        matches = ingredientName.includes('herb') || ingredientName.includes('basil') ||
+                                 ingredientName.includes('thyme') || ingredientName.includes('sage') ||
+                                 ingredientName.includes('rosemary') || ingredientName.includes('oregano');
+                        break;
+                }
+                
+                if (matches) {
+                    // Apply color
+                    ingredientColors.set(ingredient.name, color);
+                    
+                    // Save to database
+                    const dbEntry = getOrCreateDatabaseEntry(ingredient.name);
+                    dbEntry.customColor = color;
+                    
+                    // Update 3D visualization
+                    if (currentTab === 'visualizer') {
+                        updateMoleculeColor(ingredient.name, color);
+                    }
+                    
+                    appliedCount++;
+                }
+            });
+            
+            // Update displays
+            updateVisualizationLegend();
+            updateVisualizationStats();
+            closeIngredientColorPicker();
+            
+            alert(`Applied ${family} color to ${appliedCount} ingredient(s)`);
         }
         
         function calculateTerritoryAllocations() {
@@ -3994,9 +4410,21 @@
                             ${groupMolecules.map(mol => {
                                 const inventoryStatus = getInventoryStatus(mol.ingredient.name);
                                 const percentage = totalActives > 0 ? (getActives(mol.ingredient) / totalActives * 100).toFixed(1) : 0;
+                                const dbEntry = ingredientDatabase.find(entry => 
+                                    entry.name.toLowerCase() === mol.ingredient.name.toLowerCase()
+                                );
+                                const hasCustomColor = dbEntry && dbEntry.customColor;
                                 return `
-                                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px; color: #d1d5db;">
-                                        <span>${inventoryStatus.available ? '⭐' : '☆'} ${mol.ingredient.name}</span>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: #d1d5db;">
+                                        <span style="display: flex; align-items: center; gap: 4px;">
+                                            ${inventoryStatus.available ? '⭐' : '☆'} 
+                                            <span style="cursor: pointer; color: ${ingredientColors.get(mol.ingredient.name)}; text-decoration: underline;" 
+                                                  onclick="showIngredientColorPicker('${mol.ingredient.name}')" 
+                                                  title="Click to change color">
+                                                ${mol.ingredient.name}
+                                            </span>
+                                            ${hasCustomColor ? '<span style="color: #10b981; font-size: 8px;">🎨</span>' : '<span style="color: #6b7280; font-size: 8px;">⚙️</span>'}
+                                        </span>
                                         <span>${percentage}%</span>
                                     </div>
                                 `;
@@ -4011,10 +4439,13 @@
         
         function updateVisualizationStats() {
             const stats = document.getElementById('visualizerStats');
+            const colorStats = document.getElementById('colorStats');
+            
             if (!stats) return;
             
             if (ingredients.length === 0) {
                 stats.innerHTML = '<div style="color: #9ca3af;">Add ingredients to see statistics</div>';
+                if (colorStats) colorStats.innerHTML = '<div style="color: #9ca3af;">No ingredients to color</div>';
                 return;
             }
             
@@ -4023,6 +4454,16 @@
             const uniqueGroups = new Set(ingredients.map(ing => ing.group)).size;
             const availableIngredients = ingredients.filter(ing => getInventoryStatus(ing.name).available).length;
             const coverage = totalIngredients > 0 ? (availableIngredients / totalIngredients * 100).toFixed(1) : 0;
+            
+            // Color statistics
+            const customColorCount = ingredients.filter(ing => {
+                const dbEntry = ingredientDatabase.find(entry => 
+                    entry.name.toLowerCase() === ing.name.toLowerCase()
+                );
+                return dbEntry && dbEntry.customColor;
+            }).length;
+            
+            const autoColorCount = totalIngredients - customColorCount;
             
             stats.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
@@ -4053,6 +4494,219 @@
                     Sphere size represents active concentration • Territory size is inversely proportional
                 </div>
             `;
+            
+            if (colorStats) {
+                colorStats.innerHTML = `
+                    <div style="margin-bottom: 4px;">
+                        <span style="color: #10b981;">🎨 ${customColorCount} Custom</span> • 
+                        <span style="color: #6b7280;">⚙️ ${autoColorCount} Auto</span>
+                    </div>
+                    <div style="color: #9ca3af; font-size: 9px;">
+                        Click ingredient names in legend to customize colors
+                    </div>
+                `;
+            }
+        }
+        
+        function resetAllColorsToAuto() {
+            if (confirm('Reset all ingredient colors to automatic? This will remove all custom smell-based colors.')) {
+                // Remove custom colors from all database entries
+                ingredientDatabase.forEach(entry => {
+                    entry.customColor = null;
+                });
+                
+                // Regenerate all colors
+                ingredients.forEach(ingredient => {
+                    const hue = (ingredient.name.charCodeAt(0) * 137.5) % 360;
+                    const saturation = 70 + (ingredient.name.length * 5) % 30;
+                    const lightness = 50 + (ingredient.name.charCodeAt(1) * 3) % 20;
+                    const autoColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    ingredientColors.set(ingredient.name, autoColor);
+                    
+                    // Update 3D visualization
+                    if (currentTab === 'visualizer') {
+                        updateMoleculeColor(ingredient.name, autoColor);
+                    }
+                });
+                
+                // Update displays
+                updateVisualizationLegend();
+                updateVisualizationStats();
+                
+                console.log('Reset all colors to automatic');
+            }
+        }
+        
+        function showColorPresets() {
+            // Remove any existing color picker
+            const existingPicker = document.getElementById('ingredient-color-picker');
+            if (existingPicker) {
+                existingPicker.remove();
+            }
+            
+            // Create color presets modal
+            const modal = document.createElement('div');
+            modal.id = 'ingredient-color-picker';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            `;
+            
+            const colorPresets = {
+                'Citrus': '#FFA500',  // Orange
+                'Woody': '#8B4513',   // Saddle Brown
+                'Floral': '#FFB6C1',  // Light Pink
+                'Fresh/Green': '#32CD32', // Lime Green
+                'Spicy': '#DC143C',   // Crimson
+                'Sweet': '#FFD700',   // Gold
+                'Musky': '#8A2BE2',   // Blue Violet
+                'Marine': '#00CED1',  // Dark Turquoise
+                'Fruity': '#FF69B4',  // Hot Pink
+                'Herbal': '#228B22'   // Forest Green
+            };
+            
+            modal.innerHTML = `
+                <div style="background: #1f2937; padding: 30px; border-radius: 12px; max-width: 500px; color: white; border: 1px solid #3b82f6;">
+                    <h3 style="margin: 0 0 20px 0; color: #3b82f6; text-align: center;">🎨 Color Presets for Fragrance Families</h3>
+                    
+                    <div style="background: #1e3a8a; padding: 12px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #3b82f6;">
+                        <div style="font-size: 12px; color: #bfdbfe;">💡 <strong>Quick color assignment based on common fragrance families</strong></div>
+                        <div style="font-size: 11px; color: #93c5fd; margin-top: 4px;">Click a preset color to apply to ingredients that match the family name</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                        ${Object.entries(colorPresets).map(([family, color]) => `
+                            <button onclick="applyFamilyColorPreset('${family}', '${color}')" 
+                                    style="background: ${color}; color: ${getBestTextColor(color)}; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">
+                                ${family}
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="closeIngredientColorPicker()" 
+                                style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            ❌ Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Close on background click
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    closeIngredientColorPicker();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        function getBestTextColor(hexColor) {
+            // Convert hex to RGB
+            const r = parseInt(hexColor.slice(1, 3), 16);
+            const g = parseInt(hexColor.slice(3, 5), 16);
+            const b = parseInt(hexColor.slice(5, 7), 16);
+            
+            // Calculate relative luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+        
+        function applyFamilyColorPreset(family, color) {
+            const familyLower = family.toLowerCase();
+            let appliedCount = 0;
+            
+            ingredients.forEach(ingredient => {
+                const ingredientName = ingredient.name.toLowerCase();
+                
+                // Check if ingredient name contains family keywords
+                let matches = false;
+                switch (familyLower) {
+                    case 'citrus':
+                        matches = ingredientName.includes('lemon') || ingredientName.includes('orange') || 
+                                 ingredientName.includes('bergamot') || ingredientName.includes('lime') ||
+                                 ingredientName.includes('grapefruit') || ingredientName.includes('citrus');
+                        break;
+                    case 'woody':
+                        matches = ingredientName.includes('cedar') || ingredientName.includes('sandalwood') ||
+                                 ingredientName.includes('vetiver') || ingredientName.includes('wood') ||
+                                 ingredientName.includes('timber') || ingredientName.includes('oak');
+                        break;
+                    case 'floral':
+                        matches = ingredientName.includes('rose') || ingredientName.includes('jasmine') ||
+                                 ingredientName.includes('lavender') || ingredientName.includes('geranium') ||
+                                 ingredientName.includes('floral') || ingredientName.includes('flower');
+                        break;
+                    case 'fresh/green':
+                        matches = ingredientName.includes('mint') || ingredientName.includes('eucalyptus') ||
+                                 ingredientName.includes('grass') || ingredientName.includes('green') ||
+                                 ingredientName.includes('fresh') || ingredientName.includes('leaf');
+                        break;
+                    case 'spicy':
+                        matches = ingredientName.includes('pepper') || ingredientName.includes('cinnamon') ||
+                                 ingredientName.includes('clove') || ingredientName.includes('spice') ||
+                                 ingredientName.includes('ginger') || ingredientName.includes('cardamom');
+                        break;
+                    case 'sweet':
+                        matches = ingredientName.includes('vanilla') || ingredientName.includes('caramel') ||
+                                 ingredientName.includes('honey') || ingredientName.includes('sugar') ||
+                                 ingredientName.includes('sweet') || ingredientName.includes('candy');
+                        break;
+                    case 'musky':
+                        matches = ingredientName.includes('musk') || ingredientName.includes('ambergris') ||
+                                 ingredientName.includes('civet') || ingredientName.includes('animalic');
+                        break;
+                    case 'marine':
+                        matches = ingredientName.includes('marine') || ingredientName.includes('ocean') ||
+                                 ingredientName.includes('sea') || ingredientName.includes('aquatic') ||
+                                 ingredientName.includes('water') || ingredientName.includes('algae');
+                        break;
+                    case 'fruity':
+                        matches = ingredientName.includes('apple') || ingredientName.includes('peach') ||
+                                 ingredientName.includes('strawberry') || ingredientName.includes('pear') ||
+                                 ingredientName.includes('fruit') || ingredientName.includes('berry');
+                        break;
+                    case 'herbal':
+                        matches = ingredientName.includes('herb') || ingredientName.includes('basil') ||
+                                 ingredientName.includes('thyme') || ingredientName.includes('sage') ||
+                                 ingredientName.includes('rosemary') || ingredientName.includes('oregano');
+                        break;
+                }
+                
+                if (matches) {
+                    // Apply color
+                    ingredientColors.set(ingredient.name, color);
+                    
+                    // Save to database
+                    const dbEntry = getOrCreateDatabaseEntry(ingredient.name);
+                    dbEntry.customColor = color;
+                    
+                    // Update 3D visualization
+                    if (currentTab === 'visualizer') {
+                        updateMoleculeColor(ingredient.name, color);
+                    }
+                    
+                    appliedCount++;
+                }
+            });
+            
+            // Update displays
+            updateVisualizationLegend();
+            updateVisualizationStats();
+            closeIngredientColorPicker();
+            
+            alert(`Applied ${family} color to ${appliedCount} ingredient(s)`);
         }
         
 
