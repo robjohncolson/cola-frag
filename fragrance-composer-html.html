@@ -1954,6 +1954,7 @@
                 <input type="text" 
                        class="compound-ingredient-input" 
                        placeholder="Substitute ingredient ${rowCount + 1}"
+                       list="compound-inventory-datalist-${ingredientId}"
                        id="compound-ingredient-${ingredientId}-${rowCount}">
                 <input type="number" 
                        class="compound-percentage-input" 
@@ -2735,13 +2736,18 @@
                                                     </div>
                                                     
                                                     <div style="font-size: 11px; font-weight: 500; margin: 8px 0 4px 0;">Add Substitution:</div>
+                                                    <div style="font-size: 10px; color: #6b7280; margin-bottom: 4px;">💡 Type or click dropdown to see inventory items</div>
                                                     <div class="substitution-form" id="substitution-form-regular-${ingredient.id}">
                                                         <input type="text" 
                                                                id="substitution-${ingredient.id}" 
                                                                class="input" 
                                                                placeholder="Enter substitute ingredient"
+                                                               list="inventory-datalist-${ingredient.id}"
                                                                onfocus="showSubstitutionSuggestions(${ingredient.id}, this)"
                                                                style="font-size: 11px;">
+                                                        <datalist id="inventory-datalist-${ingredient.id}">
+                                                            ${inventory.map(item => `<option value="${item.name}" label="${item.amount}${item.unit} available">`).join('')}
+                                                        </datalist>
                                                         <button onclick="substituteIngredient(${ingredient.id})" class="btn btn-substitute">
                                                             <i data-lucide="arrow-right" class="icon-sm"></i>
                                                         </button>
@@ -2757,46 +2763,53 @@
                                                     <div class="compound-substitution-form" 
                                                          id="substitution-form-compound-${ingredient.id}" 
                                                          style="display: none;">
-                                                        <div style="font-size: 11px; font-weight: 500; margin-bottom: 8px;">
-                                                            Split "${ingredient.name}" into multiple ingredients:
-                                                        </div>
+                                                                                                                 <div style="font-size: 11px; font-weight: 500; margin-bottom: 4px;">
+                                                             Split "${ingredient.name}" into multiple ingredients:
+                                                         </div>
+                                                         <div style="font-size: 10px; color: #6b7280; margin-bottom: 8px;">💡 Type or click dropdown to see inventory items</div>
                                                         <div id="compound-ingredients-${ingredient.id}">
-                                                            <div class="compound-ingredient-row">
-                                                                <input type="text" 
-                                                                       class="compound-ingredient-input" 
-                                                                       placeholder="Substitute ingredient 1"
-                                                                       id="compound-ingredient-${ingredient.id}-0">
-                                                                <input type="number" 
-                                                                       class="compound-percentage-input" 
-                                                                       placeholder="%" 
-                                                                       min="0" 
-                                                                       max="100" 
-                                                                       step="0.1"
-                                                                       id="compound-percentage-${ingredient.id}-0"
-                                                                       onchange="updateCompoundPercentageTotal(${ingredient.id})">
-                                                                <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
-                                                                        class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div class="compound-ingredient-row">
-                                                                <input type="text" 
-                                                                       class="compound-ingredient-input" 
-                                                                       placeholder="Substitute ingredient 2"
-                                                                       id="compound-ingredient-${ingredient.id}-1">
-                                                                <input type="number" 
-                                                                       class="compound-percentage-input" 
-                                                                       placeholder="%" 
-                                                                       min="0" 
-                                                                       max="100" 
-                                                                       step="0.1"
-                                                                       id="compound-percentage-${ingredient.id}-1"
-                                                                       onchange="updateCompoundPercentageTotal(${ingredient.id})">
-                                                                <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
-                                                                        class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
-                                                                    ×
-                                                                </button>
-                                                            </div>
+                                                                                                                         <div class="compound-ingredient-row">
+                                                                 <input type="text" 
+                                                                        class="compound-ingredient-input" 
+                                                                        placeholder="Substitute ingredient 1"
+                                                                        list="compound-inventory-datalist-${ingredient.id}"
+                                                                        id="compound-ingredient-${ingredient.id}-0">
+                                                                 <input type="number" 
+                                                                        class="compound-percentage-input" 
+                                                                        placeholder="%" 
+                                                                        min="0" 
+                                                                        max="100" 
+                                                                        step="0.1"
+                                                                        id="compound-percentage-${ingredient.id}-0"
+                                                                        onchange="updateCompoundPercentageTotal(${ingredient.id})">
+                                                                 <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
+                                                                         class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
+                                                                     ×
+                                                                 </button>
+                                                             </div>
+                                                             <div class="compound-ingredient-row">
+                                                                 <input type="text" 
+                                                                        class="compound-ingredient-input" 
+                                                                        placeholder="Substitute ingredient 2"
+                                                                        list="compound-inventory-datalist-${ingredient.id}"
+                                                                        id="compound-ingredient-${ingredient.id}-1">
+                                                                 <input type="number" 
+                                                                        class="compound-percentage-input" 
+                                                                        placeholder="%" 
+                                                                        min="0" 
+                                                                        max="100" 
+                                                                        step="0.1"
+                                                                        id="compound-percentage-${ingredient.id}-1"
+                                                                        onchange="updateCompoundPercentageTotal(${ingredient.id})">
+                                                                 <button onclick="removeCompoundIngredientRow(this, ${ingredient.id})" 
+                                                                         class="btn" style="background: #ef4444; color: white; padding: 2px 6px; font-size: 10px;">
+                                                                     ×
+                                                                 </button>
+                                                             </div>
+                                                         </div>
+                                                         <datalist id="compound-inventory-datalist-${ingredient.id}">
+                                                             ${inventory.map(item => `<option value="${item.name}" label="${item.amount}${item.unit} available">`).join('')}
+                                                         </datalist>
                                                         </div>
                                                         <div id="compound-total-${ingredient.id}" class="percentage-total">Total: 0%</div>
                                                         <div style="margin-top: 8px; display: flex; gap: 4px; justify-content: center;">

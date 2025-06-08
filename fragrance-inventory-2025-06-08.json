@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "timestamp": "2025-06-07T22:58:40.630Z",
-  "totalItems": 109,
+  "timestamp": "2025-06-08T00:38:58.478Z",
+  "totalItems": 110,
   "inventory": [
     {
       "id": 1749337063882.2603,
@@ -548,6 +548,13 @@
       "amount": 1,
       "unit": "ml",
       "dilution": 0.5
+    },
+    {
+      "id": 1749342655996,
+      "name": "Orange Blossom Absolute",
+      "amount": 15,
+      "unit": "ml",
+      "dilution": 1
     },
     {
       "id": 1749337063883.0276,

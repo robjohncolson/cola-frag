@@ -1,0 +1,464 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-06-08T00:38:42.697Z",
+  "totalEntries": 50,
+  "database": [
+    {
+      "id": 1749342520773.933,
+      "name": "Hedione",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.4636,
+      "name": "Iso E Super",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.5889,
+      "name": "Helvetolide",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.4717,
+      "name": "Bergamot Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.7178,
+      "name": "Ambroxan",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.5159,
+      "name": "Galaxolide",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.424,
+      "name": "Patchouli Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.4565,
+      "name": "Linalyl Acetate",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.5876,
+      "name": "Lyral",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.9814,
+      "name": "Petitgrain Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.2715,
+      "name": "Sweet Orange Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.8782,
+      "name": "Evernyl",
+      "notes": "Veramoss",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.4062,
+      "name": "Juniper Berry Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.7026,
+      "name": "Coranol",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.3667,
+      "name": "Linalool",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.3645,
+      "name": "Clary Sage Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.031,
+      "name": "Birch Tar Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.178,
+      "name": "Black Currant Bud Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.5847,
+      "name": "Patchoulol",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.465,
+      "name": "Pink Pepper Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.7654,
+      "name": "Paradisadmide",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.9915,
+      "name": "Pineapple Ester",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.1582,
+      "name": "2-Isobutyl Quinoline",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.1394,
+      "name": "Neroli Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.1785,
+      "name": "Galbanum Oil",
+      "notes": "bitter, metallic",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.0156,
+      "name": "Damascone Alpha",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.7488,
+      "name": "Cassie Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.4304,
+      "name": "Boronia Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.6584,
+      "name": "Labdanum Absolute",
+      "notes": "",
+      "substitutions": [
+        "Cistus Oil"
+      ],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342520773.7266,
+      "name": "Cypress By-Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.2454,
+      "name": "Ambrettolide",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.8503,
+      "name": "Octyl Salicylate",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.6174,
+      "name": "Evernyl (Veramoss)",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.0457,
+      "name": "Alpha Damascone",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.3196,
+      "name": "Patchouli Oil (Heart Fraction)",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.7188,
+      "name": "Petitgrain Bigarade Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.5168,
+      "name": "Clary Sage Oil",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.1316,
+      "name": "Orange Blossom Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": "",
+      "currentInventory": 15,
+      "inventoryUnit": "ml",
+      "lastUpdated": "2025-06-08T00:30:55.996Z"
+    },
+    {
+      "id": 1749342530879.9482,
+      "name": "Blackcurrant Bud Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.0461,
+      "name": "Cistus Oil",
+      "notes": "",
+      "substitutions": [
+        "Labdanum Absolute"
+      ],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530879.5002,
+      "name": "Elderflower Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.0906,
+      "name": "Fir Balsam Absolute",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.0442,
+      "name": "Birch Tar Oil (Rectified)",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.0012,
+      "name": "Beta Pinene",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.7356,
+      "name": "Triplal",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.609,
+      "name": "Alpha Fenchone",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.2651,
+      "name": "Manzanate",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.333,
+      "name": "Neobutenone Alpha",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.7673,
+      "name": "Veloutone",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    },
+    {
+      "id": 1749342530880.0754,
+      "name": "Ethyl Caproate",
+      "notes": "",
+      "substitutions": [],
+      "dilution": 1,
+      "typicalUsage": 0,
+      "olfactoryFamily": ""
+    }
+  ]
+}
